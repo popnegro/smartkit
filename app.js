@@ -6,7 +6,12 @@ const DASHBOARD_STATE=(()=>{
 })();
 const STORED_ROWS=Array.isArray(DASHBOARD_STATE.rows)?DASHBOARD_STATE.rows:[];
 const STORED_ROW_MAP=new Map(STORED_ROWS.map(row=>[row.id,row]));
-const SOURCE_SCREENS=SCREENS.map(screen=>({...screen,...(STORED_ROW_MAP.get(screen.id)||{})}));
+const SOURCE_SCREENS=SCREENS.map(screen=>{
+  const stored=STORED_ROW_MAP.get(screen.id)||{};
+  const merged={...screen,...stored};
+  merged.video=safeAssetUrl(stored.video)?stored.video:screen.video;
+  return merged;
+});
 const BRAND={...DEFAULT_BRAND,...(CONFIG.brand||{}),...(DASHBOARD_STATE.brand||{})};
 const THEME=CONFIG.theme||{};
 const DEFAULT_ACTIVE_SCREEN_IDS=[1,2,3,4,5,6,7,10,13,16,18];
@@ -41,14 +46,14 @@ function whatsappButtonContent(label, icon=whatsappIcon){
   return `${icon}<span>${h(label)}</span>`;
 }
 
-function safeAssetUrl(value){
-  const url=String(value||'');
-  return /^(assets\/|\.\/assets\/|https:\/\/)/.test(url)?url:'';
-}
-
 function safeBackground(value){
   const bg=String(value||'');
   return bg.startsWith('linear-gradient(')?bg:'';
+}
+
+function safeAssetUrl(value){
+  const url=String(value||'');
+  return /^(assets\/|\.\/assets\/|https:\/\/)/.test(url)?url:'';
 }
 
 function screenCpm(s){
@@ -210,18 +215,56 @@ function loadLazyVideos(root=document){
   videos.forEach(video=>observer.observe(video));
 }
 
+function screenVideoHtml(s, eager=false){
+  const videoUrl=safeAssetUrl(s.video);
+  if(!videoUrl)return `<span>${h(s.e)}</span>`;
+  const sourceAttr=eager&&!prefersReducedMotion()
+    ? `src="${h(videoUrl)}"`
+    : `data-src="${h(videoUrl)}"`;
+  const autoplay=prefersReducedMotion()?'':'autoplay';
+  const preload=eager&&!prefersReducedMotion()?'metadata':'none';
+  return `
+    <span class="media-fallback" aria-hidden="true">${h(s.e)}</span>
+    <video ${sourceAttr} ${autoplay} muted loop playsinline preload="${preload}" aria-label="Video de ${h(s.n)}" onerror="this.hidden=true"></video>`;
+}
+
 function markerHtml(s){
   return `<div class="marker ${impNum(s)>=50000?'hot':''}" style="color:${TIPO_COL[s.tipo]}">${s.e}</div>`;
 }
 
-function screenHead(s, className, overlay=''){
-  const eager=className==='media';
-  const videoUrl=safeAssetUrl(s.video);
+function screenHead(s, className, overlay='', eager=className==='media'){
   const background=safeBackground(s.g);
-  const media=videoUrl
-    ? `<span class="media-fallback" aria-hidden="true">${h(s.e)}</span><video ${eager&&!prefersReducedMotion()?`src="${h(videoUrl)}"`:`data-src="${h(videoUrl)}"`} ${prefersReducedMotion()?'':'autoplay'} muted loop playsinline preload="${eager&&!prefersReducedMotion()?'metadata':'none'}" aria-label="Video de ${h(s.n)}"></video>`
-    : `<span>${h(s.e)}</span>`;
-  return `<div class="${className} video-head" style="background:${background}">${media}${overlay}</div>`;
+  return `<div class="${className} video-head" style="background:${background}">${screenVideoHtml(s,eager)}${overlay}</div>`;
+}
+
+function renderBrochureCard(s, eagerVideo=false){
+  const selected=selectedScreens.includes(s.id);
+  const recommended=isRecommended(s);
+  const availability=screenAvailability(s);
+  const badgeText=selected?'Seleccionada':recommended?'Recomendada':h(s.tipo);
+  const badgeClass=selected?'badge-selected':recommended?'badge-recommended':'';
+  return `
+    <article class="card video-card ${selected?'selected':''}">
+      ${screenHead(s,'thumb',`<span class="badge media-badge ${badgeClass}" style="background:${TIPO_COL[s.tipo]}22;color:${TIPO_COL[s.tipo]}">${badgeText}</span>`,eagerVideo)}
+      <div class="card-body">
+        <div class="row card-head">
+          <span class="muted small card-zone">${h(s.b)}</span>
+        </div>
+        <h3 class="card-title">${h(s.n)}</h3>
+        <p class="muted small card-address">${h(s.dir)}</p>
+        <p class="card-use-case">${h(screenUseCase(s))}</p>
+        <div class="product-tags card-product-tags">
+          <span class="product-tag availability-${availability.tone}">${h(availability.label)}</span>
+          <span class="product-tag">CPM ${fmt(screenCpm(s))}</span>
+        </div>
+        <p class="muted small card-spec">${h(s.dim)} · ${h(s.res)} · ${h(s.imp)} imp/día</p>
+        <div class="price card-price">${fmt(s.precio)}<span class="muted small"> / semana</span></div>
+        <div class="card-actions">
+          <md-filled-button class="quote-add ${selected?'selected':''}" aria-pressed="${selected?'true':'false'}" aria-label="${selected?'Quitar':'Agregar'} ${h(s.n)} del plan" data-action="toggle-quote" data-screen-id="${s.id}">${selected?'Quitar':'Agregar'}</md-filled-button>
+          <md-outlined-button class="map-btn" data-action="show-map" data-screen-id="${s.id}">Ubicar</md-outlined-button>
+        </div>
+      </div>
+    </article>`;
 }
 
 function durationOptions(){
@@ -347,28 +390,9 @@ function renderBrochure(){
       <span>${h(activeZone)} · ${h(({recommended:'Recomendadas',impact:'Mayor impacto',price:'Menor precio',type:'Tipo de tránsito'})[activeSort]||activeSort)}</span>
       <button type="button" data-action="clear-filters">Limpiar</button>`:'';
   }
-  document.getElementById('cards').innerHTML=list.length?list.map(s=>`
-    <article class="card ${selectedScreens.includes(s.id)?'selected':''}">
-      ${screenHead(s,'thumb',`<span class="badge media-badge ${selectedScreens.includes(s.id)?'badge-selected':isRecommended(s)?'badge-recommended':''}" style="background:${TIPO_COL[s.tipo]}22;color:${TIPO_COL[s.tipo]}">${selectedScreens.includes(s.id)?'Seleccionada':isRecommended(s)?'Recomendada':h(s.tipo)}</span>`)}
-      <div class="card-body">
-        <div class="row card-head">
-          <span class="muted small card-zone">${h(s.b)}</span>
-        </div>
-        <h3 class="card-title">${h(s.n)}</h3>
-        <p class="muted small card-address">${h(s.dir)}</p>
-        <p class="card-use-case">${h(screenUseCase(s))}</p>
-        <div class="product-tags card-product-tags">
-          <span class="product-tag availability-${screenAvailability(s).tone}">${h(screenAvailability(s).label)}</span>
-          <span class="product-tag">CPM ${fmt(screenCpm(s))}</span>
-        </div>
-        <p class="muted small card-spec">${h(s.dim)} · ${h(s.res)} · ${h(s.imp)} imp/día</p>
-        <div class="price card-price">${fmt(s.precio)}<span class="muted small"> / semana</span></div>
-        <div class="card-actions">
-          <md-filled-button class="quote-add ${selectedScreens.includes(s.id)?'selected':''}" aria-pressed="${selectedScreens.includes(s.id)?'true':'false'}" aria-label="${selectedScreens.includes(s.id)?'Quitar':'Agregar'} ${h(s.n)} del plan" data-action="toggle-quote" data-screen-id="${s.id}">${selectedScreens.includes(s.id)?'Quitar':'Agregar'}</md-filled-button>
-          <md-outlined-button class="map-btn" data-action="show-map" data-screen-id="${s.id}">Ubicar</md-outlined-button>
-        </div>
-      </div>
-    </article>`).join(''):`<div class="empty-state">No hay pantallas activas en ${activeZone}.<br><button type="button" data-action="set-zone" data-zone="Todos">Ver todas</button></div>`;
+  document.getElementById('cards').innerHTML=list.length
+    ? list.map((s,index)=>renderBrochureCard(s,index<4)).join('')
+    : `<div class="empty-state">No hay pantallas activas en ${activeZone}.<br><button type="button" data-action="set-zone" data-zone="Todos">Ver todas</button></div>`;
   updateMapMarkers();
   renderQuote();
   loadLazyVideos(document.getElementById('cards'));

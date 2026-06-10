@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-10T12:02:42.225Z",
+  "generatedAt": "2026-06-10T00:00:00.000Z",
   "files": [
     "index.html",
     "dashboard.html",
@@ -8,6 +8,6 @@
     "app.js",
     "config.js",
     "screens-data.js",
-    "assets"
+    "assets/videos"
   ]
 }

@@ -1,611 +1,128 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>MendozaDOOH — Dashboard</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartKit - Brochure y Mapa</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script type="module" src="https://esm.run/@material/web/all.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<!-- En producción: <script src="./screens-data.js"></script> -->
-<style>
-*{box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
-.leaflet-container{background:#0a0a0f}
-.lmk{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;border:2px solid rgba(255,255,255,.6);cursor:pointer;transition:transform .15s;box-shadow:0 2px 8px rgba(0,0,0,.5)}
-.lmk:hover{transform:scale(1.25)}
-.nav-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;cursor:pointer;font-size:14px;font-weight:500;color:#71717a;transition:all .15s;white-space:nowrap}
-.nav-item:hover{background:#27272a;color:#fff}
-.nav-item.on{background:#27272a;color:#10b981}
-.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700}
-.tipo-p{background:rgba(34,211,238,.1);color:#22D3EE}
-.tipo-v{background:rgba(245,158,11,.1);color:#F59E0B}
-.tipo-m{background:rgba(129,140,248,.1);color:#818CF8}
-.bar{background:#27272a;border-radius:6px;overflow:hidden;height:8px}
-.bar-fill{height:100%;border-radius:6px;transition:width .9s ease}
-tr:hover td{background:#1c1c1f}
-input,select{outline:none;transition:border-color .15s}
-input:focus,select:focus{border-color:#10b981!important}
-@media print{
-  #sidebar,header,.no-print{display:none!important}
-  #kit-preview{position:fixed!important;inset:0!important;z-index:9999;background:white!important;color:#111!important;overflow:auto!important}
-  #kit-preview *{color:#111!important;border-color:#ddd!important}
-  #kit-preview .dark-inv{background:#f4f4f5!important}
-}
-</style>
+<link rel="stylesheet" href="./styles.css">
 </head>
-
-<body class="bg-zinc-950 text-white flex h-screen overflow-hidden">
-
-<!-- ── SIDEBAR ──────────────────────────────────────────── -->
-<aside id="sidebar" class="w-60 flex-shrink-0 bg-zinc-900 border-r border-zinc-800 flex flex-col p-4 gap-1">
-  <div class="flex items-center gap-3 px-2 py-3 mb-4">
-    <div class="w-9 h-9 bg-emerald-500 rounded-xl flex items-center justify-center font-black text-sm text-zinc-950">MD</div>
-    <div>
-      <div class="font-bold text-sm leading-tight">MendozaDOOH</div>
-      <div class="text-emerald-400 text-xs">MediaKit SaaS</div>
+<body>
+<a class="skip-link" href="#view-brochure">Saltar al contenido</a>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <div class="logo" id="brand-logo">SK</div>
+      <div><strong id="brand-name">SmartKit</strong></div>
     </div>
-  </div>
-  <div class="nav-item on" id="nav-dashboard"   onclick="goto('dashboard')">🏠 Dashboard</div>
-  <div class="nav-item"    id="nav-inventario"  onclick="goto('inventario')">📍 Inventario LED</div>
-  <div class="nav-item"    id="nav-mediakits"   onclick="goto('mediakits')">📋 Media Kits</div>
-  <div class="nav-item"    id="nav-metricas"    onclick="goto('metricas')">📊 Métricas</div>
-  <div class="mt-auto pt-4 border-t border-zinc-800">
-    <div class="flex items-center gap-2 px-2 py-2">
-      <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-      <span class="text-xs text-zinc-500">20 pantallas activas</span>
-    </div>
-  </div>
-</aside>
-
-<!-- ── MAIN ──────────────────────────────────────────────── -->
-<div class="flex-1 flex flex-col overflow-hidden">
-
-  <!-- Topbar -->
-  <header class="bg-zinc-900 border-b border-zinc-800 px-6 py-4 flex items-center justify-between flex-shrink-0">
-    <h2 id="page-title" class="text-xl font-bold">Dashboard Principal</h2>
-    <div class="flex items-center gap-3">
-      <div class="bg-zinc-800 px-3 py-1.5 rounded-xl text-xs flex items-center gap-2">
-        <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-        Todo en línea
-      </div>
-      <button onclick="openKitGen()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl text-sm font-semibold transition">
-        + Crear Media Kit
-      </button>
-    </div>
+    <button class="menu-toggle" id="menu-toggle" type="button" aria-controls="primary-nav" aria-expanded="false" data-action="toggle-nav">
+      <span class="menu-toggle-icon" aria-hidden="true"></span>
+      <span>Menu</span>
+    </button>
+    <nav class="nav" id="primary-nav" aria-label="Vistas principales">
+      <button id="btn-brochure" class="on" type="button" aria-current="page" data-view="brochure">Brochure</button>
+      <button id="btn-map" type="button" data-view="map">Mapa</button>
+      <a class="dashboard-link" href="./dashboard.html">Gestor</a>
+    </nav>
   </header>
 
-  <!-- Content -->
-  <div class="flex-1 overflow-auto">
-
-    <!-- ── SECCIÓN: DASHBOARD ──────────────────────────── -->
-    <section id="sec-dashboard" class="p-6 space-y-6">
-      <!-- Stats -->
-      <div class="grid grid-cols-4 gap-4" id="stats-grid"></div>
-      <!-- Map -->
-      <div class="bg-zinc-900 rounded-2xl border border-zinc-800 p-5">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="font-semibold">Red de pantallas — Gran Mendoza</h3>
-          <div class="flex gap-2 text-xs">
-            <span class="badge tipo-p">Peatonal</span>
-            <span class="badge tipo-v">Vehicular</span>
-            <span class="badge tipo-m">Mixto</span>
-          </div>
-        </div>
-        <div id="dash-map" class="h-80 rounded-xl overflow-hidden border border-zinc-700"></div>
+  <main class="main" aria-label="Experiencia comercial de pantallas">
+    <section id="view-map" class="view" aria-label="Mapa de pantallas" aria-hidden="true">
+      <div id="map" role="application" aria-label="Mapa interactivo de pantallas"></div>
+      <div class="legend">
+        <span><i class="dot dot-peatonal"></i>Peatonal</span>
+        <span><i class="dot dot-vehicular"></i>Vehicular</span>
+        <span><i class="dot dot-mixto"></i>Mixto</span>
       </div>
-      <!-- Top 5 -->
-      <div class="bg-zinc-900 rounded-2xl border border-zinc-800 p-5">
-        <h3 class="font-semibold mb-4">Top 5 por impacto diario</h3>
-        <div id="top5" class="space-y-3"></div>
-      </div>
+      <aside id="screen-panel" class="side" role="dialog" aria-modal="false" aria-label="Detalle de pantalla seleccionada" aria-live="polite" tabindex="-1"></aside>
     </section>
 
-    <!-- ── SECCIÓN: INVENTARIO ──────────────────────────── -->
-    <section id="sec-inventario" class="p-6 hidden">
-      <div class="flex gap-3 mb-5 flex-wrap">
-        <input id="inv-search" oninput="renderTable()" placeholder="Buscar pantalla o barrio…"
-          class="bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2 text-sm w-64 text-white placeholder-zinc-500"/>
-        <select id="inv-tipo" onchange="renderTable()"
-          class="bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2 text-sm text-white">
-          <option value="">Todos los tipos</option>
-          <option>Peatonal</option><option>Vehicular</option><option>Mixto</option>
-        </select>
-        <select id="inv-zona" onchange="renderTable()"
-          class="bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2 text-sm text-white" id="zoneSelect"></select>
+    <section id="view-brochure" class="view brochure on" aria-label="Brochure de pantallas">
+      <div class="hero">
+        <div class="hero-inner">
+          <h1 id="hero-title">SmartKit</h1>
+          <p id="hero-copy">Planifica campañas DOOH, selecciona ubicaciones digitales y genera una reserva comercial en minutos.</p>
+          <div class="stats" id="hero-stats" role="group" aria-label="Resumen de inventario"></div>
+        </div>
       </div>
-      <div class="bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden">
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="border-b border-zinc-800 text-zinc-500 text-xs uppercase tracking-wide">
-              <th class="px-5 py-3 text-left">#</th>
-              <th class="px-5 py-3 text-left">Pantalla</th>
-              <th class="px-5 py-3 text-left">Barrio</th>
-              <th class="px-5 py-3 text-left">Dim.</th>
-              <th class="px-5 py-3 text-left">Res.</th>
-              <th class="px-5 py-3 text-right">Imp./día</th>
-              <th class="px-5 py-3 text-left">Tipo</th>
-              <th class="px-5 py-3 text-right">$/sem</th>
-            </tr>
-          </thead>
-          <tbody id="inv-tbody"></tbody>
-        </table>
-        <div id="inv-empty" class="hidden text-center py-12 text-zinc-500 text-sm">Sin resultados</div>
+
+      <div class="wrap">
+        <div class="brochure-grid">
+          <section class="catalog" aria-label="Pantallas disponibles">
+            <div class="catalog-head">
+              <div>
+                <span class="quote-eyebrow">Inventario disponible</span>
+                <h2>Pantallas</h2>
+              </div>
+              <div class="catalog-tools">
+                <span class="catalog-count" id="catalog-count">0 pantallas</span>
+                <button class="catalog-filter-toggle" id="mobile-filter-toggle" type="button" aria-controls="zone-filters" aria-expanded="false" data-action="toggle-filters">
+                  Filtros
+                </button>
+              </div>
+            </div>
+            <div class="active-filter-chip" id="active-filter-chip" hidden></div>
+            <div class="cards" id="cards"></div>
+          </section>
+
+          <aside class="quote-panel" id="quote-panel" aria-label="Cotizador de campana" tabindex="-1">
+            <div class="quote-panel-head">
+              <div>
+                <span class="quote-eyebrow">Plan de campana</span>
+                <h2>Cotizador</h2>
+              </div>
+              <span class="quote-status" id="quote-status">Vacio</span>
+            </div>
+            <div class="quote-summary" aria-live="polite">
+              <strong id="quote-summary-count">0 pantallas · Sin plan armado</strong>
+              <span id="quote-summary-detail">Agrega pantallas para estimar inversion</span>
+            </div>
+            <div class="quote-field control-panel">
+              <label for="duration-select">Duracion</label>
+              <select id="duration-select" data-duration-select></select>
+            </div>
+            <div id="quote-list" class="quote-list"></div>
+            <div class="quote-total">
+              <div class="quote-meta"><span>Pantallas</span><strong id="quote-count">0</strong></div>
+              <div class="quote-meta"><span>Impactos estimados</span><strong id="quote-impacts">0</strong></div>
+              <div>
+                <span class="muted small">Inversion estimada</span>
+                <div id="quote-total" class="price">$0</div>
+              </div>
+            </div>
+            <div class="quote-actions">
+              <md-filled-button id="quote-whatsapp" class="quote-btn quote-whatsapp is-empty" data-action="whatsapp-quote" disabled>
+                <svg slot="icon" class="whatsapp-icon plus-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg>
+                <span>Agrega pantallas</span>
+              </md-filled-button>
+              <p class="quote-action-hint" id="quote-action-hint">Agrega una pantalla al cotizador para activar la reserva por WhatsApp.</p>
+            </div>
+          </aside>
+
+          <div class="filters quote-filters" id="zone-filters" role="group" aria-label="Filtros de pantallas"></div>
+        </div>
       </div>
     </section>
+  </main>
 
-    <!-- ── SECCIÓN: MEDIA KITS ──────────────────────────── -->
-    <section id="sec-mediakits" class="p-6 hidden">
-      <div class="flex justify-between items-center mb-5">
-        <p class="text-zinc-400 text-sm">Kits generados este mes</p>
-        <button onclick="openKitGen()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl text-sm font-semibold transition no-print">
-          + Crear nuevo
-        </button>
-      </div>
-      <div class="grid grid-cols-3 gap-4" id="kits-grid"></div>
-    </section>
-
-    <!-- ── SECCIÓN: MÉTRICAS ──────────────────────────── -->
-    <section id="sec-metricas" class="p-6 hidden space-y-6">
-      <div class="grid grid-cols-2 gap-6">
-        <!-- Reach por zona -->
-        <div class="bg-zinc-900 rounded-2xl border border-zinc-800 p-5">
-          <h3 class="font-semibold mb-4">Reach diario por zona</h3>
-          <div id="zone-chart" class="space-y-3"></div>
-        </div>
-        <!-- Distribución por tipo -->
-        <div class="bg-zinc-900 rounded-2xl border border-zinc-800 p-5">
-          <h3 class="font-semibold mb-4">Pantallas por tipo de tráfico</h3>
-          <div id="tipo-chart" class="space-y-3"></div>
-        </div>
-      </div>
-      <!-- Revenue table -->
-      <div class="bg-zinc-900 rounded-2xl border border-zinc-800 p-5">
-        <h3 class="font-semibold mb-4">Potencial de ingresos por zona <span class="text-zinc-500 font-normal text-sm">(tarifa semanal)</span></h3>
-        <div id="rev-chart" class="space-y-3"></div>
-      </div>
-    </section>
-
-  </div><!-- /overflow-auto -->
-</div><!-- /main -->
-
-<!-- ── MODAL: GENERADOR DE MEDIA KIT ─────────────────────── -->
-<div id="kit-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
-  <div class="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
-    <!-- header -->
-    <div class="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
-      <h3 class="font-bold text-lg">Nuevo Media Kit</h3>
-      <button onclick="closeKitGen()" class="text-zinc-500 hover:text-white text-xl leading-none">✕</button>
-    </div>
-    <!-- body: 2 cols -->
-    <div class="flex flex-1 overflow-hidden">
-      <!-- LEFT: config -->
-      <div class="w-1/2 overflow-y-auto p-6 space-y-5 border-r border-zinc-800">
-        <div>
-          <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide">Empresa / Cliente *</label>
-          <input id="kit-client" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-zinc-500" placeholder="Ej: Bodega Trapiche S.A."/>
-        </div>
-        <div>
-          <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide">Duración de campaña</label>
-          <div class="flex gap-2 flex-wrap" id="kit-dur-pills"></div>
-        </div>
-        <div>
-          <label class="block text-xs text-zinc-400 mb-2 uppercase tracking-wide">Seleccionar pantallas</label>
-          <div class="flex gap-2 flex-wrap mb-3" id="kit-zone-filter"></div>
-          <div class="space-y-1.5 max-h-64 overflow-y-auto pr-1" id="kit-screen-list"></div>
-        </div>
-      </div>
-      <!-- RIGHT: live preview -->
-      <div class="w-1/2 overflow-y-auto p-6">
-        <div class="text-xs text-zinc-500 uppercase tracking-wide mb-4">Preview en vivo</div>
-        <div class="space-y-4" id="kit-preview-live">
-          <div class="text-zinc-600 text-sm text-center py-8">Seleccioná al menos una pantalla para ver el resumen</div>
-        </div>
-      </div>
-    </div>
-    <!-- footer -->
-    <div class="px-6 py-4 border-t border-zinc-800 flex justify-end gap-3 no-print">
-      <button onclick="closeKitGen()" class="px-5 py-2.5 rounded-xl border border-zinc-700 text-sm hover:bg-zinc-800 transition">Cancelar</button>
-      <button onclick="generateKit()" class="bg-emerald-600 hover:bg-emerald-500 px-6 py-2.5 rounded-xl text-sm font-semibold transition">Generar Media Kit →</button>
-    </div>
-  </div>
+  <div class="mobile-feedback" id="mobile-feedback" role="status" aria-live="polite" aria-atomic="true"></div>
+  <nav class="mobile-action-nav" id="mobile-action-nav" aria-label="Navegacion principal">
+    <button class="mobile-nav-destination" type="button" data-view="brochure">
+      <span>Brochure</span>
+    </button>
+    <button class="mobile-nav-destination" type="button" data-view="map">
+      <span>Mapa</span>
+    </button>
+    <button class="mobile-quote-toggle" id="mobile-quote-toggle" type="button" aria-controls="quote-panel" aria-expanded="false" data-action="toggle-mobile-quote">
+      <span>Cotizador</span>
+    </button>
+  </nav>
 </div>
 
-<!-- ── MEDIA KIT GENERADO (vista imprimible) ─────────────── -->
-<div id="kit-preview" class="fixed inset-0 z-60 bg-zinc-950 hidden overflow-auto p-8">
-  <div class="max-w-4xl mx-auto">
-    <!-- kit header -->
-    <div class="flex justify-between items-start mb-8 no-print">
-      <div></div>
-      <div class="flex gap-3">
-        <button onclick="window.print()" class="bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded-xl text-sm transition">🖨️ Imprimir / PDF</button>
-        <button onclick="copyKitLink()" id="copy-btn" class="bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded-xl text-sm transition">🔗 Copiar enlace</button>
-        <button onclick="closeKit()" class="bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded-xl text-sm transition">✕ Cerrar</button>
-      </div>
-    </div>
-    <div id="kit-doc"></div>
-  </div>
-</div>
-
-<script>
-// ═══════════════════════════════════════════════════════
-//  DATOS INLINE (en producción vendrían de screens-data.js)
-//  → Eliminar este bloque y agregar <script src="./screens-data.js">
-// ═══════════════════════════════════════════════════════
-const SCREENS=[
-  {id:1,lat:-32.8931,lng:-68.8449,n:'Peatonal Sarmiento',b:'Microcentro',dir:'Peatonal Sarmiento 150',dim:'8×4 m',res:'Full HD',imp:'52.000',precio:95000,tipo:'Peatonal',e:'🚶'},
-  {id:2,lat:-32.8890,lng:-68.8442,n:'San Martín & Belgrano',b:'Microcentro',dir:'Av. San Martín 600',dim:'6×3 m',res:'Full HD',imp:'38.000',precio:80000,tipo:'Vehicular',e:'🏙️'},
-  {id:3,lat:-32.8908,lng:-68.8388,n:'Plaza Independencia',b:'Microcentro',dir:'Plaza Independencia Este',dim:'10×5 m',res:'4K UHD',imp:'68.000',precio:140000,tipo:'Mixto',e:'🏛️'},
-  {id:4,lat:-32.8866,lng:-68.8328,n:'Terminal de Ómnibus',b:'Microcentro',dir:'Av. G. Videla s/n',dim:'5×2.5m',res:'Full HD',imp:'29.000',precio:65000,tipo:'Peatonal',e:'🚌'},
-  {id:5,lat:-32.8831,lng:-68.8358,n:'Av. Las Heras & España',b:'Microcentro',dir:'Av. Las Heras 800',dim:'6×3 m',res:'Full HD',imp:'33.000',precio:72000,tipo:'Vehicular',e:'🛣️'},
-  {id:6,lat:-32.8950,lng:-68.8410,n:'Av. Colón & Catamarca',b:'Microcentro',dir:'Av. Colón 1200',dim:'4×2 m',res:'HD Ready',imp:'21.000',precio:55000,tipo:'Vehicular',e:'🚦'},
-  {id:7,lat:-32.8532,lng:-68.8344,n:'Palmares Open Mall',b:'Las Heras',dir:'Acceso Norte km 8',dim:'12×6 m',res:'4K UHD',imp:'75.000',precio:165000,tipo:'Mixto',e:'🛍️'},
-  {id:8,lat:-32.8590,lng:-68.8390,n:'Las Heras Centro',b:'Las Heras',dir:'Av. Mitre 400',dim:'5×2.5m',res:'Full HD',imp:'18.000',precio:48000,tipo:'Peatonal',e:'🏘️'},
-  {id:9,lat:-32.8650,lng:-68.8310,n:'Av. Viamonte Norte',b:'Las Heras',dir:'Av. Viamonte 2000',dim:'6×3 m',res:'Full HD',imp:'24.000',precio:58000,tipo:'Vehicular',e:'🛣️'},
-  {id:10,lat:-32.9183,lng:-68.8397,n:'Godoy Cruz Centro',b:'Godoy Cruz',dir:'Av. San Martín 3500',dim:'6×3 m',res:'Full HD',imp:'31.000',precio:70000,tipo:'Vehicular',e:'🏙️'},
-  {id:11,lat:-32.9092,lng:-68.8411,n:'Estadio Malvinas Arg.',b:'Godoy Cruz',dir:'Irigoyen 8151',dim:'8×4 m',res:'Full HD',imp:'44.000',precio:92000,tipo:'Mixto',e:'⚽'},
-  {id:12,lat:-32.9150,lng:-68.8450,n:'Boulogne Sur Mer',b:'Godoy Cruz',dir:'Av. Boulogne Sur Mer 1500',dim:'4×2 m',res:'HD Ready',imp:'19.000',precio:52000,tipo:'Vehicular',e:'🛤️'},
-  {id:13,lat:-32.8894,lng:-68.8094,n:'Mendoza Plaza Shopping',b:'Guaymallén',dir:'Acceso Este 3280',dim:'10×5 m',res:'4K UHD',imp:'72.000',precio:158000,tipo:'Mixto',e:'🏬'},
-  {id:14,lat:-32.8775,lng:-68.7900,n:'Acceso Este km 5',b:'Guaymallén',dir:'Ruta Nac. 7 km 5',dim:'8×4 m',res:'Full HD',imp:'58.000',precio:110000,tipo:'Vehicular',e:'🚛'},
-  {id:15,lat:-32.8820,lng:-68.8150,n:'Acceso Este & Olascoaga',b:'Guaymallén',dir:'Av. Acceso Este 1500',dim:'6×3 m',res:'Full HD',imp:'35.000',precio:76000,tipo:'Vehicular',e:'🏗️'},
-  {id:16,lat:-32.9500,lng:-68.7950,n:'Maipú Centro',b:'Maipú',dir:'Av. Urquiza 1200',dim:'5×2.5m',res:'Full HD',imp:'16.000',precio:44000,tipo:'Mixto',e:'🍇'},
-  {id:17,lat:-32.9600,lng:-68.7750,n:'Ruta 7 — Maipú',b:'Maipú',dir:'Ruta Nac. 7 km 15',dim:'8×4 m',res:'Full HD',imp:'42.000',precio:88000,tipo:'Vehicular',e:'🛣️'},
-  {id:18,lat:-32.9700,lng:-68.8600,n:'Luján de Cuyo Centro',b:'Luján de Cuyo',dir:'Av. San Martín 1100',dim:'5×2.5m',res:'Full HD',imp:'14.000',precio:40000,tipo:'Mixto',e:'🍷'},
-  {id:19,lat:-32.9500,lng:-68.8500,n:'Carrodilla — Luján',b:'Luján de Cuyo',dir:'Ruta Prov. 15 km 3',dim:'6×3 m',res:'Full HD',imp:'22.000',precio:60000,tipo:'Vehicular',e:'🌿'},
-  {id:20,lat:-32.8300,lng:-68.8200,n:'Acceso Norte — Ruta 40',b:'Las Heras Norte',dir:'Ruta Nac. 40 km 1085',dim:'10×5 m',res:'4K UHD',imp:'55.000',precio:120000,tipo:'Mixto',e:'🛣️'}
-];
-const DURATIONS=[{v:'1s',l:'1 semana',mult:1},{v:'2s',l:'2 semanas',mult:1.8},{v:'1m',l:'1 mes',mult:3.2},{v:'3m',l:'3 meses',mult:8}];
-const TIPO_COL={Peatonal:'#22D3EE',Vehicular:'#F59E0B',Mixto:'#818CF8'};
-function impNum(s){return parseInt(String(s.imp||s).replace(/\./g,''))||0}
-
-// ═══════════════════════════════════════════════════════
-//  ESTADO
-// ═══════════════════════════════════════════════════════
-let curSec='dashboard', dashMap=null;
-let kitDurMult=1, kitDurLabel='1 semana', kitSel=new Set(), kitZoneFilter='Todos';
-
-const ZONES=['Todos',...[...new Set(SCREENS.map(s=>s.b))]];
-const totalReach=SCREENS.reduce((a,s)=>a+impNum(s),0);
-const totalRev=SCREENS.reduce((a,s)=>a+s.precio,0);
-const avgCPM=Math.round(SCREENS.reduce((a,s)=>a+(s.precio/(impNum(s)*7))*1000,0)/SCREENS.length);
-
-// ═══════════════════════════════════════════════════════
-//  NAVEGACIÓN
-// ═══════════════════════════════════════════════════════
-const SECTIONS={
-  dashboard:'Dashboard Principal',
-  inventario:'Inventario LED',
-  mediakits:'Media Kits',
-  metricas:'Métricas'
-};
-function goto(sec){
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('on'));
-  document.querySelectorAll('section').forEach(s=>s.classList.add('hidden'));
-  document.getElementById('nav-'+sec).classList.add('on');
-  document.getElementById('sec-'+sec).classList.remove('hidden');
-  document.getElementById('page-title').textContent=SECTIONS[sec];
-  curSec=sec;
-  if(sec==='dashboard'&&!dashMap) initDashMap();
-  if(sec==='metricas') renderMetrics();
-}
-
-// ═══════════════════════════════════════════════════════
-//  STATS CARDS
-// ═══════════════════════════════════════════════════════
-function renderStats(){
-  document.getElementById('stats-grid').innerHTML=[
-    {lbl:'PANTALLAS ACTIVAS',val:'20',sub:'Gran Mendoza',col:'text-emerald-400'},
-    {lbl:'REACH TOTAL / DÍA',val:(totalReach/1000).toFixed(0)+'k',sub:'impresiones estimadas',col:'text-emerald-400'},
-    {lbl:'CPM PROMEDIO',val:'$'+avgCPM.toLocaleString('es-AR'),sub:'ARS por mil impresiones',col:'text-emerald-400'},
-    {lbl:'INGRESO POTENCIAL',val:'$'+(totalRev/1000).toFixed(0)+'k',sub:'ARS / semana (red completa)',col:'text-emerald-400'}
-  ].map(s=>`
-    <div class="bg-zinc-900 rounded-2xl border border-zinc-800 p-5">
-      <div class="text-xs font-semibold ${s.col} mb-2">${s.lbl}</div>
-      <div class="text-4xl font-black">${s.val}</div>
-      <div class="text-zinc-500 text-xs mt-1">${s.sub}</div>
-    </div>`).join('');
-}
-
-// ═══════════════════════════════════════════════════════
-//  MAPA DASHBOARD
-// ═══════════════════════════════════════════════════════
-function initDashMap(){
-  dashMap=L.map('dash-map',{center:[-32.89,-68.83],zoom:11,zoomControl:false});
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© OSM © CartoDB',subdomains:'abcd'}).addTo(dashMap);
-  L.control.zoom({position:'bottomright'}).addTo(dashMap);
-  SCREENS.forEach(s=>{
-    const col=TIPO_COL[s.tipo]||'#10b981';
-    const icon=L.divIcon({className:'',iconAnchor:[14,14],
-      html:`<div class="lmk" style="background:rgba(10,10,15,.9);border-color:${col};box-shadow:0 0 10px ${col}66">${s.e}</div>`});
-    L.marker([s.lat,s.lng],{icon}).addTo(dashMap)
-      .bindPopup(`<b>${s.n}</b><br>${s.b} · ${s.dim}<br>${s.imp} imp/día · $${s.precio.toLocaleString('es-AR')}/sem`);
-  });
-}
-
-// ═══════════════════════════════════════════════════════
-//  TOP 5
-// ═══════════════════════════════════════════════════════
-function renderTop5(){
-  const sorted=[...SCREENS].sort((a,b)=>impNum(b)-impNum(a)).slice(0,5);
-  const max=impNum(sorted[0]);
-  document.getElementById('top5').innerHTML=sorted.map(s=>`
-    <div class="flex items-center gap-4">
-      <div style="width:24px;height:24px;border-radius:6px;background:${s.g||'#111'};display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">${s.e}</div>
-      <div class="flex-1 min-w-0">
-        <div class="flex justify-between text-sm mb-1">
-          <span class="font-medium truncate">${s.n}</span>
-          <span class="text-zinc-400 text-xs ml-2">${s.imp}</span>
-        </div>
-        <div class="bar"><div class="bar-fill bg-emerald-500" style="width:${(impNum(s)/max*100).toFixed(1)}%"></div></div>
-      </div>
-    </div>`).join('');
-}
-
-// ═══════════════════════════════════════════════════════
-//  INVENTARIO
-// ═══════════════════════════════════════════════════════
-function initInvFilters(){
-  const sel=document.getElementById('inv-zona');
-  sel.innerHTML='<option value="">Todas las zonas</option>'+
-    [...new Set(SCREENS.map(s=>s.b))].map(z=>`<option>${z}</option>`).join('');
-}
-function renderTable(){
-  const q=document.getElementById('inv-search').value.toLowerCase();
-  const tipo=document.getElementById('inv-tipo').value;
-  const zona=document.getElementById('inv-zona').value;
-  const rows=SCREENS.filter(s=>
-    (!q||(s.n+s.b+s.dir).toLowerCase().includes(q))&&
-    (!tipo||s.tipo===tipo)&&
-    (!zona||s.b===zona));
-  const col={Peatonal:'tipo-p',Vehicular:'tipo-v',Mixto:'tipo-m'};
-  const tbody=document.getElementById('inv-tbody');
-  const empty=document.getElementById('inv-empty');
-  if(!rows.length){tbody.innerHTML='';empty.classList.remove('hidden');return}
-  empty.classList.add('hidden');
-  tbody.innerHTML=rows.map(s=>`
-    <tr class="border-b border-zinc-800 cursor-default">
-      <td class="px-5 py-3 text-zinc-500">${s.id}</td>
-      <td class="px-5 py-3 font-medium">${s.n}</td>
-      <td class="px-5 py-3 text-zinc-400">${s.b}</td>
-      <td class="px-5 py-3 text-zinc-400">${s.dim}</td>
-      <td class="px-5 py-3 text-zinc-400">${s.res}</td>
-      <td class="px-5 py-3 text-right font-semibold text-emerald-400">${s.imp}</td>
-      <td class="px-5 py-3"><span class="badge ${col[s.tipo]||''}">${s.tipo}</span></td>
-      <td class="px-5 py-3 text-right font-semibold">$${s.precio.toLocaleString('es-AR')}</td>
-    </tr>`).join('');
-}
-
-// ═══════════════════════════════════════════════════════
-//  MEDIA KITS RECIENTES (simulados)
-// ═══════════════════════════════════════════════════════
-const SAMPLE_KITS=[
-  {client:'Bodega Trapiche',screens:5,dur:'1 mes',total:1570000,date:'Hace 2 días'},
-  {client:'Toyota Mendoza',screens:8,dur:'2 semanas',total:1825200,date:'Hace 5 días'},
-  {client:'Casino Club',screens:3,dur:'1 semana',total:327000,date:'Hace 1 semana'},
-  {client:'Supermercados DIA',screens:12,dur:'3 meses',total:11520000,date:'Hace 2 semanas'},
-  {client:'Universidad Aconcagua',screens:4,dur:'1 mes',total:1228800,date:'Hace 3 semanas'},
-  {client:'Banco Galicia',screens:6,dur:'2 semanas',total:1468800,date:'Hace 1 mes'}
-];
-function renderKits(){
-  document.getElementById('kits-grid').innerHTML=SAMPLE_KITS.map((k,i)=>`
-    <div class="bg-zinc-900 border border-zinc-800 hover:border-emerald-600 rounded-2xl p-5 transition cursor-pointer">
-      <div class="flex justify-between items-start mb-3">
-        <div class="w-10 h-10 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400 font-black text-sm">MK</div>
-        <span class="text-xs text-zinc-500">${k.date}</span>
-      </div>
-      <div class="font-semibold mb-1">${k.client}</div>
-      <div class="text-xs text-zinc-500 mb-3">${k.screens} pantallas · ${k.dur}</div>
-      <div class="text-emerald-400 font-bold">$${k.total.toLocaleString('es-AR')}</div>
-    </div>`).join('');
-}
-
-// ═══════════════════════════════════════════════════════
-//  MÉTRICAS
-// ═══════════════════════════════════════════════════════
-function renderMetrics(){
-  // reach por zona
-  const byZone=SCREENS.reduce((a,s)=>{a[s.b]=(a[s.b]||0)+impNum(s);return a},{});
-  const maxZ=Math.max(...Object.values(byZone));
-  document.getElementById('zone-chart').innerHTML=
-    Object.entries(byZone).sort((a,b)=>b[1]-a[1]).map(([z,v])=>`
-      <div>
-        <div class="flex justify-between text-xs mb-1"><span class="text-zinc-300">${z}</span><span class="text-zinc-500">${(v/1000).toFixed(0)}k/día</span></div>
-        <div class="bar"><div class="bar-fill bg-emerald-500" style="width:${(v/maxZ*100).toFixed(1)}%"></div></div>
-      </div>`).join('');
-
-  // tipo
-  const byTipo=SCREENS.reduce((a,s)=>{a[s.tipo]=(a[s.tipo]||0)+1;return a},{});
-  document.getElementById('tipo-chart').innerHTML=
-    Object.entries(byTipo).map(([t,v])=>`
-      <div>
-        <div class="flex justify-between text-xs mb-1">
-          <span class="badge badge-sm" style="background:${TIPO_COL[t]}18;color:${TIPO_COL[t]}">${t}</span>
-          <span class="text-zinc-400">${v} pantalla${v>1?'s':''}</span>
-        </div>
-        <div class="bar"><div class="bar-fill" style="width:${(v/20*100).toFixed(0)}%;background:${TIPO_COL[t]}"></div></div>
-      </div>`).join('');
-
-  // revenue por zona
-  const revZone=SCREENS.reduce((a,s)=>{a[s.b]=(a[s.b]||0)+s.precio;return a},{});
-  const maxR=Math.max(...Object.values(revZone));
-  document.getElementById('rev-chart').innerHTML=
-    Object.entries(revZone).sort((a,b)=>b[1]-a[1]).map(([z,v])=>`
-      <div>
-        <div class="flex justify-between text-xs mb-1"><span class="text-zinc-300">${z}</span><span class="text-emerald-400 font-semibold">$${v.toLocaleString('es-AR')}</span></div>
-        <div class="bar"><div class="bar-fill" style="width:${(v/maxR*100).toFixed(1)}%;background:linear-gradient(90deg,#10b981,#059669)"></div></div>
-      </div>`).join('');
-}
-
-// ═══════════════════════════════════════════════════════
-//  MEDIA KIT GENERATOR
-// ═══════════════════════════════════════════════════════
-function openKitGen(){
-  kitSel.clear(); kitDurMult=1; kitDurLabel='1 semana'; kitZoneFilter='Todos';
-  renderKitConfig();
-  document.getElementById('kit-modal').classList.replace('hidden','flex');
-}
-function closeKitGen(){document.getElementById('kit-modal').classList.replace('flex','hidden')}
-
-function renderKitConfig(){
-  // duration pills
-  document.getElementById('kit-dur-pills').innerHTML=DURATIONS.map(d=>`
-    <button class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition ${d.mult===kitDurMult?'bg-emerald-600 border-emerald-500 text-white':'border-zinc-700 text-zinc-400 hover:border-zinc-500'}"
-      onclick="setKitDur(${d.mult},'${d.l}')">${d.l}</button>`).join('');
-
-  // zone filter
-  document.getElementById('kit-zone-filter').innerHTML=['Todos',...new Set(SCREENS.map(s=>s.b))].map(z=>`
-    <button class="px-2.5 py-1 rounded-lg text-xs font-semibold border transition ${z===kitZoneFilter?'bg-zinc-700 border-zinc-500 text-white':'border-zinc-800 text-zinc-500 hover:border-zinc-700'}"
-      onclick="setKitZone('${z}')">${z}</button>`).join('');
-
-  // screen checkboxes
-  const visible=kitZoneFilter==='Todos'?SCREENS:SCREENS.filter(s=>s.b===kitZoneFilter);
-  document.getElementById('kit-screen-list').innerHTML=visible.map(s=>`
-    <label class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-zinc-800 cursor-pointer">
-      <input type="checkbox" class="accent-emerald-500 w-4 h-4" ${kitSel.has(s.id)?'checked':''}
-        onchange="toggleKitScreen(${s.id})"/>
-      <span style="font-size:16px">${s.e}</span>
-      <div class="flex-1 min-w-0">
-        <div class="text-sm font-medium truncate">${s.n}</div>
-        <div class="text-xs text-zinc-500">${s.b} · ${s.imp} imp/día</div>
-      </div>
-      <span class="text-xs text-emerald-400 flex-shrink-0">$${Math.round(s.precio*kitDurMult).toLocaleString('es-AR')}</span>
-    </label>`).join('');
-
-  updateKitPreview();
-}
-
-function setKitDur(mult,label){kitDurMult=mult;kitDurLabel=label;renderKitConfig()}
-function setKitZone(z){kitZoneFilter=z;renderKitConfig()}
-function toggleKitScreen(id){kitSel.has(id)?kitSel.delete(id):kitSel.add(id);renderKitConfig()}
-
-function updateKitPreview(){
-  const sel=SCREENS.filter(s=>kitSel.has(s.id));
-  const el=document.getElementById('kit-preview-live');
-  if(!sel.length){
-    el.innerHTML='<div class="text-zinc-600 text-sm text-center py-8">Seleccioná al menos una pantalla</div>';
-    return;
-  }
-  const totalP=sel.reduce((a,s)=>a+Math.round(s.precio*kitDurMult),0);
-  const totalI=sel.reduce((a,s)=>a+impNum(s),0);
-  const days=Math.round(kitDurMult*7);
-  el.innerHTML=`
-    <div class="grid grid-cols-2 gap-3">
-      <div class="bg-zinc-800 rounded-xl p-4 text-center"><div class="text-2xl font-black text-emerald-400">${sel.length}</div><div class="text-xs text-zinc-500 mt-1">Pantallas</div></div>
-      <div class="bg-zinc-800 rounded-xl p-4 text-center"><div class="text-2xl font-black text-emerald-400">${(totalI*days/1000).toFixed(0)}k</div><div class="text-xs text-zinc-500 mt-1">Impresiones totales</div></div>
-      <div class="bg-zinc-800 rounded-xl p-4 text-center col-span-2"><div class="text-2xl font-black text-white">$${totalP.toLocaleString('es-AR')}</div><div class="text-xs text-zinc-500 mt-1">Inversión total ARS · ${kitDurLabel}</div></div>
-    </div>
-    <div class="space-y-2 mt-2">
-      ${sel.map(s=>`<div class="flex justify-between items-center text-sm py-1.5 border-b border-zinc-800">
-        <span class="flex items-center gap-2">${s.e} ${s.n}</span>
-        <span class="text-emerald-400">$${Math.round(s.precio*kitDurMult).toLocaleString('es-AR')}</span>
-      </div>`).join('')}
-    </div>`;
-}
-
-function generateKit(){
-  const client=document.getElementById('kit-client').value.trim()||'Cliente';
-  const sel=SCREENS.filter(s=>kitSel.has(s.id));
-  if(!sel.length){alert('Seleccioná al menos una pantalla');return}
-  const totalP=sel.reduce((a,s)=>a+Math.round(s.precio*kitDurMult),0);
-  const totalI=sel.reduce((a,s)=>a+impNum(s),0);
-  const days=Math.round(kitDurMult*7);
-  const ord='MK-'+Math.floor(10000+Math.random()*90000);
-  const now=new Date().toLocaleDateString('es-AR',{year:'numeric',month:'long',day:'numeric'});
-
-  document.getElementById('kit-doc').innerHTML=`
-    <div class="bg-zinc-900 rounded-2xl border border-zinc-800 p-8 space-y-8">
-      <div class="flex justify-between items-start">
-        <div>
-          <div class="flex items-center gap-3 mb-3">
-            <div class="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center font-black text-zinc-950 text-sm">MD</div>
-            <div><div class="font-bold">MendozaDOOH</div><div class="text-xs text-emerald-400">MediaKit SaaS · Gran Mendoza</div></div>
-          </div>
-          <h1 class="text-2xl font-black mt-2">Media Kit Publicitario</h1>
-          <p class="text-zinc-400 mt-1">Preparado para: <strong class="text-white">${client}</strong></p>
-        </div>
-        <div class="text-right">
-          <div class="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-4 py-2 rounded-xl text-sm font-bold">${ord}</div>
-          <div class="text-xs text-zinc-500 mt-2">${now}</div>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-4 gap-4">
-        ${[['Pantallas',sel.length,'seleccionadas'],[(totalI/1000).toFixed(0)+'k','imp./día','alcance'],[(totalI*days/1000).toFixed(0)+'k','impresiones',kitDurLabel],['$'+totalP.toLocaleString('es-AR'),'ARS','inversión total']].map(([v,u,l])=>`
-        <div class="bg-zinc-800 rounded-xl p-4 text-center dark-inv">
-          <div class="text-2xl font-black text-emerald-400">${v}</div>
-          <div class="text-xs text-zinc-400 mt-1">${u}</div>
-          <div class="text-xs text-zinc-600">${l}</div>
-        </div>`).join('')}
-      </div>
-
-      <div>
-        <h3 class="font-bold mb-3 text-sm uppercase tracking-wide text-zinc-400">Detalle de pantallas</h3>
-        <table class="w-full text-sm border-collapse">
-          <thead><tr class="border-b border-zinc-700 text-zinc-500 text-xs">
-            <th class="py-2 text-left">Pantalla</th>
-            <th class="py-2 text-left">Ubicación</th>
-            <th class="py-2 text-left">Formato</th>
-            <th class="py-2 text-right">Imp./día</th>
-            <th class="py-2 text-right">Inversión</th>
-          </tr></thead>
-          <tbody>${sel.map(s=>`
-            <tr class="border-b border-zinc-800">
-              <td class="py-3">${s.e} <span class="font-semibold">${s.n}</span></td>
-              <td class="py-3 text-zinc-400">${s.b}</td>
-              <td class="py-3 text-zinc-400">${s.dim} · ${s.res}</td>
-              <td class="py-3 text-right text-emerald-400 font-semibold">${s.imp}</td>
-              <td class="py-3 text-right font-semibold">$${Math.round(s.precio*kitDurMult).toLocaleString('es-AR')}</td>
-            </tr>`).join('')}
-            <tr class="font-bold">
-              <td colspan="3" class="py-3 text-zinc-400 text-xs uppercase">TOTAL</td>
-              <td class="py-3 text-right text-emerald-400">${(totalI/1000).toFixed(0)}k/día</td>
-              <td class="py-3 text-right text-white">$${totalP.toLocaleString('es-AR')}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="bg-zinc-800 rounded-xl p-5 dark-inv">
-        <h3 class="font-bold mb-3 text-sm">Condiciones de campaña</h3>
-        <ul class="text-sm text-zinc-400 space-y-1">
-          <li>• Duración: <strong class="text-white">${kitDurLabel}</strong> · ${days} días de emisión continua</li>
-          <li>• Formatos aceptados: MP4 (H.264), JPG/PNG, GIF animado · resolución mínima 1280×720px</li>
-          <li>• Envío de creatividad: <strong class="text-white">produccion@mendozadooh.com.ar</strong></li>
-          <li>• Inicio de campaña: 72hs hábiles desde aprobación de pago</li>
-          <li>• Reporte semanal de impactos por email incluido</li>
-        </ul>
-      </div>
-
-      <div class="text-center text-xs text-zinc-600 pt-2">
-        MendozaDOOH MediaKit · Gran Mendoza · contacto@mendozadooh.com.ar · ${ord}
-      </div>
-    </div>`;
-
-  closeKitGen();
-  document.getElementById('kit-preview').classList.remove('hidden');
-}
-
-function closeKit(){document.getElementById('kit-preview').classList.add('hidden')}
-
-function copyKitLink(){
-  const btn=document.getElementById('copy-btn');
-  navigator.clipboard.writeText(window.location.href+'?kit='+Date.now()).then(()=>{
-    btn.textContent='✅ Enlace copiado';
-    setTimeout(()=>btn.textContent='🔗 Copiar enlace',2000);
-  });
-}
-
-// ═══════════════════════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════════════════════
-window.addEventListener('DOMContentLoaded',()=>{
-  renderStats();
-  renderTop5();
-  initInvFilters();
-  renderTable();
-  renderKits();
-  initDashMap();
-});
-</script>
+<script src="./config.js"></script>
+<script src="./screens-data.js"></script>
+<script src="./app.js"></script>
 </body>
 </html>

@@ -255,6 +255,10 @@ tr.selected{background:#eef8ff}
             </select>
           </div>
           <div class="field">
+            <label for="edit-video">Video del head</label>
+            <input id="edit-video" name="video" type="text" placeholder="./assets/videos/pantalla.mp4" autocomplete="off">
+          </div>
+          <div class="field">
             <label for="edit-note">Nota interna</label>
             <textarea id="edit-note" name="note" placeholder="Ej: validar disponibilidad antes de cotizar"></textarea>
           </div>
@@ -416,6 +420,7 @@ function persistState(message='Cambios guardados localmente'){
       n: row.n,
       b: row.b,
       precio: row.precio,
+      video: row.video || '',
       status: row.status,
       note: row.note || ''
     })),
@@ -528,6 +533,7 @@ function updateEditor(row){
   document.getElementById('edit-zone').value = row.b;
   document.getElementById('edit-price').value = row.precio;
   document.getElementById('edit-status').value = row.status;
+  document.getElementById('edit-video').value = row.video || '';
   document.getElementById('edit-note').value = row.note;
   renderPreview(row);
 }
@@ -742,6 +748,7 @@ function bindEvents(){
     row.b = document.getElementById('edit-zone').value.trim() || row.b;
     row.precio = Number(document.getElementById('edit-price').value) || row.precio;
     row.status = document.getElementById('edit-status').value;
+    row.video = document.getElementById('edit-video').value.trim();
     row.note = document.getElementById('edit-note').value.trim();
     document.getElementById('last-action').textContent = `Actualizada #${row.id}`;
     updateKpis();
