@@ -64,7 +64,9 @@ El flujo PMV principal es:
 index.html -> seleccion de pantallas -> Generar media kit -> mediakit.html?id={id}
 ```
 
-Desde el cotizador del brochure se puede generar una propuesta local con snapshot completo de pantallas, duracion, inversion, impactos, condiciones y marca. La vista `mediakit.html` permite guardar PDF y contactar por WhatsApp.
+Desde el cotizador del brochure se puede generar una propuesta local con snapshot completo de pantallas, duración, inversión, impactos, condiciones y marca. La vista `mediakit.html` permite verificar la firma digital de la propuesta, guardar PDF y contactar por WhatsApp.
+
+La firma digital se calcula sobre un payload canonico del media kit con huella SHA-256 y HMAC-SHA-256 configurable en `config.js`. Esto permite detectar cambios en el contenido antes de imprimir o guardar el PDF. Para una firma PDF legal con certificado, el sellado debe hacerse en backend o con un proveedor de firma digital que emita la firma criptografica dentro del binario PDF.
 
 El dashboard queda como Acceso Usuarios/backoffice y permite descargar cada propuesta como JSON, duplicarla, archivarla y restaurarla. Archivar oculta el kit del historial activo sin borrar su link publico ni su informacion local.
 
@@ -81,6 +83,8 @@ mediakit.html?id={id}
 ```
 
 Cada JSON debe incluir un snapshot completo de pantallas, totales, condiciones, marca y fecha de validez.
+
+Para una presentación comercial sin backend, usar `mediakit.html?id=demo-trapiche` como media kit publicado de referencia. Para propuestas nuevas, generar el kit desde el brochure, descargar o copiar su JSON desde `localStorage` y publicarlo en `data/kits/{id}.json` antes de compartir el link con terceros.
 
 ## Produccion
 

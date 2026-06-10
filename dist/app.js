@@ -87,6 +87,7 @@ function screenUseCase(s){
 }
 
 function setView(v, fitMap=true){
+  if(!document.getElementById('view-'+v))v='brochure';
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
   document.getElementById('view-'+v).classList.add('on');
   document.querySelectorAll('.view').forEach(x=>x.setAttribute('aria-hidden',x.id!==`view-${v}`?'true':'false'));
@@ -99,7 +100,7 @@ function setView(v, fitMap=true){
     else btn.removeAttribute('aria-current');
   });
   document.querySelectorAll('.nav button').forEach(btn=>btn.removeAttribute('aria-current'));
-  document.getElementById('btn-'+v).setAttribute('aria-current','page');
+  document.getElementById('btn-'+v)?.setAttribute('aria-current','page');
   const mobileToggle=document.getElementById('mobile-quote-toggle');
   setMobileNav(false);
   setMobileFilters(false);
@@ -154,6 +155,7 @@ function setMobileQuote(open){
   if(open)setMobileFilters(false);
   if(panel)panel.classList.toggle('mobile-open',open);
   if(toggle)toggle.setAttribute('aria-expanded',open?'true':'false');
+  document.getElementById('mobile-quote-cart')?.classList.toggle('is-suppressed',open);
   if(open)setView('brochure',false);
   if(open&&panel)requestAnimationFrame(()=>panel.focus({preventScroll:true}));
   if(!open&&lastQuoteTrigger instanceof HTMLElement)lastQuoteTrigger.focus({preventScroll:true});
@@ -283,8 +285,8 @@ function renderBrochureCard(s, eagerVideo=false){
         </div>
         <p class="muted small card-spec">${h(s.dim)} · ${h(s.res)} · ${h(s.imp)} imp/día</p>
         <div class="price card-price">${fmt(s.precio)}<span class="muted small"> / semana</span></div>
-        <div class="card-actions">
-          <md-filled-button class="quote-add ${selected?'selected':''}" aria-pressed="${selected?'true':'false'}" aria-label="${selected?'Quitar':'Agregar'} ${h(s.n)} del plan" data-action="toggle-quote" data-screen-id="${s.id}">${selected?'Quitar':'Agregar'}</md-filled-button>
+        <div class="card-actions button-group" role="group" aria-label="Acciones para ${h(s.n)}">
+          <md-filled-button class="quote-add ${selected?'selected':''}" aria-pressed="${selected?'true':'false'}" aria-label="${selected?'Quitar':'Agregar'} ${h(s.n)} del plan" data-action="toggle-quote" data-screen-id="${s.id}">${selected?'Agregado':'Agregar'}</md-filled-button>
           <md-outlined-button class="map-btn" data-action="show-map" data-screen-id="${s.id}">Ubicar</md-outlined-button>
         </div>
       </div>
@@ -495,6 +497,9 @@ function renderQuote(){
     const status=document.getElementById(`${panel.prefix}quote-status`);
     const hint=document.getElementById(`${panel.prefix}quote-action-hint`);
     const mobileToggle=document.getElementById(`${panel.prefix}mobile-quote-toggle`);
+    const mobileCart=document.getElementById(`${panel.prefix}mobile-quote-cart`);
+    const mobileCartSummary=document.getElementById(`${panel.prefix}mobile-quote-cart-summary`);
+    const mobileCartMeta=document.getElementById(`${panel.prefix}mobile-quote-cart-meta`);
     const quotePanel=whatsapp?.closest('.quote-panel');
     const hasScreens=q.screens.length>0;
     if(durationSelect)durationSelect.innerHTML=durationHtml;
@@ -523,20 +528,27 @@ function renderQuote(){
       const labelTarget=mobileToggle.querySelector('span')||mobileToggle;
       labelTarget.textContent=label;
     }
+    if(mobileCart){
+      mobileCart.hidden=!hasScreens;
+      mobileCart.classList.toggle('show',hasScreens);
+      mobileCart.setAttribute('aria-hidden',hasScreens?'false':'true');
+    }
+    if(mobileCartSummary)mobileCartSummary.textContent=hasScreens?`${q.screens.length} ${q.screens.length===1?'pantalla':'pantallas'} · ${fmt(q.total)}`:'Cotizador vacío';
+    if(mobileCartMeta)mobileCartMeta.textContent=hasScreens?`${Math.round(q.impacts/1000).toLocaleString('es-AR')}k impactos · ${q.duration.l}`:'Agrega pantallas para armar tu plan';
   });
 }
 
-function buildMediaKitFromQuote(){
+async function buildMediaKitFromQuote(){
   const q=quoteTotals();
   if(!q.screens.length)return null;
   const createdAt=new Date();
   const validUntil=new Date(createdAt);
   validUntil.setDate(validUntil.getDate()+15);
   const client=`Propuesta ${BRAND.name}`;
-  return {
+  const kit={
     id:`kit-${kitSlug(client)}-${createdAt.getTime()}`,
     client,
-    contact:'Contacto a confirmar',
+    contact:'Equipo comercial',
     duration:q.duration.l,
     durationValue:q.duration.v,
     days:q.duration.days,
@@ -549,21 +561,31 @@ function buildMediaKitFromQuote(){
     status:'Borrador',
     createdAt:createdAt.toISOString(),
     validUntil:validUntil.toISOString().slice(0,10),
-    validity:'15 dias',
+    validity:'15 días',
+    executiveSummary:`Plan recomendado de ${q.screens.length} ${q.screens.length===1?'pantalla':'pantallas'} para cubrir puntos de alto tránsito durante ${q.duration.l}, con ${Math.round(q.impacts).toLocaleString('es-AR')} impactos estimados y CPM de ${fmt(q.impacts?q.total/q.impacts*1000:0)}.`,
+    nextSteps:['Validar disponibilidad de pantallas y fechas de campaña.','Confirmar inversión, forma de pago y orden de compra.','Enviar piezas finales 72 hs hábiles antes del inicio.'],
     terms:'Inicio de campaña sujeto a disponibilidad y aprobación de piezas. Valores expresados en ARS. La reserva se confirma con orden de compra y material aprobado.',
     brand:{name:BRAND.name,logo:BRAND.logo,whatsapp:BRAND.whatsapp}
   };
+  kit.digitalSignature=await SmartKitShared.signMediaKit(kit,{
+    signer:CONFIG.signature?.signer||BRAND.name,
+    secret:CONFIG.signature?.secret||''
+  });
+  return kit;
 }
 
-function generateMediaKit(id=null){
+async function generateMediaKit(id=null){
   ensureQuoteScreen(id);
-  const kit=buildMediaKitFromQuote();
+  const popup=window.open('about:blank','_blank','noopener');
+  const kit=await buildMediaKitFromQuote();
   if(!kit)return;
   const kits=[kit,...storedPublicKits().filter(item=>item.id!==kit.id)].slice(0,12);
   localStorage.setItem(PUBLIC_KITS_STORAGE_KEY,JSON.stringify(kits));
   updateMediaKitLinks(kit.id);
   showGeneratedFeedback(kit);
-  window.open(`./mediakit.html?id=${encodeURIComponent(kit.id)}`,'_blank','noopener');
+  const href=`./mediakit.html?id=${encodeURIComponent(kit.id)}`;
+  if(popup)popup.location.href=href;
+  else window.open(href,'_blank','noopener');
 }
 
 function toggleQuoteScreen(id){
