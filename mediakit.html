@@ -15,6 +15,10 @@ a{color:inherit}
 .logo{width:40px;height:40px;border-radius:10px;background:var(--primary);color:#fff;display:grid;place-items:center;font-weight:950}
 .brand strong{display:block}
 .brand span{display:block;color:var(--muted);font-size:12px}
+.nav{display:flex;align-items:center;gap:8px;margin-left:auto}
+.nav a{display:inline-flex;align-items:center;justify-content:center;min-height:40px;min-width:104px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--muted);font-weight:850;text-decoration:none;padding:0 14px}
+.nav a:hover,.nav a:focus-visible{border-color:var(--primary);background:#e0f2fe;color:#0f172a}
+.nav a.on{background:var(--primary);border-color:var(--primary);color:#fff}
 .btn{display:inline-flex;align-items:center;justify-content:center;min-height:40px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--text);font-weight:850;text-decoration:none;padding:0 12px}
 .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
 .wrap{max-width:1120px;margin:0 auto;padding:28px 24px}
@@ -41,13 +45,33 @@ h1{font-size:clamp(34px,5vw,62px);line-height:1;margin-bottom:10px}
 .spec{border:1px solid var(--line);border-radius:10px;background:#f8fafc;padding:9px}
 .spec span{display:block;color:var(--muted);font-size:11px;font-weight:850;text-transform:uppercase}
 .spec b{display:block;font-size:14px}
+.conditions{display:grid;grid-template-columns:1.2fr .8fr;gap:12px;padding:16px}
+.condition-box{border:1px solid var(--line);border-radius:12px;background:#f8fafc;padding:14px}
+.condition-box h3{font-size:16px;margin-bottom:8px}
+.condition-box p,.condition-box ul{margin-bottom:0;color:var(--muted)}
+.condition-box ul{padding-left:18px}
+.cta{display:grid;gap:10px;align-content:start;border:1px solid #86efac;border-radius:12px;background:#f0fdf4;padding:14px}
+.cta h3{margin-bottom:0;color:#166534}
+.cta p{margin-bottom:0;color:#334155}
+.cta-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.cta-actions .btn{width:100%}
 .empty{max-width:620px;margin:72px auto;padding:24px;border:1px dashed var(--line);border-radius:14px;background:#fff;text-align:center}
 .empty h1{font-size:28px}
 @media(max-width:760px){
   .top{position:static;display:grid;padding:14px}
+  .nav{margin-left:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .nav a{min-width:0}
+  .cta-actions{grid-template-columns:1fr}
   .hero{grid-template-columns:1fr;padding:22px}
-  .summary,.screen-list,.specs{grid-template-columns:1fr}
+  .summary,.screen-list,.specs,.conditions{grid-template-columns:1fr}
   .wrap{padding:18px 14px}
+}
+@media print{
+  .top,.section-head .btn,.cta .btn{display:none!important}
+  body{background:#fff}
+  .wrap{max-width:none;padding:0}
+  .hero,.section{box-shadow:none;break-inside:avoid}
+  .screen-card{break-inside:avoid}
 }
 </style>
 </head>
@@ -61,7 +85,12 @@ h1{font-size:clamp(34px,5vw,62px);line-height:1;margin-bottom:10px}
         <span>Media kit comercial</span>
       </div>
     </div>
-    <a class="btn" href="./index.html">Ver brochure</a>
+    <nav class="nav" aria-label="Vistas principales">
+      <a href="./index.html">Brochure</a>
+      <a href="./index.html?view=map">Mapa</a>
+      <a class="on" href="./mediakit.html" data-mediakit-link aria-current="page">Media Kit</a>
+      <a href="./dashboard.html">Acceso Usuarios</a>
+    </nav>
   </header>
   <main class="wrap" id="app" aria-live="polite"></main>
 </div>
@@ -90,26 +119,75 @@ function storedKits(){
   catch{return [];}
 }
 
+function latestMediaKitId(){
+  const kits = storedKits();
+  return id || kits[0]?.id || '';
+}
+
+function updateMediaKitLinks(kitId = latestMediaKitId()){
+  const href = kitId ? `./mediakit.html?id=${encodeURIComponent(kitId)}` : './mediakit.html';
+  document.querySelectorAll('[data-mediakit-link]').forEach(link => {
+    link.setAttribute('href', href);
+  });
+}
+
+async function fetchKit(id){
+  if(!id)return null;
+  try{
+    const response = await fetch(`./data/kits/${encodeURIComponent(id)}.json`, {cache:'no-store'});
+    if(response.ok)return await response.json();
+  }catch{}
+  return null;
+}
+
+function kitScreens(kit){
+  if(Array.isArray(kit.screenSnapshots) && kit.screenSnapshots.length)return kit.screenSnapshots;
+  return (kit.screenIds || []).map(screenId => {
+    const screen = SCREENS.find(item => item.id === screenId);
+    if(!screen)return null;
+    return {
+      id: screen.id,
+      name: screen.n,
+      zone: screen.b,
+      address: screen.dir,
+      type: screen.tipo,
+      format: screen.dim,
+      resolution: screen.res,
+      impactsDay: screen.imp,
+      priceWeek: screen.precio,
+      subtotal: screen.precio,
+      video: screen.video,
+      gradient: screen.g,
+      initials: screen.e
+    };
+  }).filter(Boolean);
+}
+
 function screenMedia(screen){
   const video = screen.video ? `<video src="${escapeHtml(screen.video)}" autoplay muted loop playsinline></video>` : '';
-  return `<div class="media" style="background:${escapeHtml(screen.g || 'linear-gradient(135deg,#075985,#0f766e)')}">${escapeHtml(screen.e)}${video}</div>`;
+  return `<div class="media" style="background:${escapeHtml(screen.gradient || 'linear-gradient(135deg,#075985,#0f766e)')}">${escapeHtml(screen.initials || '')}${video}</div>`;
 }
 
 function renderEmpty(){
   document.getElementById('app').innerHTML = `
     <section class="empty">
       <span class="eyebrow">Media Kit</span>
-      <h1>No hay un media kit publicado</h1>
-      <p class="muted">Genera uno desde el dashboard para abrir esta vista pública con datos de cliente, pantallas, inversión e impactos.</p>
-      <a class="btn primary" href="./dashboard.html">Ir al gestor</a>
+      <h1>Crea tu media kit</h1>
+      <p class="muted">Selecciona pantallas desde el brochure, ajusta la duración y genera una propuesta con inversión, impactos, videos y condiciones lista para compartir.</p>
+      <a class="btn primary" href="./index.html">Ir al brochure</a>
     </section>`;
 }
 
 function renderKit(kit){
   const brand = kit.brand || config.brand || {name:'SmartKit',logo:'SK'};
-  const screens = (kit.screenIds || []).map(screenId => SCREENS.find(screen => screen.id === screenId)).filter(Boolean);
+  const screens = kitScreens(kit);
   const total = Number(kit.total) || 0;
-  const impacts = Number(kit.impacts) || screens.reduce((sum,screen) => sum + imp(screen) * 7, 0);
+  const impacts = Number(kit.impacts) || screens.reduce((sum,screen) => sum + imp(screen.impactsDay) * 7, 0);
+  const phone = String(brand.whatsapp || config.brand?.whatsapp || '').replace(/\D/g,'');
+  const whatsappMessage = encodeURIComponent(`Hola, quiero avanzar con el media kit ${kit.id || ''} para ${kit.client || 'mi campana'}.`);
+  const whatsappHref = phone ? `https://wa.me/${phone}?text=${whatsappMessage}` : './index.html';
+  const date = kit.createdAt ? new Date(kit.createdAt).toLocaleDateString('es-AR') : 'Fecha a confirmar';
+  const validUntil = kit.validUntil ? new Date(`${kit.validUntil}T00:00:00`).toLocaleDateString('es-AR') : (kit.validity || '15 dias');
   document.title = `${brand.name} - Media Kit ${kit.client}`;
   document.getElementById('brand-logo').textContent = brand.logo || 'SK';
   document.getElementById('brand-name').textContent = brand.name || 'SmartKit';
@@ -118,7 +196,7 @@ function renderKit(kit){
       <div>
         <span class="eyebrow">Propuesta DOOH</span>
         <h1>${escapeHtml(kit.client || 'Cliente')}</h1>
-        <p>${escapeHtml(kit.contact || 'Contacto a confirmar')} · ${escapeHtml(kit.duration || 'Duracion a confirmar')}</p>
+        <p>${escapeHtml(kit.contact || 'Contacto a confirmar')} · ${escapeHtml(kit.duration || 'Duracion a confirmar')} · ${escapeHtml(date)}</p>
       </div>
       <div class="summary" aria-label="Resumen de media kit">
         <div class="kpi"><b>${screens.length}</b><span>Pantallas</span></div>
@@ -140,23 +218,58 @@ function renderKit(kit){
           <article class="screen-card">
             ${screenMedia(screen)}
             <div class="screen-body">
-              <h3>${escapeHtml(screen.n)}</h3>
-              <p class="muted">${escapeHtml(screen.dir)} · ${escapeHtml(screen.b)}</p>
+              <h3>${escapeHtml(screen.name)}</h3>
+              <p class="muted">${escapeHtml(screen.address)} · ${escapeHtml(screen.zone)}</p>
               <div class="specs">
-                <div class="spec"><span>Formato</span><b>${escapeHtml(screen.dim)}</b></div>
-                <div class="spec"><span>Resolucion</span><b>${escapeHtml(screen.res)}</b></div>
-                <div class="spec"><span>Impactos/dia</span><b>${escapeHtml(screen.imp)}</b></div>
+                <div class="spec"><span>Formato</span><b>${escapeHtml(screen.format)}</b></div>
+                <div class="spec"><span>Resolucion</span><b>${escapeHtml(screen.resolution)}</b></div>
+                <div class="spec"><span>Impactos/dia</span><b>${escapeHtml(screen.impactsDay)}</b></div>
               </div>
             </div>
           </article>`).join('')}
       </div>
+    </section>
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Condiciones</span>
+          <h2>Detalle comercial</h2>
+        </div>
+      </div>
+      <div class="conditions">
+        <div class="condition-box">
+          <h3>Condiciones de campaña</h3>
+          <p>${escapeHtml(kit.terms || 'Inicio de campana sujeto a disponibilidad y aprobacion de piezas. Valores expresados en ARS.')}</p>
+        </div>
+        <div class="condition-box">
+          <h3>Formatos y validez</h3>
+          <ul>
+            <li>Validez de propuesta: ${escapeHtml(validUntil)}</li>
+            <li>Formatos sugeridos: MP4 H.264, JPG o PNG.</li>
+            <li>Entrega de piezas: 72 hs habiles antes del inicio.</li>
+          </ul>
+        </div>
+        <div class="cta">
+          <h3>Reservar propuesta</h3>
+          <p>Confirma disponibilidad, fechas y piezas finales con el equipo comercial.</p>
+          <div class="cta-actions">
+            <a class="btn primary" href="${whatsappHref}" target="_blank" rel="noopener">Contactar por WhatsApp</a>
+            <button class="btn" type="button" onclick="window.print()">Guardar PDF</button>
+          </div>
+        </div>
+      </div>
     </section>`;
 }
 
-const kits = storedKits();
-const kit = kits.find(item => item.id === id) || kits[0];
-if(kit)renderKit(kit);
-else renderEmpty();
+(async function init(){
+  updateMediaKitLinks();
+  const remoteKit = await fetchKit(id);
+  const kits = storedKits();
+  const kit = remoteKit || (id ? kits.find(item => item.id === id) : null);
+  if(kit?.id)updateMediaKitLinks(kit.id);
+  if(kit)renderKit(kit);
+  else renderEmpty();
+})();
 </script>
 </body>
 </html>

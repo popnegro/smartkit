@@ -8,6 +8,7 @@
     "app.js",
     "config.js",
     "screens-data.js",
-    "assets/videos"
+    "assets/videos",
+    "data/kits"
   ]
 }

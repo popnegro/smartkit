@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartKit - Dashboard de Gestion</title>
+<style>
+:root{--primary:#0369a1;--primary-strong:#075985;--success:#166534;--bg:#f6f8fb;--panel:#fff;--panel-soft:#f8fafc;--text:#0f172a;--muted:#475569;--line:#d9e2ec;--warning:#92400e;--danger:#991b1b;--radius:12px;--shadow:0 1px 2px rgba(15,23,42,.08),0 8px 24px rgba(15,23,42,.06)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.45}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid #fbbf24;outline-offset:3px}
+.app{min-height:100vh;display:grid;grid-template-columns:260px minmax(0,1fr)}
+.sidebar{position:sticky;top:0;height:100vh;background:#fff;border-right:1px solid var(--line);padding:18px;display:flex;flex-direction:column;gap:18px}
+.brand{display:flex;align-items:center;gap:12px;min-height:44px}
+.logo{width:40px;height:40px;border-radius:10px;background:var(--primary);color:#fff;display:grid;place-items:center;font-weight:950}
+.brand strong{display:block;font-size:16px}
+.brand span{display:block;color:var(--muted);font-size:12px}
+.nav{display:grid;gap:6px}
+.nav button{width:100%;min-height:42px;border:0;border-radius:10px;background:transparent;color:var(--muted);font-weight:850;text-align:left;padding:0 12px}
+.nav button.active{background:#e0f2fe;color:var(--primary-strong)}
+.sidebar-footer{margin-top:auto;border-top:1px solid var(--line);padding-top:14px;color:var(--muted);font-size:12px}
+.main{min-width:0;padding:22px}
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+.eyebrow{display:block;color:var(--muted);font-size:11px;font-weight:950;letter-spacing:.04em;text-transform:uppercase}
+h1,h2,h3,p{margin-top:0}
+h1{font-size:28px;line-height:1.15;margin-bottom:6px}
+h2{font-size:18px;line-height:1.2;margin-bottom:0}
+.topbar p{color:var(--muted);margin-bottom:0}
+.actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.btn{min-height:40px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--text);font-weight:850;padding:0 12px}
+.btn.primary{background:var(--primary-strong);border-color:var(--primary-strong);color:#fff}
+.btn.success{background:var(--success);border-color:var(--success);color:#fff}
+.btn.ghost{background:transparent}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px}
+.kpi b{display:block;font-size:25px;line-height:1.1}
+.kpi span{color:var(--muted);font-size:13px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px;border-bottom:1px solid var(--line)}
+.drawer .panel-head{padding:0 0 12px}
+.panel-head.compact{padding:0 0 12px}
+.panel-pad{padding:12px}
+.section-pad{padding:16px}
+.filters{display:grid;grid-template-columns:1.2fr repeat(3,minmax(130px,.55fr));gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--panel-soft)}
+.field{display:grid;gap:6px}
+.field label{color:var(--muted);font-size:11px;font-weight:900;text-transform:uppercase}
+.field input,.field select,.field textarea{width:100%;min-height:42px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--text);padding:8px 10px}
+.field textarea{min-height:84px;resize:vertical}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:820px}
+th,td{padding:12px 16px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{color:var(--muted);font-size:11px;font-weight:950;text-transform:uppercase;background:#fff;position:sticky;top:0;z-index:1}
+td{font-size:14px}
+tr.selected{background:#eef8ff}
+.screen-cell{display:flex;align-items:center;gap:10px;min-width:230px}
+.screen-icon{width:38px;height:38px;border-radius:10px;background:#e0f2fe;display:grid;place-items:center;font-size:19px}
+.screen-cell strong{display:block}
+.screen-cell span{display:block;color:var(--muted);font-size:12px}
+.badge{display:inline-flex;align-items:center;min-height:26px;border-radius:999px;border:1px solid var(--line);background:#fff;color:#334155;font-size:12px;font-weight:900;padding:0 9px;white-space:nowrap}
+.badge.active{background:#dcfce7;border-color:#86efac;color:#166534}
+.badge.paused{background:#f1f5f9;border-color:#cbd5e1;color:#475569}
+.badge.warning{background:#fef3c7;border-color:#fcd34d;color:#92400e}
+.row-actions{display:flex;gap:6px;flex-wrap:wrap}
+.icon-btn{width:auto;min-width:36px;height:36px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--text);font-weight:950;padding:0 10px}
+.icon-btn.publish{border-color:#86efac;background:#dcfce7;color:#166534}
+.icon-btn.pause{border-color:#cbd5e1;background:#f8fafc;color:#475569}
+.drawer{display:grid;gap:14px;padding:16px;position:sticky;top:22px}
+.preview{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#0d1728;color:#fff}
+.preview-media{height:136px;display:grid;place-items:center;font-size:44px;background:linear-gradient(135deg,var(--primary-strong),#0f766e);position:relative}
+.preview-media video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.preview-body{padding:14px}
+.preview-body h3{margin-bottom:4px}
+.preview-body p{color:#cbd5e1;margin-bottom:10px}
+.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.metric{border:1px solid #213047;border-radius:10px;background:#111c31;padding:10px}
+.metric span{display:block;color:#94a3b8;font-size:12px}
+.metric b{display:block;font-size:16px}
+.editor{display:grid;gap:10px}
+.status-line{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);border-radius:12px;background:var(--panel-soft);padding:10px 12px;color:var(--muted);font-size:13px}
+.status-line strong{color:var(--text)}
+.section[hidden]{display:none!important}
+.kit-layout{display:grid;grid-template-columns:380px minmax(0,1fr);gap:16px;align-items:start}
+.kit-screen-list{display:grid;gap:8px;max-height:430px;overflow:auto;padding-right:4px}
+.kit-screen{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;background:#fff;padding:10px}
+.kit-screen input{width:18px;height:18px;accent-color:var(--primary-strong)}
+.kit-screen strong{display:block;font-size:14px}
+.kit-screen span{display:block;color:var(--muted);font-size:12px}
+.kit-preview{display:grid;gap:12px;padding:16px}
+.kit-doc{border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}
+.kit-doc-hero{padding:18px;background:linear-gradient(135deg,#075985,#0f766e);color:#fff}
+.kit-doc-body{display:grid;gap:14px;padding:16px}
+.kit-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kit-summary .kpi{box-shadow:none}
+.kit-list{display:grid;gap:8px}
+.kit-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel-soft);padding:10px}
+.kit-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.kit-link{color:var(--primary-strong);font-size:12px;font-weight:950;text-decoration:none}
+.kit-link:hover{text-decoration:underline}
+.kit-actions .icon-btn{min-width:0;height:32px;border-radius:8px;font-size:12px}
+.chart-list{display:grid;gap:12px;padding:16px}
+.chart-row{display:grid;gap:5px}
+.chart-meta{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:13px}
+.bar{height:9px;border-radius:999px;background:#e2e8f0;overflow:hidden}
+.bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--primary-strong),#22d3ee)}
+.settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.toast{position:fixed;left:50%;bottom:22px;z-index:20;transform:translate(-50%,12px);opacity:0;pointer-events:none;background:#0f172a;color:#fff;border-radius:999px;box-shadow:var(--shadow);font-weight:900;padding:10px 14px;transition:transform .18s ease,opacity .18s ease}
+.toast.show{transform:translate(-50%,0);opacity:1}
+@media(max-width:980px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:12px}
+  .nav{grid-template-columns:repeat(3,1fr)}
+  .sidebar-footer{display:none}
+  .main{padding:16px}
+  .topbar{display:grid}
+  .actions{justify-content:flex-start}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .layout{grid-template-columns:1fr}
+  .drawer{position:static}
+  .filters,.kit-layout,.settings-grid{grid-template-columns:1fr}
+  .kit-summary{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:560px){
+  .kpis,.filters{grid-template-columns:1fr}
+  .kit-summary{grid-template-columns:1fr}
+  .nav{grid-template-columns:1fr}
+  .topbar h1{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" aria-label="Navegacion de gestion">
+    <div class="brand">
+      <div class="logo" id="dash-logo">SK</div>
+      <div>
+        <strong id="dash-brand">SmartKit</strong>
+        <span>Gestion comercial DOOH</span>
+      </div>
+    </div>
+    <nav class="nav" aria-label="Secciones del dashboard">
+      <button class="active" type="button" data-section="inventory">Inventario</button>
+      <button type="button" data-section="mediakits">Media Kits</button>
+      <button type="button" data-section="metrics">Metricas</button>
+      <button type="button" data-section="settings">Configuracion</button>
+    </nav>
+    <div class="sidebar-footer">
+      <strong>Estado:</strong> Datos locales desde <code>screens-data.js</code>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <span class="eyebrow">Dashboard</span>
+        <h1 id="page-title">Gestion de pantallas</h1>
+        <p id="page-copy">Administra inventario, disponibilidad, precios y vista comercial desde una sola superficie.</p>
+      </div>
+      <div class="actions">
+        <a class="btn ghost" href="./index.html">Ver brochure</a>
+        <button class="btn" type="button" id="export-btn">Exportar CSV</button>
+        <button class="btn primary" type="button" id="save-btn">Guardar cambios</button>
+      </div>
+    </header>
+
+    <section class="kpis" aria-label="Indicadores principales">
+      <div class="kpi"><b id="kpi-published">0 / 0</b><span>Publicadas / inventario</span></div>
+      <div class="kpi"><b id="kpi-active">0</b><span>Pantallas activas</span></div>
+      <div class="kpi"><b id="kpi-reach">0</b><span>Impactos diarios</span></div>
+      <div class="kpi"><b id="kpi-revenue">$0</b><span>Potencial semanal</span></div>
+      <div class="kpi"><b id="kpi-cpm">$0</b><span>CPM promedio</span></div>
+    </section>
+
+    <section class="section" id="section-inventory">
+    <div class="layout">
+      <section class="panel" aria-label="Inventario de pantallas">
+        <div class="panel-head">
+          <div>
+            <span class="eyebrow">Inventario</span>
+            <h2>Pantallas publicadas</h2>
+          </div>
+          <span class="badge active" id="result-count">0 resultados</span>
+        </div>
+        <div class="filters">
+          <div class="field">
+            <label for="search">Buscar</label>
+            <input id="search" type="search" placeholder="Nombre, direccion o zona">
+          </div>
+          <div class="field">
+            <label for="zone-filter">Zona</label>
+            <select id="zone-filter"></select>
+          </div>
+          <div class="field">
+            <label for="type-filter">Tipo</label>
+            <select id="type-filter">
+              <option value="Todos">Todos</option>
+              <option value="Peatonal">Peatonal</option>
+              <option value="Vehicular">Vehicular</option>
+              <option value="Mixto">Mixto</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="status-filter">Estado</label>
+            <select id="status-filter">
+              <option value="Todos">Todos</option>
+              <option value="Activo">Activo</option>
+              <option value="Pausado">Pausado</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Pantalla</th>
+                <th>Tipo</th>
+                <th>Impactos/dia</th>
+                <th>Precio semana</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="screen-table"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside class="panel drawer" aria-label="Detalle editable">
+        <div class="panel-head">
+          <div>
+            <span class="eyebrow">Detalle</span>
+            <h2 id="editor-title">Selecciona una pantalla</h2>
+          </div>
+        </div>
+        <div class="preview" id="preview"></div>
+        <form class="editor" id="editor-form">
+          <div class="field">
+            <label for="edit-name">Nombre comercial</label>
+            <input id="edit-name" name="name" type="text" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="edit-zone">Zona</label>
+            <input id="edit-zone" name="zone" type="text" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="edit-price">Precio semanal</label>
+            <input id="edit-price" name="price" type="number" min="0" step="1000">
+          </div>
+          <div class="field">
+            <label for="edit-status">Estado comercial</label>
+            <select id="edit-status" name="status">
+              <option value="Activo">Activo</option>
+              <option value="Pausado">Pausado</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="edit-video">Video del head</label>
+            <input id="edit-video" name="video" type="text" placeholder="./assets/videos/pantalla.mp4" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="edit-note">Nota interna</label>
+            <textarea id="edit-note" name="note" placeholder="Ej: validar disponibilidad antes de cotizar"></textarea>
+          </div>
+          <button class="btn success" type="submit">Aplicar al dashboard</button>
+        </form>
+        <div class="status-line">
+          <span>Ultima accion</span>
+          <strong id="last-action">Sin cambios</strong>
+        </div>
+      </aside>
+    </div>
+    </section>
+
+    <section class="section" id="section-mediakits" hidden>
+      <div class="kit-layout">
+        <section class="panel" aria-label="Constructor de media kit">
+          <div class="panel-head">
+            <div>
+              <span class="eyebrow">Media Kit</span>
+              <h2>Crear propuesta comercial</h2>
+            </div>
+            <span class="badge warning" id="kit-state">Borrador</span>
+          </div>
+          <div class="filters">
+            <div class="field">
+              <label for="kit-client">Cliente</label>
+              <input id="kit-client" type="text" placeholder="Ej: Bodega Trapiche">
+            </div>
+            <div class="field">
+              <label for="kit-contact">Contacto</label>
+              <input id="kit-contact" type="text" placeholder="Nombre y apellido">
+            </div>
+            <div class="field">
+              <label for="kit-duration">Duracion</label>
+              <select id="kit-duration"></select>
+            </div>
+            <div class="field">
+              <label for="kit-zone">Zona</label>
+              <select id="kit-zone"></select>
+            </div>
+          </div>
+          <div class="panel-head">
+            <div>
+              <span class="eyebrow">Seleccion</span>
+              <h2>Pantallas del mediakit</h2>
+            </div>
+            <span class="badge active" id="kit-selected-count">0 seleccionadas</span>
+          </div>
+          <div class="kit-screen-list" id="kit-screen-list"></div>
+        </section>
+
+        <aside class="panel kit-preview" aria-label="Preview de media kit">
+          <div class="panel-head compact">
+            <div>
+              <span class="eyebrow">Preview</span>
+              <h2>Documento para cliente</h2>
+            </div>
+            <button class="btn primary" type="button" id="kit-save-btn">Guardar kit</button>
+          </div>
+          <div class="kit-doc" id="kit-preview"></div>
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <span class="eyebrow">Historial</span>
+                <h2>Kits generados</h2>
+              </div>
+            </div>
+            <div class="kit-list panel-pad" id="kit-history"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section" id="section-metrics" hidden>
+      <div class="layout">
+        <section class="panel" aria-label="Reach diario por zona">
+          <div class="panel-head"><div><span class="eyebrow">Metricas</span><h2>Reach diario por zona</h2></div></div>
+          <div class="chart-list" id="zone-chart"></div>
+        </section>
+        <aside class="panel" aria-label="Distribucion por tipo de transito">
+          <div class="panel-head"><div><span class="eyebrow">Distribucion</span><h2>Tipos de transito</h2></div></div>
+          <div class="chart-list" id="type-chart"></div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section" id="section-settings" hidden>
+      <div class="settings-grid">
+        <section class="panel">
+          <div class="panel-head"><div><span class="eyebrow">Marca</span><h2>Datos visibles</h2></div></div>
+          <div class="editor section-pad">
+            <div class="field"><label for="settings-brand">Nombre</label><input id="settings-brand" type="text"></div>
+            <div class="field"><label for="settings-logo">Logo corto</label><input id="settings-logo" type="text"></div>
+            <div class="field"><label for="settings-whatsapp">WhatsApp comercial</label><input id="settings-whatsapp" type="text"></div>
+          </div>
+        </section>
+        <section class="panel">
+          <div class="panel-head"><div><span class="eyebrow">Plantilla</span><h2>Condiciones del mediakit</h2></div></div>
+          <div class="editor section-pad">
+            <div class="field"><label for="settings-validity">Validez comercial</label><select id="settings-validity"><option>7 dias</option><option>15 dias</option><option>30 dias</option></select></div>
+            <div class="field"><label for="settings-terms">Condiciones</label><textarea id="settings-terms">Inicio de campana sujeto a disponibilidad y aprobacion de piezas. Valores expresados en ARS.</textarea></div>
+            <button class="btn success" type="button" id="settings-save">Aplicar configuracion</button>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="./config.js"></script>
+<script src="./screens-data.js"></script>
+<script>
+const config = window.APP_CONFIG || {};
+const activeIds = new Set(config.inventory?.activeScreenIds || []);
+const brand = {name:'SmartKit',logo:'SK',...(config.brand || {})};
+const theme = config.theme || {};
+const DASHBOARD_STORAGE_KEY = 'smartkit-dashboard-state';
+const PUBLIC_KITS_STORAGE_KEY = 'smartkit-public-kits';
+const fmt = value => '$' + Math.round(Number(value) || 0).toLocaleString('es-AR');
+const imp = screen => parseInt(String(screen.imp || '0').replace(/\./g,''),10) || 0;
+const h = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+let selectedId = (config.inventory?.activeScreenIds || [SCREENS[0]?.id])[0];
+let rows = SCREENS.map(screen => ({
+  ...screen,
+  status: activeIds.has(screen.id) ? 'Activo' : 'Pausado',
+  note: ''
+}));
+let currentSection = 'inventory';
+let kitSelected = new Set((config.inventory?.activeScreenIds || []).slice(0,3));
+let savedKits = [
+  {id:'demo-trapiche',client:'Bodega Trapiche',screens:5,total:1570000,status:'Enviado',screenIds:[1,2,3,4,5],duration:'1 semana',createdAt:'2026-06-10T00:00:00.000Z'},
+  {id:'demo-toyota',client:'Toyota Mendoza',screens:8,total:1825200,status:'Aprobado',screenIds:[1,2,3,4,5,6,7,10],duration:'1 semana',createdAt:'2026-06-10T00:00:00.000Z'}
+];
+
+function loadStoredState(){
+  let state = {};
+  try{state = JSON.parse(localStorage.getItem(DASHBOARD_STORAGE_KEY) || '{}') || {};}
+  catch{state = {};}
+  if(state.brand && typeof state.brand === 'object')Object.assign(brand,state.brand);
+  if(Array.isArray(state.rows)){
+    const storedById = new Map(state.rows.map(row => [row.id,row]));
+    rows = rows.map(row => ({...row,...(storedById.get(row.id) || {})}));
+  }
+  if(Array.isArray(state.savedKits) && state.savedKits.length)savedKits = state.savedKits;
+  selectedId = rows.find(row => row.id === selectedId)?.id || rows[0]?.id;
+  kitSelected = new Set(rows.filter(row => row.status === 'Activo').slice(0,3).map(row => row.id));
+}
+
+function publicKits(){
+  try{return JSON.parse(localStorage.getItem(PUBLIC_KITS_STORAGE_KEY) || '[]') || [];}
+  catch{return [];}
+}
+
+function persistState(message='Cambios guardados localmente'){
+  const state = {
+    brand,
+    rows: rows.map(row => ({
+      id: row.id,
+      n: row.n,
+      b: row.b,
+      precio: row.precio,
+      video: row.video || '',
+      status: row.status,
+      note: row.note || ''
+    })),
+    savedKits
+  };
+  localStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(state));
+  localStorage.setItem(PUBLIC_KITS_STORAGE_KEY, JSON.stringify(savedKits));
+  showToast(message);
+}
+
+function kitSlug(value){
+  return String(value || 'media-kit')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')
+    .slice(0,48) || 'media-kit';
+}
+
+function kitPublicUrl(kit){
+  return `${location.origin}${location.pathname.replace(/dashboard\.html?$/,'')}mediakit.html?id=${encodeURIComponent(kit.id)}`;
+}
+
+function screenSnapshot(row,duration){
+  return {
+    id: row.id,
+    name: row.n,
+    zone: row.b,
+    address: row.dir,
+    type: row.tipo,
+    format: row.dim,
+    resolution: row.res,
+    impactsDay: row.imp,
+    priceWeek: row.precio,
+    subtotal: Math.round(row.precio * duration.mult),
+    video: row.video || '',
+    gradient: row.g || '',
+    initials: row.e || ''
+  };
+}
+
+function buildKitPayload(status='Borrador'){
+  const duration = selectedDuration();
+  const screens = kitScreens();
+  const client = document.getElementById('kit-client').value.trim() || 'Cliente sin nombre';
+  const contact = document.getElementById('kit-contact').value.trim() || 'Contacto a confirmar';
+  const total = screens.reduce((sum,row)=>sum + row.precio * duration.mult,0);
+  const impacts = screens.reduce((sum,row)=>sum + imp(row) * duration.days,0);
+  const createdAt = new Date();
+  const validUntil = new Date(createdAt);
+  validUntil.setDate(validUntil.getDate() + 15);
+  return {
+    id: `kit-${kitSlug(client)}-${createdAt.getTime()}`,
+    client,
+    contact,
+    duration: duration.l,
+    durationValue: duration.v,
+    days: duration.days,
+    screenIds: screens.map(row => row.id),
+    screenSnapshots: screens.map(row => screenSnapshot(row,duration)),
+    screens: screens.length,
+    total,
+    impacts,
+    cpm: impacts ? Math.round(total / impacts * 1000) : 0,
+    status,
+    createdAt: createdAt.toISOString(),
+    validUntil: validUntil.toISOString().slice(0,10),
+    terms: document.getElementById('settings-terms').value.trim(),
+    validity: document.getElementById('settings-validity').value,
+    brand:{...brand}
+  };
+}
+
+function downloadKitJson(kit){
+  const blob = new Blob([JSON.stringify(kit,null,2)], {type:'application/json;charset=utf-8'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `${kit.id}.json`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+function applyBrand(){
+  document.title = `${brand.name} - Dashboard de Gestion`;
+  document.getElementById('dash-logo').textContent = brand.logo;
+  document.getElementById('dash-brand').textContent = brand.name;
+  if(theme.primary)document.documentElement.style.setProperty('--primary', theme.primary);
+  if(theme.primaryStrong)document.documentElement.style.setProperty('--primary-strong', theme.primaryStrong);
+  if(theme.success)document.documentElement.style.setProperty('--success', theme.success);
+}
+
+function updateKpis(){
+  const active = rows.filter(row => row.status === 'Activo');
+  const totalImpacts = active.reduce((acc,row) => acc + imp(row), 0);
+  const revenue = active.reduce((acc,row) => acc + row.precio, 0);
+  const avgCpm = active.length
+    ? active.reduce((acc,row) => acc + ((row.precio / (imp(row) * 7)) * 1000), 0) / active.length
+    : 0;
+  document.getElementById('kpi-published').textContent = `${active.length} / ${rows.length}`;
+  document.getElementById('kpi-active').textContent = active.length;
+  document.getElementById('kpi-reach').textContent = totalImpacts.toLocaleString('es-AR');
+  document.getElementById('kpi-revenue').textContent = fmt(revenue);
+  document.getElementById('kpi-cpm').textContent = fmt(avgCpm);
+}
+
+function fillFilters(){
+  const zones = ['Todos', ...new Set(rows.map(row => row.b))];
+  document.getElementById('zone-filter').innerHTML = zones.map(zone => `<option value="${zone}">${zone}</option>`).join('');
+  document.getElementById('kit-zone').innerHTML = zones.map(zone => `<option value="${zone}">${zone}</option>`).join('');
+  document.getElementById('kit-duration').innerHTML = DURATIONS.map(duration => `<option value="${duration.v}">${duration.l}</option>`).join('');
+}
+
+function filteredRows(){
+  const query = document.getElementById('search').value.trim().toLowerCase();
+  const zone = document.getElementById('zone-filter').value;
+  const type = document.getElementById('type-filter').value;
+  const status = document.getElementById('status-filter').value;
+  return rows.filter(row => {
+    const matchesQuery = !query || [row.n,row.dir,row.b,row.tipo].some(value => String(value).toLowerCase().includes(query));
+    const matchesZone = zone === 'Todos' || row.b === zone;
+    const matchesType = type === 'Todos' || row.tipo === type;
+    const matchesStatus = status === 'Todos' || row.status === status;
+    return matchesQuery && matchesZone && matchesType && matchesStatus;
+  });
+}
+
+function renderTable(){
+  const list = filteredRows();
+  let selectedChanged = false;
+  if(list.length && !list.some(row => row.id === selectedId)){
+    selectedId = list[0].id;
+    selectedChanged = true;
+  }
+  document.getElementById('result-count').textContent = `${list.length} ${list.length === 1 ? 'resultado' : 'resultados'}`;
+  document.getElementById('screen-table').innerHTML = list.map(row => `
+    <tr class="${row.id === selectedId ? 'selected' : ''}">
+      <td>
+        <div class="screen-cell">
+          <span class="screen-icon">${h(row.e)}</span>
+          <div><strong>${h(row.n)}</strong><span>${h(row.dir)} · ${h(row.b)}</span></div>
+        </div>
+      </td>
+      <td><span class="badge">${h(row.tipo)}</span></td>
+      <td>${h(row.imp)}</td>
+      <td><strong>${fmt(row.precio)}</strong></td>
+      <td><span class="badge ${row.status === 'Activo' ? 'active' : 'paused'}">${row.status}</span></td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-btn" type="button" data-action="select" data-id="${row.id}" aria-label="Editar ${h(row.n)}">Editar</button>
+          <button class="icon-btn ${row.status === 'Activo' ? 'pause' : 'publish'}" type="button" data-action="toggle-status" data-id="${row.id}" aria-label="${row.status === 'Activo' ? 'Pausar' : 'Publicar en brochure'} ${h(row.n)}">${row.status === 'Activo' ? 'Pausar' : 'Publicar'}</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+  if(selectedChanged){
+    const row = rows.find(item => item.id === selectedId);
+    if(row)updateEditor(row);
+  }
+}
+
+function renderPreview(row){
+  const video = row.video ? `<video src="${row.video}" autoplay muted loop playsinline></video>` : '';
+  document.getElementById('preview').innerHTML = `
+    <div class="preview-media" style="background:${row.g || 'linear-gradient(135deg,#075985,#0f766e)'}">${row.e}${video}</div>
+    <div class="preview-body">
+      <h3>${row.n}</h3>
+      <p>${row.dir} · ${row.b}</p>
+      <div class="metrics-grid">
+        <div class="metric"><span>Formato</span><b>${row.dim}</b></div>
+        <div class="metric"><span>Resolucion</span><b>${row.res}</b></div>
+        <div class="metric"><span>Impactos/dia</span><b>${row.imp}</b></div>
+        <div class="metric"><span>CPM</span><b>${fmt((row.precio / (imp(row) * 7)) * 1000)}</b></div>
+      </div>
+    </div>
+  `;
+}
+
+function updateEditor(row){
+  if(!row)return;
+  document.getElementById('editor-title').textContent = row.n;
+  document.getElementById('edit-name').value = row.n;
+  document.getElementById('edit-zone').value = row.b;
+  document.getElementById('edit-price').value = row.precio;
+  document.getElementById('edit-status').value = row.status;
+  document.getElementById('edit-video').value = row.video || '';
+  document.getElementById('edit-note').value = row.note;
+  renderPreview(row);
+}
+
+function selectRow(id){
+  selectedId = Number(id);
+  const row = rows.find(item => item.id === selectedId) || rows[0];
+  updateEditor(row);
+  renderTable();
+}
+
+function togglePublication(id){
+  const row = rows.find(item => item.id === Number(id));
+  if(!row)return;
+  row.status = row.status === 'Activo' ? 'Pausado' : 'Activo';
+  document.getElementById('last-action').textContent = `${row.status === 'Activo' ? 'Publicada' : 'Pausada'} #${row.id}`;
+  updateKpis();
+  renderTable();
+  updateEditor(row);
+  renderKitBuilder();
+  persistState(row.status === 'Activo' ? 'Pantalla publicada en brochure' : 'Pantalla pausada del brochure');
+}
+
+function showToast(message){
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  clearTimeout(showToast.timer);
+  showToast.timer = setTimeout(() => toast.classList.remove('show'), 1600);
+}
+
+function exportCsv(){
+  const header = ['id','nombre','zona','direccion','tipo','impactos_dia','precio_semana','estado'];
+  const lines = rows.map(row => [row.id,row.n,row.b,row.dir,row.tipo,row.imp,row.precio,row.status].map(value => `"${String(value).replace(/"/g,'""')}"`).join(','));
+  const blob = new Blob([[header.join(','), ...lines].join('\n')], {type:'text/csv;charset=utf-8'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'smartkit-inventario.csv';
+  link.click();
+  URL.revokeObjectURL(link.href);
+  showToast('CSV exportado');
+}
+
+function setSection(section){
+  currentSection = section;
+  document.querySelectorAll('[data-section]').forEach(button=>{
+    button.classList.toggle('active',button.dataset.section===section);
+  });
+  document.querySelectorAll('.section').forEach(panel=>{
+    panel.hidden = panel.id !== `section-${section}`;
+  });
+  const titles = {
+    inventory:['Gestion de pantallas','Administra inventario, disponibilidad, precios y vista comercial desde una sola superficie.'],
+    mediakits:['Constructor de Media Kits','Crea, previsualiza y mantiene propuestas comerciales listas para enviar a clientes.'],
+    metrics:['Metricas comerciales','Analiza cobertura, mix de transito y potencial de venta por zona.'],
+    settings:['Configuracion comercial','Define marca, contacto y condiciones base para tus mediakits.']
+  };
+  document.getElementById('page-title').textContent = titles[section][0];
+  document.getElementById('page-copy').textContent = titles[section][1];
+  if(section==='mediakits')renderKitBuilder();
+  if(section==='metrics')renderMetrics();
+}
+
+function selectedDuration(){
+  return DURATIONS.find(duration => duration.v === document.getElementById('kit-duration').value) || DURATIONS[0];
+}
+
+function kitScreens(){
+  return rows.filter(row => kitSelected.has(row.id) && row.status === 'Activo');
+}
+
+function renderKitBuilder(){
+  const zone = document.getElementById('kit-zone').value || 'Todos';
+  const visible = rows.filter(row => row.status === 'Activo' && (zone === 'Todos' || row.b === zone));
+  document.getElementById('kit-screen-list').innerHTML = visible.map(row => `
+    <label class="kit-screen">
+      <input type="checkbox" data-kit-screen="${row.id}" ${kitSelected.has(row.id)?'checked':''}>
+      <span class="screen-icon">${h(row.e)}</span>
+      <span><strong>${h(row.n)}</strong><span>${h(row.b)} · ${h(row.imp)} imp/dia · ${fmt(row.precio)}/sem</span></span>
+      <span class="badge">${h(row.tipo)}</span>
+    </label>
+  `).join('');
+  renderKitPreview();
+}
+
+function renderKitPreview(){
+  const duration = selectedDuration();
+  const screens = kitScreens();
+  const client = document.getElementById('kit-client').value.trim() || 'Cliente sin nombre';
+  const total = screens.reduce((sum,row)=>sum + row.precio * duration.mult,0);
+  const impacts = screens.reduce((sum,row)=>sum + imp(row) * duration.days,0);
+  document.getElementById('kit-selected-count').textContent = `${screens.length} ${screens.length===1?'seleccionada':'seleccionadas'}`;
+  document.getElementById('kit-state').textContent = screens.length ? 'Borrador listo' : 'Borrador';
+  document.getElementById('kit-preview').innerHTML = `
+    <div class="kit-doc-hero">
+      <span class="eyebrow" style="color:#bae6fd">Media Kit</span>
+      <h2>${h(brand.name)} para ${h(client)}</h2>
+      <p>${h(document.getElementById('kit-contact').value.trim() || 'Contacto a confirmar')} · ${h(duration.l)}</p>
+    </div>
+    <div class="kit-doc-body">
+      <div class="kit-summary">
+        <div class="kpi"><b>${screens.length}</b><span>Pantallas</span></div>
+        <div class="kpi"><b>${Math.round(impacts/1000).toLocaleString('es-AR')}k</b><span>Impactos estimados</span></div>
+        <div class="kpi"><b>${fmt(total)}</b><span>Inversion</span></div>
+        <div class="kpi"><b>${screens.length ? fmt(total/(impacts||1)*1000) : '$0'}</b><span>CPM plan</span></div>
+      </div>
+      <div class="kit-list">
+        ${screens.length?screens.map(row=>`
+          <div class="kit-row">
+            <span><strong>${h(row.e)} ${h(row.n)}</strong><br><small>${h(row.b)} · ${h(row.dim)} · ${h(row.res)}</small></span>
+            <strong>${fmt(row.precio * duration.mult)}</strong>
+          </div>`).join(''):'<div class="kit-row"><span>Selecciona pantallas para generar el resumen comercial.</span></div>'}
+      </div>
+    </div>
+  `;
+}
+
+function saveKit(){
+  const screens = kitScreens();
+  if(!screens.length){
+    showToast('Selecciona al menos una pantalla');
+    return;
+  }
+  const kit = buildKitPayload('Borrador');
+  savedKits = [kit,...savedKits].slice(0,8);
+  renderKitHistory();
+  persistState('Media kit guardado');
+}
+
+function renderKitHistory(){
+  document.getElementById('kit-history').innerHTML = savedKits.map(kit => `
+    <div class="kit-row">
+      <span><strong>${h(kit.client)}</strong><br><small>${Number(kit.screens)||0} pantallas · ${h(kit.status || 'Borrador')}</small></span>
+      <span class="kit-actions">
+        <strong>${fmt(kit.total)}</strong>
+        <a class="kit-link" href="./mediakit.html?id=${kit.id}" target="_blank" rel="noopener">Ver público</a>
+        <button class="icon-btn" type="button" data-action="copy-kit" data-id="${h(kit.id)}">Copiar</button>
+        <button class="icon-btn" type="button" data-action="download-kit" data-id="${h(kit.id)}">JSON</button>
+        <button class="icon-btn" type="button" data-action="duplicate-kit" data-id="${h(kit.id)}">Duplicar</button>
+        <button class="icon-btn pause" type="button" data-action="delete-kit" data-id="${h(kit.id)}">Eliminar</button>
+      </span>
+    </div>
+  `).join('') || '<div class="kit-row"><span>No hay kits guardados.</span></div>';
+}
+
+function renderMetrics(){
+  const active = rows.filter(row => row.status === 'Activo');
+  const byZone = active.reduce((acc,row)=>{acc[row.b]=(acc[row.b]||0)+imp(row);return acc;},{});
+  const byType = active.reduce((acc,row)=>{acc[row.tipo]=(acc[row.tipo]||0)+1;return acc;},{});
+  const maxZone = Math.max(...Object.values(byZone),1);
+  document.getElementById('zone-chart').innerHTML = Object.entries(byZone).sort((a,b)=>b[1]-a[1]).map(([zone,value])=>`
+    <div class="chart-row">
+      <div class="chart-meta"><strong>${zone}</strong><span>${value.toLocaleString('es-AR')} imp/dia</span></div>
+      <div class="bar"><div class="bar-fill" style="width:${(value/maxZone*100).toFixed(1)}%"></div></div>
+    </div>
+  `).join('');
+  document.getElementById('type-chart').innerHTML = Object.entries(byType).map(([type,value])=>`
+    <div class="chart-row">
+      <div class="chart-meta"><strong>${type}</strong><span>${value} pantalla${value===1?'':'s'}</span></div>
+      <div class="bar"><div class="bar-fill" style="width:${(value/(active.length||1)*100).toFixed(1)}%"></div></div>
+    </div>
+  `).join('');
+}
+
+function bindEvents(){
+  document.querySelectorAll('[data-section]').forEach(button=>{
+    button.addEventListener('click',()=>setSection(button.dataset.section));
+  });
+  ['search','zone-filter','type-filter','status-filter'].forEach(id => {
+    document.getElementById(id).addEventListener('input', renderTable);
+    document.getElementById(id).addEventListener('change', renderTable);
+  });
+  ['kit-client','kit-contact'].forEach(id=>{
+    document.getElementById(id).addEventListener('input', renderKitPreview);
+  });
+  ['kit-duration','kit-zone'].forEach(id=>{
+    document.getElementById(id).addEventListener('change', renderKitBuilder);
+  });
+  document.addEventListener('click', event => {
+    const target = event.target.closest('[data-action]');
+    if(!target)return;
+    if(target.dataset.action === 'select')selectRow(target.dataset.id);
+    if(target.dataset.action === 'toggle-status')togglePublication(target.dataset.id);
+    if(target.dataset.action === 'copy-kit'){
+      const kit = savedKits.find(item => item.id === target.dataset.id);
+      if(kit)navigator.clipboard?.writeText(kitPublicUrl(kit)).then(()=>showToast('Link copiado')).catch(()=>showToast('No se pudo copiar'));
+    }
+    if(target.dataset.action === 'download-kit'){
+      const kit = savedKits.find(item => item.id === target.dataset.id);
+      if(kit){downloadKitJson(kit);showToast('JSON descargado');}
+    }
+    if(target.dataset.action === 'duplicate-kit'){
+      const kit = savedKits.find(item => item.id === target.dataset.id);
+      if(kit){
+        const copy = {...kit,id:`${kit.id}-copy-${Date.now()}`,status:'Borrador',createdAt:new Date().toISOString()};
+        savedKits = [copy,...savedKits].slice(0,8);
+        renderKitHistory();
+        persistState('Media kit duplicado');
+      }
+    }
+    if(target.dataset.action === 'delete-kit'){
+      savedKits = savedKits.filter(item => item.id !== target.dataset.id);
+      renderKitHistory();
+      persistState('Media kit eliminado');
+    }
+  });
+  document.addEventListener('change', event => {
+    const target = event.target.closest('[data-kit-screen]');
+    if(!target)return;
+    const id = Number(target.dataset.kitScreen);
+    if(target.checked)kitSelected.add(id);
+    else kitSelected.delete(id);
+    renderKitPreview();
+  });
+  document.getElementById('editor-form').addEventListener('submit', event => {
+    event.preventDefault();
+    const row = rows.find(item => item.id === selectedId);
+    if(!row)return;
+    row.n = document.getElementById('edit-name').value.trim() || row.n;
+    row.b = document.getElementById('edit-zone').value.trim() || row.b;
+    row.precio = Number(document.getElementById('edit-price').value) || row.precio;
+    row.status = document.getElementById('edit-status').value;
+    row.video = document.getElementById('edit-video').value.trim();
+    row.note = document.getElementById('edit-note').value.trim();
+    document.getElementById('last-action').textContent = `Actualizada #${row.id}`;
+    updateKpis();
+    fillFilters();
+    selectRow(row.id);
+    renderKitBuilder();
+    persistState('Cambios aplicados al dashboard');
+  });
+  document.getElementById('save-btn').addEventListener('click', () => persistState('Cambios disponibles para brochure y backend'));
+  document.getElementById('export-btn').addEventListener('click', exportCsv);
+  document.getElementById('kit-save-btn').addEventListener('click', saveKit);
+  document.getElementById('settings-save').addEventListener('click', () => {
+    brand.name = document.getElementById('settings-brand').value.trim() || brand.name;
+    brand.logo = document.getElementById('settings-logo').value.trim() || brand.logo;
+    brand.whatsapp = document.getElementById('settings-whatsapp').value.trim() || brand.whatsapp;
+    applyBrand();
+    renderKitPreview();
+    persistState('Configuracion aplicada');
+  });
+}
+
+loadStoredState();
+applyBrand();
+fillFilters();
+updateKpis();
+bindEvents();
+document.getElementById('settings-brand').value = brand.name;
+document.getElementById('settings-logo').value = brand.logo;
+document.getElementById('settings-whatsapp').value = brand.whatsapp || '';
+renderKitHistory();
+renderKitBuilder();
+selectRow(selectedId);
+</script>
+</body>
+</html>

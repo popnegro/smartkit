@@ -1,5 +1,6 @@
 const CONFIG=window.APP_CONFIG||{};
 const DEFAULT_BRAND={name:'SmartKit',logo:'SK',whatsapp:'5492613871088',heroCopy:'Planifica campañas DOOH, selecciona ubicaciones digitales y genera una reserva comercial en minutos.'};
+const PUBLIC_KITS_STORAGE_KEY='smartkit-public-kits';
 const DASHBOARD_STATE=(()=>{
   try{return JSON.parse(localStorage.getItem('smartkit-dashboard-state')||'{}')||{};}
   catch{return {};}
@@ -41,6 +42,7 @@ function escapeHtml(value){
 const h=escapeHtml;
 const whatsappIcon='<svg slot="icon" class="whatsapp-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3.5a8.5 8.5 0 0 0-7.23 12.97L4 20l3.62-.74A8.5 8.5 0 1 0 12 3.5Zm0 1.8a6.7 6.7 0 0 1 5.72 10.18 6.7 6.7 0 0 1-9.45 2.12l-.3-.2-1.62.33.35-1.56-.22-.32A6.7 6.7 0 0 1 12 5.3Zm-2.44 3.5c-.2 0-.5.08-.77.37-.27.3-.9.88-.9 2.1 0 1.23.92 2.42 1.05 2.59.13.17 1.78 2.84 4.42 3.76 2.2.77 2.65.42 3.12-.03.38-.36.6-1.02.66-1.28.07-.27.04-.48-.15-.58l-1.78-.85c-.2-.1-.44-.05-.57.14l-.5.64c-.13.17-.32.2-.52.1-.42-.18-1.17-.51-1.92-1.18-.7-.62-1.18-1.4-1.32-1.63-.13-.23-.02-.39.1-.52l.37-.43c.12-.14.18-.3.27-.48.09-.18.04-.34-.03-.48l-.82-1.83c-.12-.27-.3-.4-.5-.4Z"/></svg>';
 const plusIcon='<svg slot="icon" class="whatsapp-icon plus-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg>';
+const documentIcon='<svg slot="icon" class="whatsapp-icon plus-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 4h14v16H5V4Zm2 2v12h10V6H7Zm2 2h6v2H9V8Zm0 4h6v2H9v-2Z"/></svg>';
 
 function whatsappButtonContent(label, icon=whatsappIcon){
   return `${icon}<span>${h(label)}</span>`;
@@ -54,6 +56,48 @@ function safeBackground(value){
 function safeAssetUrl(value){
   const url=String(value||'');
   return /^(assets\/|\.\/assets\/|https:\/\/)/.test(url)?url:'';
+}
+
+function kitSlug(value){
+  return String(value || 'media-kit')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')
+    .slice(0,48) || 'media-kit';
+}
+
+function storedPublicKits(){
+  try{return JSON.parse(localStorage.getItem(PUBLIC_KITS_STORAGE_KEY)||'[]')||[];}
+  catch{return [];}
+}
+
+function latestMediaKitId(){
+  const kits=storedPublicKits();
+  return kits[0]?.id || '';
+}
+
+function updateMediaKitLinks(id=latestMediaKitId()){
+  const href=id?`./mediakit.html?id=${encodeURIComponent(id)}`:'./mediakit.html';
+  document.querySelectorAll('[data-mediakit-link]').forEach(link=>{
+    link.setAttribute('href',href);
+  });
+}
+
+function screenSnapshot(s,duration){
+  return {
+    id:s.id,
+    name:s.n,
+    zone:s.b,
+    address:s.dir,
+    type:s.tipo,
+    format:s.dim,
+    resolution:s.res,
+    impactsDay:s.imp,
+    priceWeek:s.precio,
+    subtotal:Math.round(s.precio*duration.mult),
+    video:s.video||'',
+    gradient:s.g||'',
+    initials:s.e||''
+  };
 }
 
 function screenCpm(s){
@@ -168,10 +212,20 @@ function setMobileFilters(open){
 function showFeedback(message){
   const feedback=document.getElementById('mobile-feedback');
   if(!feedback)return;
+  feedback.classList.remove('is-success');
   feedback.textContent=message;
   feedback.classList.add('show');
   clearTimeout(showFeedback.timer);
   showFeedback.timer=setTimeout(()=>feedback.classList.remove('show'),1400);
+}
+
+function showGeneratedFeedback(kit){
+  const feedback=document.getElementById('mobile-feedback');
+  if(!feedback)return;
+  feedback.innerHTML=`<strong>Media kit generado</strong><span>${h(kit.screens)} pantallas · ${fmt(kit.total)}</span>`;
+  feedback.classList.add('show','is-success');
+  clearTimeout(showFeedback.timer);
+  showFeedback.timer=setTimeout(()=>feedback.classList.remove('show','is-success'),2200);
 }
 
 function sortedScreens(list){
@@ -323,7 +377,8 @@ function renderScreenCard(s){
           <div class="quote-list">${selectedList}</div>
         </details>
         <div class="quote-actions">
-          <md-filled-button class="quote-btn quote-whatsapp reserve-btn" data-action="whatsapp-quote" data-screen-id="${s.id}">${whatsappButtonContent('Reservar')}</md-filled-button>
+          <md-filled-button class="quote-btn quote-mediakit reserve-btn" data-action="generate-mediakit" data-screen-id="${s.id}">${whatsappButtonContent('Generar media kit', documentIcon)}</md-filled-button>
+          <md-filled-button class="quote-btn quote-whatsapp reserve-btn" data-action="toggle-quote" data-screen-id="${s.id}">${whatsappButtonContent(selected?'Quitar del plan':'Agregar al plan', selected?plusIcon:plusIcon)}</md-filled-button>
         </div>
       </div>
     </div>`;
@@ -464,6 +519,7 @@ function renderQuote(){
     const impacts=document.getElementById(`${panel.prefix}quote-impacts`);
     const total=document.getElementById(`${panel.prefix}quote-total`);
     const whatsapp=document.getElementById(`${panel.prefix}quote-whatsapp`);
+    const mediakit=document.getElementById(`${panel.prefix}quote-mediakit`);
     const summaryCount=document.getElementById(`${panel.prefix}quote-summary-count`);
     const summaryDetail=document.getElementById(`${panel.prefix}quote-summary-detail`);
     const status=document.getElementById(`${panel.prefix}quote-status`);
@@ -480,10 +536,15 @@ function renderQuote(){
     if(whatsapp){
       whatsapp.disabled=!hasScreens;
       whatsapp.classList.toggle('is-empty',!hasScreens);
-      whatsapp.innerHTML=hasScreens?whatsappButtonContent('Reservar'):whatsappButtonContent('Agrega pantallas', plusIcon);
+      whatsapp.innerHTML=hasScreens?whatsappButtonContent('Contactar'):whatsappButtonContent('Contactar', plusIcon);
+    }
+    if(mediakit){
+      mediakit.disabled=!hasScreens;
+      mediakit.classList.toggle('is-empty',!hasScreens);
+      mediakit.innerHTML=hasScreens?whatsappButtonContent('Generar media kit', documentIcon):whatsappButtonContent('Generar media kit', documentIcon);
     }
     if(status)status.textContent=hasScreens?'Listo':'Vacío';
-    if(hint)hint.textContent=hasScreens?'Se abrirá WhatsApp con el resumen de pantallas, duración e inversión.':'Agrega una pantalla al cotizador para activar la reserva por WhatsApp.';
+    if(hint)hint.textContent=hasScreens?'Genera una propuesta con snapshot, inversión, impactos y condiciones; luego puedes guardarla como PDF o contactar por WhatsApp.':'Agrega una pantalla al cotizador para generar una propuesta compartible.';
     if(quotePanel)quotePanel.classList.toggle('has-selection',hasScreens);
     if(summaryCount)summaryCount.textContent=hasScreens?`${q.screens.length} ${q.screens.length===1?'pantalla':'pantallas'} · ${Math.round(q.impacts/1000).toLocaleString('es-AR')}k impactos · ${fmt(q.total)}`:'0 pantallas · Sin plan armado';
     if(summaryDetail)summaryDetail.textContent=hasScreens?`${q.duration.l} · disponibilidad a confirmar`:'Agrega pantallas para estimar inversión';
@@ -493,6 +554,46 @@ function renderQuote(){
       labelTarget.textContent=label;
     }
   });
+}
+
+function buildMediaKitFromQuote(){
+  const q=quoteTotals();
+  if(!q.screens.length)return null;
+  const createdAt=new Date();
+  const validUntil=new Date(createdAt);
+  validUntil.setDate(validUntil.getDate()+15);
+  const client=`Propuesta ${BRAND.name}`;
+  return {
+    id:`kit-${kitSlug(client)}-${createdAt.getTime()}`,
+    client,
+    contact:'Contacto a confirmar',
+    duration:q.duration.l,
+    durationValue:q.duration.v,
+    days:q.duration.days,
+    screenIds:q.screens.map(s=>s.id),
+    screenSnapshots:q.screens.map(s=>screenSnapshot(s,q.duration)),
+    screens:q.screens.length,
+    total:q.total,
+    impacts:q.impacts,
+    cpm:q.impacts?Math.round(q.total/q.impacts*1000):0,
+    status:'Borrador',
+    createdAt:createdAt.toISOString(),
+    validUntil:validUntil.toISOString().slice(0,10),
+    validity:'15 dias',
+    terms:'Inicio de campaña sujeto a disponibilidad y aprobación de piezas. Valores expresados en ARS. La reserva se confirma con orden de compra y material aprobado.',
+    brand:{name:BRAND.name,logo:BRAND.logo,whatsapp:BRAND.whatsapp}
+  };
+}
+
+function generateMediaKit(id=null){
+  ensureQuoteScreen(id);
+  const kit=buildMediaKitFromQuote();
+  if(!kit)return;
+  const kits=[kit,...storedPublicKits().filter(item=>item.id!==kit.id)].slice(0,12);
+  localStorage.setItem(PUBLIC_KITS_STORAGE_KEY,JSON.stringify(kits));
+  updateMediaKitLinks(kit.id);
+  showGeneratedFeedback(kit);
+  window.open(`./mediakit.html?id=${encodeURIComponent(kit.id)}`,'_blank','noopener');
 }
 
 function toggleQuoteScreen(id){
@@ -569,7 +670,7 @@ function applyTheme(){
 function bindEvents(){
   document.addEventListener('click',event=>{
     const viewButton=event.target.closest('[data-view]');
-    if(viewButton){
+    if(viewButton&&viewButton instanceof HTMLButtonElement){
       setView(viewButton.dataset.view);
       return;
     }
@@ -581,6 +682,7 @@ function bindEvents(){
     }
     const id=Number(actionTarget.dataset.screenId);
     const action=actionTarget.dataset.action;
+    if(action==='generate-mediakit')generateMediaKit(id);
     if(action==='whatsapp-quote')requestWhatsappQuote(id, actionTarget);
     if(action==='toggle-quote')toggleQuoteScreen(id);
     if(action==='show-map')showOnMap(id, actionTarget);
@@ -644,8 +746,10 @@ function bindEvents(){
 window.addEventListener('DOMContentLoaded',()=>{
   applyTheme();
   applyBrand();
+  updateMediaKitLinks();
   bindEvents();
   initMap();
-  setView('brochure',false);
+  const initialView=new URLSearchParams(window.location.search).get('view')==='map'?'map':'brochure';
+  setView(initialView,false);
   renderBrochure();
 });

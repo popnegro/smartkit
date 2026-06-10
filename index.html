@@ -24,8 +24,9 @@
     <nav class="nav" id="primary-nav" aria-label="Vistas principales">
       <button id="btn-brochure" class="on" type="button" aria-current="page" data-view="brochure">Brochure</button>
       <button id="btn-map" type="button" data-view="map">Mapa</button>
-      <a class="dashboard-link" href="./dashboard.html">Gestor</a>
+      <a class="nav-link" href="./mediakit.html" data-mediakit-link>Media Kit</a>
     </nav>
+    <a class="user-access-link" href="./dashboard.html">Acceso Usuarios</a>
   </header>
 
   <main class="main" aria-label="Experiencia comercial de pantallas">
@@ -93,11 +94,15 @@
               </div>
             </div>
             <div class="quote-actions">
+              <md-filled-button id="quote-mediakit" class="quote-btn quote-mediakit is-empty" data-action="generate-mediakit" disabled>
+                <svg slot="icon" class="whatsapp-icon plus-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 4h14v16H5V4Zm2 2v12h10V6H7Zm2 2h6v2H9V8Zm0 4h6v2H9v-2Z"/></svg>
+                <span>Generar media kit</span>
+              </md-filled-button>
               <md-filled-button id="quote-whatsapp" class="quote-btn quote-whatsapp is-empty" data-action="whatsapp-quote" disabled>
                 <svg slot="icon" class="whatsapp-icon plus-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg>
-                <span>Agrega pantallas</span>
+                <span>Contactar</span>
               </md-filled-button>
-              <p class="quote-action-hint" id="quote-action-hint">Agrega una pantalla al cotizador para activar la reserva por WhatsApp.</p>
+              <p class="quote-action-hint" id="quote-action-hint">Agrega una pantalla al cotizador para generar una propuesta compartible.</p>
             </div>
           </aside>
 
@@ -115,6 +120,9 @@
     <button class="mobile-nav-destination" type="button" data-view="map">
       <span>Mapa</span>
     </button>
+    <a class="mobile-nav-destination" href="./mediakit.html" data-mediakit-link>
+      <span>Media Kit</span>
+    </a>
     <button class="mobile-quote-toggle" id="mobile-quote-toggle" type="button" aria-controls="quote-panel" aria-expanded="false" data-action="toggle-mobile-quote">
       <span>Cotizador</span>
     </button>

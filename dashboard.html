@@ -99,6 +99,7 @@ tr.selected{background:#eef8ff}
 .kit-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .kit-link{color:var(--primary-strong);font-size:12px;font-weight:950;text-decoration:none}
 .kit-link:hover{text-decoration:underline}
+.kit-actions .icon-btn{min-width:0;height:32px;border-radius:8px;font-size:12px}
 .chart-list{display:grid;gap:12px;padding:16px}
 .chart-row{display:grid;gap:5px}
 .chart-meta{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:13px}
@@ -380,6 +381,7 @@ const DASHBOARD_STORAGE_KEY = 'smartkit-dashboard-state';
 const PUBLIC_KITS_STORAGE_KEY = 'smartkit-public-kits';
 const fmt = value => '$' + Math.round(Number(value) || 0).toLocaleString('es-AR');
 const imp = screen => parseInt(String(screen.imp || '0').replace(/\./g,''),10) || 0;
+const h = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 let selectedId = (config.inventory?.activeScreenIds || [SCREENS[0]?.id])[0];
 let rows = SCREENS.map(screen => ({
   ...screen,
@@ -389,8 +391,8 @@ let rows = SCREENS.map(screen => ({
 let currentSection = 'inventory';
 let kitSelected = new Set((config.inventory?.activeScreenIds || []).slice(0,3));
 let savedKits = [
-  {id:'demo-trapiche',client:'Bodega Trapiche',screens:5,total:1570000,status:'Enviado',screenIds:[1,2,3,4,5],duration:'1 semana'},
-  {id:'demo-toyota',client:'Toyota Mendoza',screens:8,total:1825200,status:'Aprobado',screenIds:[1,2,3,4,5,6,7,10],duration:'1 semana'}
+  {id:'demo-trapiche',client:'Bodega Trapiche',screens:5,total:1570000,status:'Enviado',screenIds:[1,2,3,4,5],duration:'1 semana',createdAt:'2026-06-10T00:00:00.000Z'},
+  {id:'demo-toyota',client:'Toyota Mendoza',screens:8,total:1825200,status:'Aprobado',screenIds:[1,2,3,4,5,6,7,10],duration:'1 semana',createdAt:'2026-06-10T00:00:00.000Z'}
 ];
 
 function loadStoredState(){
@@ -429,6 +431,76 @@ function persistState(message='Cambios guardados localmente'){
   localStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(state));
   localStorage.setItem(PUBLIC_KITS_STORAGE_KEY, JSON.stringify(savedKits));
   showToast(message);
+}
+
+function kitSlug(value){
+  return String(value || 'media-kit')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')
+    .slice(0,48) || 'media-kit';
+}
+
+function kitPublicUrl(kit){
+  return `${location.origin}${location.pathname.replace(/dashboard\.html?$/,'')}mediakit.html?id=${encodeURIComponent(kit.id)}`;
+}
+
+function screenSnapshot(row,duration){
+  return {
+    id: row.id,
+    name: row.n,
+    zone: row.b,
+    address: row.dir,
+    type: row.tipo,
+    format: row.dim,
+    resolution: row.res,
+    impactsDay: row.imp,
+    priceWeek: row.precio,
+    subtotal: Math.round(row.precio * duration.mult),
+    video: row.video || '',
+    gradient: row.g || '',
+    initials: row.e || ''
+  };
+}
+
+function buildKitPayload(status='Borrador'){
+  const duration = selectedDuration();
+  const screens = kitScreens();
+  const client = document.getElementById('kit-client').value.trim() || 'Cliente sin nombre';
+  const contact = document.getElementById('kit-contact').value.trim() || 'Contacto a confirmar';
+  const total = screens.reduce((sum,row)=>sum + row.precio * duration.mult,0);
+  const impacts = screens.reduce((sum,row)=>sum + imp(row) * duration.days,0);
+  const createdAt = new Date();
+  const validUntil = new Date(createdAt);
+  validUntil.setDate(validUntil.getDate() + 15);
+  return {
+    id: `kit-${kitSlug(client)}-${createdAt.getTime()}`,
+    client,
+    contact,
+    duration: duration.l,
+    durationValue: duration.v,
+    days: duration.days,
+    screenIds: screens.map(row => row.id),
+    screenSnapshots: screens.map(row => screenSnapshot(row,duration)),
+    screens: screens.length,
+    total,
+    impacts,
+    cpm: impacts ? Math.round(total / impacts * 1000) : 0,
+    status,
+    createdAt: createdAt.toISOString(),
+    validUntil: validUntil.toISOString().slice(0,10),
+    terms: document.getElementById('settings-terms').value.trim(),
+    validity: document.getElementById('settings-validity').value,
+    brand:{...brand}
+  };
+}
+
+function downloadKitJson(kit){
+  const blob = new Blob([JSON.stringify(kit,null,2)], {type:'application/json;charset=utf-8'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `${kit.id}.json`;
+  link.click();
+  URL.revokeObjectURL(link.href);
 }
 
 function applyBrand(){
@@ -487,18 +559,18 @@ function renderTable(){
     <tr class="${row.id === selectedId ? 'selected' : ''}">
       <td>
         <div class="screen-cell">
-          <span class="screen-icon">${row.e}</span>
-          <div><strong>${row.n}</strong><span>${row.dir} · ${row.b}</span></div>
+          <span class="screen-icon">${h(row.e)}</span>
+          <div><strong>${h(row.n)}</strong><span>${h(row.dir)} · ${h(row.b)}</span></div>
         </div>
       </td>
-      <td><span class="badge">${row.tipo}</span></td>
-      <td>${row.imp}</td>
+      <td><span class="badge">${h(row.tipo)}</span></td>
+      <td>${h(row.imp)}</td>
       <td><strong>${fmt(row.precio)}</strong></td>
       <td><span class="badge ${row.status === 'Activo' ? 'active' : 'paused'}">${row.status}</span></td>
       <td>
         <div class="row-actions">
-          <button class="icon-btn" type="button" data-action="select" data-id="${row.id}" aria-label="Editar ${row.n}">Editar</button>
-          <button class="icon-btn ${row.status === 'Activo' ? 'pause' : 'publish'}" type="button" data-action="toggle-status" data-id="${row.id}" aria-label="${row.status === 'Activo' ? 'Pausar' : 'Publicar en brochure'} ${row.n}">${row.status === 'Activo' ? 'Pausar' : 'Publicar'}</button>
+          <button class="icon-btn" type="button" data-action="select" data-id="${row.id}" aria-label="Editar ${h(row.n)}">Editar</button>
+          <button class="icon-btn ${row.status === 'Activo' ? 'pause' : 'publish'}" type="button" data-action="toggle-status" data-id="${row.id}" aria-label="${row.status === 'Activo' ? 'Pausar' : 'Publicar en brochure'} ${h(row.n)}">${row.status === 'Activo' ? 'Pausar' : 'Publicar'}</button>
         </div>
       </td>
     </tr>
@@ -611,9 +683,9 @@ function renderKitBuilder(){
   document.getElementById('kit-screen-list').innerHTML = visible.map(row => `
     <label class="kit-screen">
       <input type="checkbox" data-kit-screen="${row.id}" ${kitSelected.has(row.id)?'checked':''}>
-      <span class="screen-icon">${row.e}</span>
-      <span><strong>${row.n}</strong><span>${row.b} · ${row.imp} imp/dia · ${fmt(row.precio)}/sem</span></span>
-      <span class="badge">${row.tipo}</span>
+      <span class="screen-icon">${h(row.e)}</span>
+      <span><strong>${h(row.n)}</strong><span>${h(row.b)} · ${h(row.imp)} imp/dia · ${fmt(row.precio)}/sem</span></span>
+      <span class="badge">${h(row.tipo)}</span>
     </label>
   `).join('');
   renderKitPreview();
@@ -630,8 +702,8 @@ function renderKitPreview(){
   document.getElementById('kit-preview').innerHTML = `
     <div class="kit-doc-hero">
       <span class="eyebrow" style="color:#bae6fd">Media Kit</span>
-      <h2>${brand.name} para ${client}</h2>
-      <p>${document.getElementById('kit-contact').value.trim() || 'Contacto a confirmar'} · ${duration.l}</p>
+      <h2>${h(brand.name)} para ${h(client)}</h2>
+      <p>${h(document.getElementById('kit-contact').value.trim() || 'Contacto a confirmar')} · ${h(duration.l)}</p>
     </div>
     <div class="kit-doc-body">
       <div class="kit-summary">
@@ -643,7 +715,7 @@ function renderKitPreview(){
       <div class="kit-list">
         ${screens.length?screens.map(row=>`
           <div class="kit-row">
-            <span><strong>${row.e} ${row.n}</strong><br><small>${row.b} · ${row.dim} · ${row.res}</small></span>
+            <span><strong>${h(row.e)} ${h(row.n)}</strong><br><small>${h(row.b)} · ${h(row.dim)} · ${h(row.res)}</small></span>
             <strong>${fmt(row.precio * duration.mult)}</strong>
           </div>`).join(''):'<div class="kit-row"><span>Selecciona pantallas para generar el resumen comercial.</span></div>'}
       </div>
@@ -657,25 +729,7 @@ function saveKit(){
     showToast('Selecciona al menos una pantalla');
     return;
   }
-  const duration = selectedDuration();
-  const client = document.getElementById('kit-client').value.trim() || 'Cliente sin nombre';
-  const contact = document.getElementById('kit-contact').value.trim() || 'Contacto a confirmar';
-  const total = screens.reduce((sum,row)=>sum + row.precio * duration.mult,0);
-  const impacts = screens.reduce((sum,row)=>sum + imp(row) * duration.days,0);
-  const kit = {
-    id: `kit-${Date.now()}`,
-    client,
-    contact,
-    duration: duration.l,
-    durationValue: duration.v,
-    screenIds: screens.map(row => row.id),
-    screens: screens.length,
-    total,
-    impacts,
-    status:'Borrador',
-    createdAt: new Date().toISOString(),
-    brand:{...brand}
-  };
+  const kit = buildKitPayload('Borrador');
   savedKits = [kit,...savedKits].slice(0,8);
   renderKitHistory();
   persistState('Media kit guardado');
@@ -684,13 +738,17 @@ function saveKit(){
 function renderKitHistory(){
   document.getElementById('kit-history').innerHTML = savedKits.map(kit => `
     <div class="kit-row">
-      <span><strong>${kit.client}</strong><br><small>${kit.screens} pantallas · ${kit.status}</small></span>
+      <span><strong>${h(kit.client)}</strong><br><small>${Number(kit.screens)||0} pantallas · ${h(kit.status || 'Borrador')}</small></span>
       <span class="kit-actions">
         <strong>${fmt(kit.total)}</strong>
         <a class="kit-link" href="./mediakit.html?id=${kit.id}" target="_blank" rel="noopener">Ver público</a>
+        <button class="icon-btn" type="button" data-action="copy-kit" data-id="${h(kit.id)}">Copiar</button>
+        <button class="icon-btn" type="button" data-action="download-kit" data-id="${h(kit.id)}">JSON</button>
+        <button class="icon-btn" type="button" data-action="duplicate-kit" data-id="${h(kit.id)}">Duplicar</button>
+        <button class="icon-btn pause" type="button" data-action="delete-kit" data-id="${h(kit.id)}">Eliminar</button>
       </span>
     </div>
-  `).join('');
+  `).join('') || '<div class="kit-row"><span>No hay kits guardados.</span></div>';
 }
 
 function renderMetrics(){
@@ -731,6 +789,28 @@ function bindEvents(){
     if(!target)return;
     if(target.dataset.action === 'select')selectRow(target.dataset.id);
     if(target.dataset.action === 'toggle-status')togglePublication(target.dataset.id);
+    if(target.dataset.action === 'copy-kit'){
+      const kit = savedKits.find(item => item.id === target.dataset.id);
+      if(kit)navigator.clipboard?.writeText(kitPublicUrl(kit)).then(()=>showToast('Link copiado')).catch(()=>showToast('No se pudo copiar'));
+    }
+    if(target.dataset.action === 'download-kit'){
+      const kit = savedKits.find(item => item.id === target.dataset.id);
+      if(kit){downloadKitJson(kit);showToast('JSON descargado');}
+    }
+    if(target.dataset.action === 'duplicate-kit'){
+      const kit = savedKits.find(item => item.id === target.dataset.id);
+      if(kit){
+        const copy = {...kit,id:`${kit.id}-copy-${Date.now()}`,status:'Borrador',createdAt:new Date().toISOString()};
+        savedKits = [copy,...savedKits].slice(0,8);
+        renderKitHistory();
+        persistState('Media kit duplicado');
+      }
+    }
+    if(target.dataset.action === 'delete-kit'){
+      savedKits = savedKits.filter(item => item.id !== target.dataset.id);
+      renderKitHistory();
+      persistState('Media kit eliminado');
+    }
   });
   document.addEventListener('change', event => {
     const target = event.target.closest('[data-kit-screen]');
