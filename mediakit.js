@@ -33,7 +33,47 @@ function renderEmpty() {
     </section>`;
 }
 
-function renderKit(kit) {
+function shortHash(value = '') {
+  return value ? `${value.slice(0, 16)}...${value.slice(-12)}` : 'No disponible';
+}
+
+function renderSignature(signature) {
+  const labels = {
+    valid: ['Firma verificada', 'Autenticidad e integridad confirmadas para el contenido de esta propuesta.'],
+    invalid: ['Sin firma digital', 'La propuesta incluye datos de integridad, pero no se pudo verificar con la clave actual.'],
+    unsigned: ['Sin firma digital', 'Este documento no incluye firma verificable.']
+  };
+  const [title, copy] = labels[signature.state] || labels.unsigned;
+  const signedAt = signature.signedAt ? new Date(signature.signedAt).toLocaleString('es-AR') : 'No informado';
+  return `
+    <section class="mk-section mk-signature" data-signature-state="${h(signature.state)}">
+      <div class="mk-section-head">
+        <div>
+          <span class="quote-eyebrow">Autenticidad e integridad</span>
+          <h2>Firma digital</h2>
+        </div>
+        <span class="mk-signature-badge">${h(title)}</span>
+      </div>
+      <div class="mk-signature-grid">
+        <div class="mk-condition-box">
+          <h3>${h(title)}</h3>
+          <p>${h(copy)}</p>
+        </div>
+        <details class="mk-signature-details">
+          <summary>Ver datos técnicos</summary>
+          <dl class="mk-signature-data">
+            <div><dt>Firmante</dt><dd>${h(signature.signer || 'SmartKit')}</dd></div>
+            <div><dt>Algoritmo</dt><dd>${h(signature.algorithm || 'SHA-256')}</dd></div>
+            <div><dt>Fecha de firma</dt><dd>${h(signedAt)}</dd></div>
+            <div><dt>Huella SHA-256</dt><dd>${h(shortHash(signature.hash))}</dd></div>
+            <div><dt>Firma</dt><dd>${h(shortHash(signature.value))}</dd></div>
+          </dl>
+        </details>
+      </div>
+    </section>`;
+}
+
+async function renderKit(kit) {
   const brand = kit.brand || config.brand || Shared.DEFAULT_BRAND;
   const screens = kitScreens(kit);
   const total = Number(kit.total) || 0;
@@ -43,6 +83,10 @@ function renderKit(kit) {
   const whatsappHref = phone ? `https://wa.me/${phone}?text=${whatsappMessage}` : './index.html';
   const date = kit.createdAt ? new Date(kit.createdAt).toLocaleDateString('es-AR') : 'Fecha a confirmar';
   const validUntil = kit.validUntil ? new Date(`${kit.validUntil}T00:00:00`).toLocaleDateString('es-AR') : (kit.validity || '15 dias');
+  const signature = await Shared.verifyMediaKitSignature(kit, {
+    signer: config.signature?.signer || brand.name,
+    secret: config.signature?.secret || ''
+  });
 
   document.title = `${brand.name || 'SmartKit'} - Media Kit ${kit.client || ''}`;
   Shared.applyBrandHeader(brand);
@@ -113,7 +157,8 @@ function renderKit(kit) {
           </div>
         </div>
       </div>
-    </section>`;
+    </section>
+    ${renderSignature(signature)}`;
 }
 
 (async function init() {
@@ -122,6 +167,6 @@ function renderKit(kit) {
   const kits = Shared.storedPublicKits();
   const kit = remoteKit || (id ? kits.find(item => item.id === id) : null);
   if (kit?.id) Shared.updateMediaKitLinks(kit.id);
-  if (kit) renderKit(kit);
+  if (kit) await renderKit(kit);
   else renderEmpty();
 })();
