@@ -73,6 +73,69 @@ const SmartKitShared = (() => {
     };
   }
 
+  function canonicalize(value) {
+    if (Array.isArray(value)) return value.map(canonicalize);
+    if (value && typeof value === 'object') {
+      return Object.keys(value).sort().reduce((acc, key) => {
+        if (key !== 'digitalSignature') acc[key] = canonicalize(value[key]);
+        return acc;
+      }, {});
+    }
+    return value;
+  }
+
+  async function sha256Hex(message) {
+    const subtle = globalThis.crypto?.subtle;
+    if (!subtle) return '';
+    const data = new TextEncoder().encode(message);
+    const digest = await subtle.digest('SHA-256', data);
+    return [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function hmacHex(message, secret) {
+    const subtle = globalThis.crypto?.subtle;
+    if (!subtle) return '';
+    const key = await subtle.importKey(
+      'raw',
+      new TextEncoder().encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+    const signature = await subtle.sign('HMAC', key, new TextEncoder().encode(message));
+    return [...new Uint8Array(signature)].map(byte => byte.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function signMediaKit(kit, options = {}) {
+    if (!globalThis.crypto?.subtle) return null;
+    const signer = options.signer || kit.brand?.name || DEFAULT_BRAND.name;
+    const payload = JSON.stringify(canonicalize(kit));
+    const secret = options.secret || signer;
+    return {
+      algorithm: 'HMAC-SHA-256',
+      signer,
+      hash: await sha256Hex(payload),
+      value: await hmacHex(payload, secret),
+      signedAt: new Date().toISOString()
+    };
+  }
+
+  async function verifyMediaKitSignature(kit, options = {}) {
+    const signature = kit?.digitalSignature;
+    if (!signature?.value || !globalThis.crypto?.subtle) return { state: 'unsigned' };
+    const signer = signature.signer || options.signer || kit.brand?.name || DEFAULT_BRAND.name;
+    const payload = JSON.stringify(canonicalize(kit));
+    const secret = options.secret || signer;
+    const hash = await sha256Hex(payload);
+    const value = await hmacHex(payload, secret);
+    return {
+      ...signature,
+      signer,
+      hash,
+      state: hash === signature.hash && value === signature.value ? 'valid' : 'invalid'
+    };
+  }
+
   function mediaHtml(screen, className = 'media', options = {}) {
     const h = escapeHtml;
     const videoUrl = safeAssetUrl(screen.video);
@@ -96,8 +159,10 @@ const SmartKitShared = (() => {
     safeAssetUrl,
     safeBackground,
     screenSnapshot,
+    signMediaKit,
     storedPublicKits,
-    updateMediaKitLinks
+    updateMediaKitLinks,
+    verifyMediaKitSignature
   };
 })();
 
