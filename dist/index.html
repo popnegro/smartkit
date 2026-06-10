@@ -26,7 +26,11 @@
       <button id="btn-map" type="button" data-view="map">Mapa</button>
       <a class="nav-link" href="./mediakit.html" data-mediakit-link>Media Kit</a>
     </nav>
-    <a class="user-access-link" href="./dashboard.html">Acceso Usuarios</a>
+    <div class="header-actions">
+      <button class="mobile-quote-toggle" id="mobile-quote-toggle" type="button" aria-controls="quote-panel" aria-expanded="false" data-action="toggle-mobile-quote">
+        <span>Cotizador</span>
+      </button>
+    </div>
   </header>
 
   <main class="main" aria-label="Experiencia comercial de pantallas">
@@ -123,14 +127,12 @@
     <a class="mobile-nav-destination" href="./mediakit.html" data-mediakit-link>
       <span>Media Kit</span>
     </a>
-    <button class="mobile-quote-toggle" id="mobile-quote-toggle" type="button" aria-controls="quote-panel" aria-expanded="false" data-action="toggle-mobile-quote">
-      <span>Cotizador</span>
-    </button>
   </nav>
 </div>
 
 <script src="./config.js"></script>
 <script src="./screens-data.js"></script>
+<script src="./shared.js"></script>
 <script src="./app.js"></script>
 </body>
 </html>

@@ -1,0 +1,27 @@
+{
+  "name": "smartkit",
+  "version": "1.0.0",
+  "description": "Aplicacion estatica para publicar un catalogo de pantallas DOOH, gestionarlas desde un dashboard local y generar media kits.",
+  "main": "app.js",
+  "directories": {
+    "test": "tests"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0"
+  },
+  "scripts": {
+    "test": "playwright test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/popnegro/smartkit.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/popnegro/smartkit/issues"
+  },
+  "homepage": "https://github.com/popnegro/smartkit#readme"
+}

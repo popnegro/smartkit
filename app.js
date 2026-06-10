@@ -1,6 +1,7 @@
+const Shared=window.SmartKitShared;
 const CONFIG=window.APP_CONFIG||{};
-const DEFAULT_BRAND={name:'SmartKit',logo:'SK',whatsapp:'5492613871088',heroCopy:'Planifica campañas DOOH, selecciona ubicaciones digitales y genera una reserva comercial en minutos.'};
-const PUBLIC_KITS_STORAGE_KEY='smartkit-public-kits';
+const DEFAULT_BRAND=Shared.DEFAULT_BRAND;
+const PUBLIC_KITS_STORAGE_KEY=Shared.PUBLIC_KITS_STORAGE_KEY;
 const DASHBOARD_STATE=(()=>{
   try{return JSON.parse(localStorage.getItem('smartkit-dashboard-state')||'{}')||{};}
   catch{return {};}
@@ -20,7 +21,7 @@ let map, activeZone='Todos', activeSort='recommended', markers={}, selectedScree
 const STORED_ACTIVE_SCREEN_IDS=Array.isArray(DASHBOARD_STATE.rows)?STORED_ROWS.filter(row=>row.status==='Activo').map(row=>row.id):null;
 const ACTIVE_SCREEN_IDS = STORED_ACTIVE_SCREEN_IDS || (Array.isArray(CONFIG.inventory?.activeScreenIds)&&CONFIG.inventory.activeScreenIds.length?CONFIG.inventory.activeScreenIds:DEFAULT_ACTIVE_SCREEN_IDS);
 const ACTIVE_SCREENS = ACTIVE_SCREEN_IDS.map(id=>SOURCE_SCREENS.find(s=>s.id===id)).filter(Boolean);
-const fmt=n=>'$'+Math.round(n).toLocaleString('es-AR');
+const fmt=Shared.formatMoney;
 const zones=['Todos',...new Set(ACTIVE_SCREENS.map(s=>s.b))];
 const activeMetrics=(()=>{
   const totalReach=ACTIVE_SCREENS.reduce((acc,s)=>acc+impNum(s),0);
@@ -29,15 +30,7 @@ const activeMetrics=(()=>{
 const whatsappPhone=BRAND.whatsapp;
 const prefersReducedMotion=()=>window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
-function escapeHtml(value){
-  return String(value??'').replace(/[&<>"']/g, char=>({
-    '&':'&amp;',
-    '<':'&lt;',
-    '>':'&gt;',
-    '"':'&quot;',
-    "'":'&#39;'
-  }[char]));
-}
+const escapeHtml=Shared.escapeHtml;
 
 const h=escapeHtml;
 const whatsappIcon='<svg slot="icon" class="whatsapp-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3.5a8.5 8.5 0 0 0-7.23 12.97L4 20l3.62-.74A8.5 8.5 0 1 0 12 3.5Zm0 1.8a6.7 6.7 0 0 1 5.72 10.18 6.7 6.7 0 0 1-9.45 2.12l-.3-.2-1.62.33.35-1.56-.22-.32A6.7 6.7 0 0 1 12 5.3Zm-2.44 3.5c-.2 0-.5.08-.77.37-.27.3-.9.88-.9 2.1 0 1.23.92 2.42 1.05 2.59.13.17 1.78 2.84 4.42 3.76 2.2.77 2.65.42 3.12-.03.38-.36.6-1.02.66-1.28.07-.27.04-.48-.15-.58l-1.78-.85c-.2-.1-.44-.05-.57.14l-.5.64c-.13.17-.32.2-.52.1-.42-.18-1.17-.51-1.92-1.18-.7-.62-1.18-1.4-1.32-1.63-.13-.23-.02-.39.1-.52l.37-.43c.12-.14.18-.3.27-.48.09-.18.04-.34-.03-.48l-.82-1.83c-.12-.27-.3-.4-.5-.4Z"/></svg>';
@@ -49,13 +42,11 @@ function whatsappButtonContent(label, icon=whatsappIcon){
 }
 
 function safeBackground(value){
-  const bg=String(value||'');
-  return bg.startsWith('linear-gradient(')?bg:'';
+  return Shared.safeBackground(value);
 }
 
 function safeAssetUrl(value){
-  const url=String(value||'');
-  return /^(assets\/|\.\/assets\/|https:\/\/)/.test(url)?url:'';
+  return Shared.safeAssetUrl(value);
 }
 
 function kitSlug(value){
@@ -65,39 +56,18 @@ function kitSlug(value){
     .slice(0,48) || 'media-kit';
 }
 
-function storedPublicKits(){
-  try{return JSON.parse(localStorage.getItem(PUBLIC_KITS_STORAGE_KEY)||'[]')||[];}
-  catch{return [];}
-}
+const storedPublicKits=Shared.storedPublicKits;
 
 function latestMediaKitId(){
-  const kits=storedPublicKits();
-  return kits[0]?.id || '';
+  return Shared.latestMediaKitId();
 }
 
 function updateMediaKitLinks(id=latestMediaKitId()){
-  const href=id?`./mediakit.html?id=${encodeURIComponent(id)}`:'./mediakit.html';
-  document.querySelectorAll('[data-mediakit-link]').forEach(link=>{
-    link.setAttribute('href',href);
-  });
+  Shared.updateMediaKitLinks(id);
 }
 
 function screenSnapshot(s,duration){
-  return {
-    id:s.id,
-    name:s.n,
-    zone:s.b,
-    address:s.dir,
-    type:s.tipo,
-    format:s.dim,
-    resolution:s.res,
-    impactsDay:s.imp,
-    priceWeek:s.precio,
-    subtotal:Math.round(s.precio*duration.mult),
-    video:s.video||'',
-    gradient:s.g||'',
-    initials:s.e||''
-  };
+  return Shared.screenSnapshot(s,duration);
 }
 
 function screenCpm(s){
@@ -648,8 +618,7 @@ function showOnMap(id, trigger=document.activeElement){
 
 function applyBrand(){
   document.title=BRAND.name+' - Brochure y Mapa';
-  document.getElementById('brand-logo').textContent=BRAND.logo;
-  document.getElementById('brand-name').textContent=BRAND.name;
+  Shared.applyBrandHeader(BRAND);
   document.getElementById('hero-title').textContent=BRAND.name;
   document.getElementById('hero-copy').textContent=BRAND.heroCopy;
 }
