@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SmartKit - Dashboard de Gestión</title>
+<title>SmartKit - Dashboard de Gestion</title>
 <style>
 :root{--primary:#0369a1;--primary-strong:#075985;--success:#166534;--bg:#f6f8fb;--panel:#fff;--panel-soft:#f8fafc;--text:#0f172a;--muted:#475569;--line:#d9e2ec;--warning:#92400e;--danger:#991b1b;--radius:12px;--shadow:0 1px 2px rgba(15,23,42,.08),0 8px 24px rgba(15,23,42,.06)}
 *{box-sizing:border-box}
@@ -45,30 +45,16 @@ h2{font-size:18px;line-height:1.2;margin-bottom:0}
 .panel-pad{padding:12px}
 .section-pad{padding:16px}
 .filters{display:grid;grid-template-columns:1.2fr repeat(3,minmax(130px,.55fr));gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--panel-soft)}
-.filter-chips{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--line);background:#fff}
-.filter-chips[hidden]{display:none!important}
-.filter-chip{display:inline-flex;align-items:center;gap:6px;min-height:30px;border:1px solid #bae6fd;border-radius:999px;background:#eef8ff;color:var(--primary-strong);font-size:12px;font-weight:900;padding:0 6px 0 10px}
-.filter-chip button{min-height:22px;border:0;border-radius:999px;background:#fff;color:var(--primary-strong);font-size:12px;font-weight:950;padding:0 8px}
-.bulk-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--line);background:#fff}
-.bulk-controls,.bulk-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.bulk-controls label{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;font-weight:900}
-.bulk-controls input{width:18px;height:18px;accent-color:var(--primary-strong)}
-.bulk-count{color:var(--muted);font-size:13px;font-weight:900}
 .field{display:grid;gap:6px}
 .field label{color:var(--muted);font-size:11px;font-weight:900;text-transform:uppercase}
 .field input,.field select,.field textarea{width:100%;min-height:42px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--text);padding:8px 10px}
-.field.error input,.field.error select,.field.error textarea{border-color:#fca5a5;background:#fff7f7}
-.field-error{display:none;color:var(--danger);font-size:12px;font-weight:800}
-.field.error .field-error{display:block}
 .field textarea{min-height:84px;resize:vertical}
 .table-wrap{overflow:auto}
-.mobile-screen-cards{display:none}
 table{width:100%;border-collapse:collapse;min-width:820px}
 th,td{padding:12px 16px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
 th{color:var(--muted);font-size:11px;font-weight:950;text-transform:uppercase;background:#fff;position:sticky;top:0;z-index:1}
 td{font-size:14px}
 tr.selected{background:#eef8ff}
-tr[data-row-id]{cursor:pointer}
 .screen-cell{display:flex;align-items:center;gap:10px;min-width:230px}
 .screen-icon{width:38px;height:38px;border-radius:10px;background:#e0f2fe;display:grid;place-items:center;font-size:19px}
 .screen-cell strong{display:block}
@@ -95,9 +81,6 @@ tr[data-row-id]{cursor:pointer}
 .editor{display:grid;gap:10px}
 .status-line{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);border-radius:12px;background:var(--panel-soft);padding:10px 12px;color:var(--muted);font-size:13px}
 .status-line strong{color:var(--text)}
-.save-state{display:inline-flex;align-items:center;min-height:28px;border:1px solid var(--line);border-radius:999px;background:#f8fafc;color:var(--muted);font-size:12px;font-weight:900;padding:0 10px;white-space:nowrap}
-.save-state.dirty{background:#fef3c7;border-color:#fcd34d;color:#92400e}
-.save-state.saved{background:#dcfce7;border-color:#86efac;color:#166534}
 .section[hidden]{display:none!important}
 .kit-layout{display:grid;grid-template-columns:380px minmax(0,1fr);gap:16px;align-items:start}
 .kit-screen-list{display:grid;gap:8px;max-height:430px;overflow:auto;padding-right:4px}
@@ -106,10 +89,6 @@ tr[data-row-id]{cursor:pointer}
 .kit-screen strong{display:block;font-size:14px}
 .kit-screen span{display:block;color:var(--muted);font-size:12px}
 .kit-preview{display:grid;gap:12px;padding:16px}
-.kit-total-bar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;border:1px solid var(--line);border-radius:12px;background:var(--panel-soft);padding:10px}
-.kit-total-bar div{display:grid;gap:2px}
-.kit-total-bar span{color:var(--muted);font-size:11px;font-weight:900;text-transform:uppercase}
-.kit-total-bar strong{font-size:15px}
 .kit-doc{border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}
 .kit-doc-hero{padding:18px;background:linear-gradient(135deg,#075985,#0f766e);color:#fff}
 .kit-doc-body{display:grid;gap:14px;padding:16px}
@@ -118,17 +97,11 @@ tr[data-row-id]{cursor:pointer}
 .kit-list{display:grid;gap:8px}
 .kit-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel-soft);padding:10px}
 .kit-row.archived{background:#f8fafc;border-style:dashed;color:var(--muted)}
-.kit-row.editing{border-color:#7dd3fc;background:#eef8ff}
-.kit-row.editing{border-color:#7dd3fc;background:#eef8ff}
 .kit-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .kit-link{color:var(--primary-strong);font-size:12px;font-weight:950;text-decoration:none}
 .kit-link:hover{text-decoration:underline}
 .kit-actions .icon-btn{min-width:0;height:32px;border-radius:8px;font-size:12px}
 .chart-list{display:grid;gap:12px;padding:16px}
-.insight-list{display:grid;gap:10px;padding:16px}
-.insight{border:1px solid var(--line);border-radius:12px;background:var(--panel-soft);padding:12px}
-.insight strong{display:block;margin-bottom:3px}
-.insight span{display:block;color:var(--muted);font-size:13px}
 .chart-row{display:grid;gap:5px}
 .chart-meta{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:13px}
 .bar{height:9px;border-radius:999px;background:#e2e8f0;overflow:hidden}
@@ -149,27 +122,10 @@ tr[data-row-id]{cursor:pointer}
   .drawer{position:static}
   .filters,.kit-layout,.settings-grid{grid-template-columns:1fr}
   .kit-summary{grid-template-columns:repeat(2,1fr)}
-  .kit-total-bar{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:560px){
   .kpis,.filters{grid-template-columns:1fr}
   .kit-summary{grid-template-columns:1fr}
-  .kit-total-bar{grid-template-columns:1fr}
-  .table-wrap{display:none}
-  .mobile-screen-cards{display:grid;gap:10px;padding:12px}
-  .mobile-screen-card{display:grid;gap:10px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:12px}
-  .mobile-screen-card.selected{border-color:#7dd3fc;background:#eef8ff}
-  .bulk-bar{align-items:stretch}
-  .bulk-controls,.bulk-actions{width:100%}
-  .bulk-actions{display:grid;grid-template-columns:1fr 1fr}
-  .mobile-screen-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-  .mobile-screen-card h3{font-size:15px;margin-bottom:2px}
-  .mobile-screen-card p{color:var(--muted);font-size:12px;margin-bottom:0}
-  .mobile-screen-card-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-  .mobile-screen-card-meta span{display:block;color:var(--muted);font-size:11px;font-weight:900;text-transform:uppercase}
-  .mobile-screen-card-meta strong{display:block;font-size:14px}
-  .row-actions{display:grid;grid-template-columns:1fr 1fr}
-  .icon-btn{width:100%}
   .nav{grid-template-columns:1fr}
   .topbar h1{font-size:24px}
 }
@@ -177,19 +133,19 @@ tr[data-row-id]{cursor:pointer}
 </head>
 <body>
 <div class="app">
-  <aside class="sidebar" aria-label="Navegación de gestión">
+  <aside class="sidebar" aria-label="Navegacion de gestion">
     <div class="brand">
       <div class="logo" id="dash-logo">SK</div>
       <div>
         <strong id="dash-brand">SmartKit</strong>
-        <span>Gestión comercial DOOH</span>
+        <span>Gestion comercial DOOH</span>
       </div>
     </div>
     <nav class="nav" aria-label="Secciones del dashboard">
       <button class="active" type="button" data-section="inventory">Inventario</button>
       <button type="button" data-section="mediakits">Media Kits</button>
-      <button type="button" data-section="metrics">Métricas</button>
-      <button type="button" data-section="settings">Configuración</button>
+      <button type="button" data-section="metrics">Metricas</button>
+      <button type="button" data-section="settings">Configuracion</button>
     </nav>
     <div class="sidebar-footer">
       <strong>Estado:</strong> Datos locales desde <code>screens-data.js</code>
@@ -200,14 +156,13 @@ tr[data-row-id]{cursor:pointer}
     <header class="topbar">
       <div>
         <span class="eyebrow">Dashboard</span>
-        <h1 id="page-title">Gestión de pantallas</h1>
+        <h1 id="page-title">Gestion de pantallas</h1>
         <p id="page-copy">Administra inventario, disponibilidad, precios y vista comercial desde una sola superficie.</p>
       </div>
       <div class="actions">
         <a class="btn ghost" href="./index.html">Ver brochure</a>
         <button class="btn" type="button" id="export-btn">Exportar CSV</button>
         <button class="btn primary" type="button" id="save-btn">Guardar cambios</button>
-        <span class="save-state saved" id="save-state">Guardado</span>
       </div>
     </header>
 
@@ -256,17 +211,6 @@ tr[data-row-id]{cursor:pointer}
             </select>
           </div>
         </div>
-        <div class="filter-chips" id="filter-chips" hidden></div>
-        <div class="bulk-bar" aria-label="Acciones masivas de inventario">
-          <div class="bulk-controls">
-            <label><input id="bulk-select-visible" type="checkbox"> Seleccionar visibles</label>
-            <span class="bulk-count" id="bulk-count">0 seleccionadas</span>
-          </div>
-          <div class="bulk-actions">
-            <button class="btn" type="button" data-action="bulk-publish">Publicar</button>
-            <button class="btn" type="button" data-action="bulk-pause">Pausar</button>
-          </div>
-        </div>
         <div class="table-wrap">
           <table>
             <thead>
@@ -282,7 +226,6 @@ tr[data-row-id]{cursor:pointer}
             <tbody id="screen-table"></tbody>
           </table>
         </div>
-        <div class="mobile-screen-cards" id="screen-cards-mobile"></div>
       </section>
 
       <aside class="panel drawer" aria-label="Detalle editable">
@@ -297,17 +240,14 @@ tr[data-row-id]{cursor:pointer}
           <div class="field">
             <label for="edit-name">Nombre comercial</label>
             <input id="edit-name" name="name" type="text" autocomplete="off">
-            <span class="field-error" id="edit-name-error">Ingresa un nombre comercial.</span>
           </div>
           <div class="field">
             <label for="edit-zone">Zona</label>
             <input id="edit-zone" name="zone" type="text" autocomplete="off">
-            <span class="field-error" id="edit-zone-error">Ingresa una zona.</span>
           </div>
           <div class="field">
             <label for="edit-price">Precio semanal</label>
             <input id="edit-price" name="price" type="number" min="0" step="1000">
-            <span class="field-error" id="edit-price-error">Ingresa un precio mayor a cero.</span>
           </div>
           <div class="field">
             <label for="edit-status">Estado comercial</label>
@@ -319,7 +259,6 @@ tr[data-row-id]{cursor:pointer}
           <div class="field">
             <label for="edit-video">Video del head</label>
             <input id="edit-video" name="video" type="text" placeholder="./assets/videos/pantalla.mp4" autocomplete="off">
-            <span class="field-error" id="edit-video-error">Usa una ruta de video local, mp4 o deja el campo vacío.</span>
           </div>
           <div class="field">
             <label for="edit-note">Nota interna</label>
@@ -340,8 +279,8 @@ tr[data-row-id]{cursor:pointer}
         <section class="panel" aria-label="Constructor de media kit">
           <div class="panel-head">
             <div>
-            <span class="eyebrow">Media Kit</span>
-              <h2 id="kit-builder-title">Crear propuesta comercial</h2>
+              <span class="eyebrow">Media Kit</span>
+              <h2>Crear propuesta comercial</h2>
             </div>
             <span class="badge warning" id="kit-state">Borrador</span>
           </div>
@@ -355,7 +294,7 @@ tr[data-row-id]{cursor:pointer}
               <input id="kit-contact" type="text" placeholder="Nombre y apellido">
             </div>
             <div class="field">
-              <label for="kit-duration">Duración</label>
+              <label for="kit-duration">Duracion</label>
               <select id="kit-duration"></select>
             </div>
             <div class="field">
@@ -379,12 +318,8 @@ tr[data-row-id]{cursor:pointer}
               <span class="eyebrow">Preview</span>
               <h2>Documento para cliente</h2>
             </div>
-            <div class="actions">
-              <button class="btn primary" type="button" id="kit-save-btn">Guardar borrador</button>
-              <button class="btn" type="button" id="kit-archive-btn">Archivar borrador</button>
-            </div>
+            <button class="btn primary" type="button" id="kit-save-btn">Guardar en archivados</button>
           </div>
-          <div class="kit-total-bar" id="kit-total-bar" aria-label="Resumen del media kit"></div>
           <div class="kit-doc" id="kit-preview"></div>
           <div class="panel">
             <div class="panel-head">
@@ -406,14 +341,12 @@ tr[data-row-id]{cursor:pointer}
     <section class="section" id="section-metrics" hidden>
       <div class="layout">
         <section class="panel" aria-label="Reach diario por zona">
-          <div class="panel-head"><div><span class="eyebrow">Métricas</span><h2>Reach diario por zona</h2></div></div>
+          <div class="panel-head"><div><span class="eyebrow">Metricas</span><h2>Reach diario por zona</h2></div></div>
           <div class="chart-list" id="zone-chart"></div>
         </section>
-        <aside class="panel" aria-label="Distribución por tipo de tránsito">
-          <div class="panel-head"><div><span class="eyebrow">Distribución</span><h2>Tipos de tránsito</h2></div></div>
+        <aside class="panel" aria-label="Distribucion por tipo de transito">
+          <div class="panel-head"><div><span class="eyebrow">Distribucion</span><h2>Tipos de transito</h2></div></div>
           <div class="chart-list" id="type-chart"></div>
-          <div class="panel-head"><div><span class="eyebrow">Alertas</span><h2>Oportunidades</h2></div></div>
-          <div class="insight-list" id="metric-insights"></div>
         </aside>
       </div>
     </section>
@@ -425,16 +358,15 @@ tr[data-row-id]{cursor:pointer}
           <div class="editor section-pad">
             <div class="field"><label for="settings-brand">Nombre</label><input id="settings-brand" type="text"></div>
             <div class="field"><label for="settings-logo">Logo corto</label><input id="settings-logo" type="text"></div>
-            <div class="field"><label for="settings-whatsapp">WhatsApp comercial</label><input id="settings-whatsapp" type="tel" placeholder="+5492610000000"></div>
-            <div class="status-line"><span>Preview</span><strong id="settings-brand-preview">SmartKit · SK</strong></div>
+            <div class="field"><label for="settings-whatsapp">WhatsApp comercial</label><input id="settings-whatsapp" type="text"></div>
           </div>
         </section>
         <section class="panel">
           <div class="panel-head"><div><span class="eyebrow">Plantilla</span><h2>Condiciones del mediakit</h2></div></div>
           <div class="editor section-pad">
-            <div class="field"><label for="settings-validity">Validez comercial</label><select id="settings-validity"><option>7 días</option><option>15 días</option><option>30 días</option></select></div>
-            <div class="field"><label for="settings-terms">Condiciones</label><textarea id="settings-terms">Inicio de campaña sujeto a disponibilidad y aprobación de piezas. Valores expresados en ARS.</textarea></div>
-            <button class="btn success" type="button" id="settings-save">Aplicar configuración</button>
+            <div class="field"><label for="settings-validity">Validez comercial</label><select id="settings-validity"><option>7 dias</option><option>15 dias</option><option>30 dias</option></select></div>
+            <div class="field"><label for="settings-terms">Condiciones</label><textarea id="settings-terms">Inicio de campana sujeto a disponibilidad y aprobacion de piezas. Valores expresados en ARS.</textarea></div>
+            <button class="btn success" type="button" id="settings-save">Aplicar configuracion</button>
           </div>
         </section>
       </div>
@@ -463,9 +395,6 @@ let rows = SCREENS.map(screen => ({
 }));
 let currentSection = 'inventory';
 let kitSelected = new Set((config.inventory?.activeScreenIds || []).slice(0,3));
-let hasUnsavedChanges = false;
-let bulkSelected = new Set();
-let editingKitId = null;
 let savedKits = [
   {id:'demo-trapiche',client:'Bodega Trapiche',screens:5,total:1570000,status:'Enviado',screenIds:[1,2,3,4,5],duration:'1 semana',createdAt:'2026-06-10T00:00:00.000Z'},
   {id:'demo-toyota',client:'Toyota Mendoza',screens:8,total:1825200,status:'Aprobado',screenIds:[1,2,3,4,5,6,7,10],duration:'1 semana',createdAt:'2026-06-10T00:00:00.000Z'}
@@ -513,20 +442,7 @@ function persistState(message='Cambios guardados localmente'){
   };
   localStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(state));
   localStorage.setItem(PUBLIC_KITS_STORAGE_KEY, JSON.stringify(savedKits));
-  setDirty(false);
   showToast(message);
-}
-
-function setDirty(dirty=true){
-  hasUnsavedChanges = dirty;
-  const state = document.getElementById('save-state');
-  const save = document.getElementById('save-btn');
-  if(state){
-    state.textContent = dirty ? 'Cambios pendientes' : 'Guardado';
-    state.classList.toggle('dirty', dirty);
-    state.classList.toggle('saved', !dirty);
-  }
-  if(save)save.textContent = dirty ? 'Guardar cambios' : 'Guardado';
 }
 
 function kitSlug(value){
@@ -569,7 +485,7 @@ function buildKitPayload(status='Borrador'){
   const validUntil = new Date(createdAt);
   validUntil.setDate(validUntil.getDate() + 15);
   return {
-    id: editingKitId || `kit-${kitSlug(client)}-${createdAt.getTime()}`,
+    id: `kit-${kitSlug(client)}-${createdAt.getTime()}`,
     client,
     contact,
     duration: duration.l,
@@ -582,8 +498,7 @@ function buildKitPayload(status='Borrador'){
     impacts,
     cpm: impacts ? Math.round(total / impacts * 1000) : 0,
     status,
-    createdAt: savedKits.find(kit => kit.id === editingKitId)?.createdAt || createdAt.toISOString(),
-    updatedAt: createdAt.toISOString(),
+    createdAt: createdAt.toISOString(),
     validUntil: validUntil.toISOString().slice(0,10),
     terms: document.getElementById('settings-terms').value.trim(),
     validity: document.getElementById('settings-validity').value,
@@ -601,7 +516,7 @@ function downloadKitJson(kit){
 }
 
 function applyBrand(){
-  document.title = `${brand.name} - Dashboard de Gestión`;
+  document.title = `${brand.name} - Dashboard de Gestion`;
   document.getElementById('dash-logo').textContent = brand.logo;
   document.getElementById('dash-brand').textContent = brand.name;
   if(theme.primary)document.documentElement.style.setProperty('--primary', theme.primary);
@@ -646,20 +561,16 @@ function filteredRows(){
 
 function renderTable(){
   const list = filteredRows();
-  const visibleIds = new Set(list.map(row => row.id));
-  bulkSelected = new Set([...bulkSelected].filter(id => visibleIds.has(id)));
   let selectedChanged = false;
   if(list.length && !list.some(row => row.id === selectedId)){
     selectedId = list[0].id;
     selectedChanged = true;
   }
   document.getElementById('result-count').textContent = `${list.length} ${list.length === 1 ? 'resultado' : 'resultados'}`;
-  renderFilterChips();
   document.getElementById('screen-table').innerHTML = list.map(row => `
-    <tr class="${row.id === selectedId ? 'selected' : ''}" data-row-id="${row.id}">
+    <tr class="${row.id === selectedId ? 'selected' : ''}">
       <td>
         <div class="screen-cell">
-          <input type="checkbox" data-bulk-screen="${row.id}" ${bulkSelected.has(row.id)?'checked':''} aria-label="Seleccionar ${h(row.n)}">
           <span class="screen-icon">${h(row.e)}</span>
           <div><strong>${h(row.n)}</strong><span>${h(row.dir)} · ${h(row.b)}</span></div>
         </div>
@@ -676,57 +587,10 @@ function renderTable(){
       </td>
     </tr>
   `).join('');
-  document.getElementById('screen-cards-mobile').innerHTML = list.map(row => `
-    <article class="mobile-screen-card ${row.id === selectedId ? 'selected' : ''}" data-row-id="${row.id}">
-      <div class="mobile-screen-card-head">
-        <div>
-          <h3><input type="checkbox" data-bulk-screen="${row.id}" ${bulkSelected.has(row.id)?'checked':''} aria-label="Seleccionar ${h(row.n)}"> ${h(row.e)} ${h(row.n)}</h3>
-          <p>${h(row.dir)} · ${h(row.b)}</p>
-        </div>
-        <span class="badge ${row.status === 'Activo' ? 'active' : 'paused'}">${row.status}</span>
-      </div>
-      <div class="mobile-screen-card-meta">
-        <div><span>Impactos/día</span><strong>${h(row.imp)}</strong></div>
-        <div><span>Precio semana</span><strong>${fmt(row.precio)}</strong></div>
-      </div>
-      <div class="row-actions">
-        <button class="icon-btn" type="button" data-action="select" data-id="${row.id}" aria-label="Editar ${h(row.n)}">Editar</button>
-        <button class="icon-btn ${row.status === 'Activo' ? 'pause' : 'publish'}" type="button" data-action="toggle-status" data-id="${row.id}" aria-label="${row.status === 'Activo' ? 'Pausar' : 'Publicar en brochure'} ${h(row.n)}">${row.status === 'Activo' ? 'Pausar' : 'Publicar'}</button>
-      </div>
-    </article>
-  `).join('');
   if(selectedChanged){
     const row = rows.find(item => item.id === selectedId);
     if(row)updateEditor(row);
   }
-  updateBulkUi(list);
-}
-
-function updateBulkUi(list=filteredRows()){
-  const visibleIds = list.map(row => row.id);
-  const selectedVisible = visibleIds.filter(id => bulkSelected.has(id));
-  const toggle = document.getElementById('bulk-select-visible');
-  document.getElementById('bulk-count').textContent = `${selectedVisible.length} seleccionada${selectedVisible.length===1?'':'s'}`;
-  if(toggle){
-    toggle.checked = visibleIds.length > 0 && selectedVisible.length === visibleIds.length;
-    toggle.indeterminate = selectedVisible.length > 0 && selectedVisible.length < visibleIds.length;
-  }
-}
-
-function renderFilterChips(){
-  const query = document.getElementById('search').value.trim();
-  const zone = document.getElementById('zone-filter').value;
-  const type = document.getElementById('type-filter').value;
-  const status = document.getElementById('status-filter').value;
-  const chips = [
-    query && ['search',`Busqueda: ${query}`],
-    zone !== 'Todos' && ['zone-filter',`Zona: ${zone}`],
-    type !== 'Todos' && ['type-filter',`Tipo: ${type}`],
-    status !== 'Todos' && ['status-filter',`Estado: ${status}`]
-  ].filter(Boolean);
-  const wrap = document.getElementById('filter-chips');
-  wrap.hidden = chips.length === 0;
-  wrap.innerHTML = chips.map(([id,label]) => `<span class="filter-chip">${h(label)} <button type="button" data-action="clear-filter" data-filter="${id}">Limpiar</button></span>`).join('');
 }
 
 function renderPreview(row){
@@ -738,8 +602,8 @@ function renderPreview(row){
       <p>${row.dir} · ${row.b}</p>
       <div class="metrics-grid">
         <div class="metric"><span>Formato</span><b>${row.dim}</b></div>
-        <div class="metric"><span>Resolución</span><b>${row.res}</b></div>
-        <div class="metric"><span>Impactos/día</span><b>${row.imp}</b></div>
+        <div class="metric"><span>Resolucion</span><b>${row.res}</b></div>
+        <div class="metric"><span>Impactos/dia</span><b>${row.imp}</b></div>
         <div class="metric"><span>CPM</span><b>${fmt((row.precio / (imp(row) * 7)) * 1000)}</b></div>
       </div>
     </div>
@@ -755,28 +619,7 @@ function updateEditor(row){
   document.getElementById('edit-status').value = row.status;
   document.getElementById('edit-video').value = row.video || '';
   document.getElementById('edit-note').value = row.note;
-  clearEditorErrors();
   renderPreview(row);
-}
-
-function clearEditorErrors(){
-  document.querySelectorAll('#editor-form .field').forEach(field=>field.classList.remove('error'));
-}
-
-function validateEditor(){
-  clearEditorErrors();
-  const name = document.getElementById('edit-name').value.trim();
-  const zone = document.getElementById('edit-zone').value.trim();
-  const price = Number(document.getElementById('edit-price').value);
-  const video = document.getElementById('edit-video').value.trim();
-  const errors = [];
-  if(!name)errors.push('edit-name');
-  if(!zone)errors.push('edit-zone');
-  if(!Number.isFinite(price) || price <= 0)errors.push('edit-price');
-  if(video && !/^(\.\/|\/|https?:\/\/).+\.mp4($|\?)/i.test(video))errors.push('edit-video');
-  errors.forEach(id=>document.getElementById(id).closest('.field').classList.add('error'));
-  if(errors.length)showToast('Revisa los campos marcados');
-  return errors.length === 0;
 }
 
 function selectRow(id){
@@ -795,23 +638,7 @@ function togglePublication(id){
   renderTable();
   updateEditor(row);
   renderKitBuilder();
-  setDirty(true);
   persistState(row.status === 'Activo' ? 'Pantalla publicada en brochure' : 'Pantalla pausada del brochure');
-}
-
-function bulkSetStatus(status){
-  if(!bulkSelected.size){
-    showToast('Selecciona pantallas primero');
-    return;
-  }
-  rows = rows.map(row => bulkSelected.has(row.id) ? {...row,status} : row);
-  document.getElementById('last-action').textContent = `${status === 'Activo' ? 'Publicadas' : 'Pausadas'} ${bulkSelected.size}`;
-  bulkSelected.clear();
-  updateKpis();
-  renderTable();
-  updateEditor(rows.find(item => item.id === selectedId));
-  renderKitBuilder();
-  persistState(status === 'Activo' ? 'Pantallas publicadas en brochure' : 'Pantallas pausadas del brochure');
 }
 
 function showToast(message){
@@ -843,10 +670,10 @@ function setSection(section){
     panel.hidden = panel.id !== `section-${section}`;
   });
   const titles = {
-    inventory:['Gestión de pantallas','Administra inventario, disponibilidad, precios y vista comercial desde una sola superficie.'],
+    inventory:['Gestion de pantallas','Administra inventario, disponibilidad, precios y vista comercial desde una sola superficie.'],
     mediakits:['Constructor de Media Kits','Crea, previsualiza y mantiene propuestas comerciales listas para enviar a clientes.'],
-    metrics:['Métricas comerciales','Analiza cobertura, mix de tránsito y potencial de venta por zona.'],
-    settings:['Configuración comercial','Define marca, contacto y condiciones base para tus mediakits.']
+    metrics:['Metricas comerciales','Analiza cobertura, mix de transito y potencial de venta por zona.'],
+    settings:['Configuracion comercial','Define marca, contacto y condiciones base para tus mediakits.']
   };
   document.getElementById('page-title').textContent = titles[section][0];
   document.getElementById('page-copy').textContent = titles[section][1];
@@ -865,12 +692,11 @@ function kitScreens(){
 function renderKitBuilder(){
   const zone = document.getElementById('kit-zone').value || 'Todos';
   const visible = rows.filter(row => row.status === 'Activo' && (zone === 'Todos' || row.b === zone));
-  document.getElementById('kit-builder-title').textContent = editingKitId ? 'Editar propuesta comercial' : 'Crear propuesta comercial';
   document.getElementById('kit-screen-list').innerHTML = visible.map(row => `
     <label class="kit-screen">
       <input type="checkbox" data-kit-screen="${row.id}" ${kitSelected.has(row.id)?'checked':''}>
       <span class="screen-icon">${h(row.e)}</span>
-      <span><strong>${h(row.n)}</strong><span>${h(row.b)} · ${h(row.imp)} imp/día · ${fmt(row.precio)}/sem</span></span>
+      <span><strong>${h(row.n)}</strong><span>${h(row.b)} · ${h(row.imp)} imp/dia · ${fmt(row.precio)}/sem</span></span>
       <span class="badge">${h(row.tipo)}</span>
     </label>
   `).join('');
@@ -885,12 +711,6 @@ function renderKitPreview(){
   const impacts = screens.reduce((sum,row)=>sum + imp(row) * duration.days,0);
   document.getElementById('kit-selected-count').textContent = `${screens.length} ${screens.length===1?'seleccionada':'seleccionadas'}`;
   document.getElementById('kit-state').textContent = screens.length ? 'Borrador listo' : 'Borrador';
-  document.getElementById('kit-total-bar').innerHTML = `
-    <div><span>Pantallas</span><strong>${screens.length}</strong></div>
-    <div><span>Impactos</span><strong>${Math.round(impacts/1000).toLocaleString('es-AR')}k</strong></div>
-    <div><span>Inversión</span><strong>${fmt(total)}</strong></div>
-    <div><span>CPM</span><strong>${screens.length ? fmt(total/(impacts||1)*1000) : '$0'}</strong></div>
-  `;
   document.getElementById('kit-preview').innerHTML = `
     <div class="kit-doc-hero">
       <span class="eyebrow" style="color:#bae6fd">Media Kit</span>
@@ -901,7 +721,7 @@ function renderKitPreview(){
       <div class="kit-summary">
         <div class="kpi"><b>${screens.length}</b><span>Pantallas</span></div>
         <div class="kpi"><b>${Math.round(impacts/1000).toLocaleString('es-AR')}k</b><span>Impactos estimados</span></div>
-        <div class="kpi"><b>${fmt(total)}</b><span>Inversión</span></div>
+        <div class="kpi"><b>${fmt(total)}</b><span>Inversion</span></div>
         <div class="kpi"><b>${screens.length ? fmt(total/(impacts||1)*1000) : '$0'}</b><span>CPM plan</span></div>
       </div>
       <div class="kit-list">
@@ -915,7 +735,7 @@ function renderKitPreview(){
   `;
 }
 
-function saveKit(archived=false){
+function saveKit(){
   const screens = kitScreens();
   if(!screens.length){
     showToast('Selecciona al menos una pantalla');
@@ -923,51 +743,26 @@ function saveKit(archived=false){
   }
   const kit = {
     ...buildKitPayload('Borrador'),
-    archived,
-    archivedAt: archived ? new Date().toISOString() : ''
+    archived: true,
+    archivedAt: new Date().toISOString()
   };
-  savedKits = [kit,...savedKits.filter(item => item.id !== kit.id)].slice(0,8);
-  editingKitId = null;
-  document.getElementById('kit-builder-title').textContent = 'Crear propuesta comercial';
+  savedKits = [kit,...savedKits].slice(0,8);
   renderKitHistory();
-  persistState(archived ? 'Media kit guardado en archivados' : 'Media kit guardado como borrador');
-}
-
-function editKit(id){
-  const kit = savedKits.find(item => item.id === id);
-  if(!kit)return;
-  editingKitId = kit.id;
-  document.getElementById('kit-client').value = kit.client || '';
-  document.getElementById('kit-contact').value = kit.contact || '';
-  if(kit.durationValue)document.getElementById('kit-duration').value = kit.durationValue;
-  document.getElementById('kit-zone').value = 'Todos';
-  kitSelected = new Set(Array.isArray(kit.screenIds) ? kit.screenIds : []);
-  setSection('mediakits');
-  renderKitBuilder();
-  showToast('Media kit cargado para editar');
-}
-
-function updateKitStatus(id,status){
-  savedKits = savedKits.map(item => item.id === id ? {...item,status,archived:false,updatedAt:new Date().toISOString()} : item);
-  renderKitHistory();
-  persistState(`Media kit marcado como ${status.toLowerCase()}`);
+  persistState('Media kit guardado en archivados');
 }
 
 function renderKitHistory(){
   const activeKits = savedKits.filter(kit => !kit.archived);
   const archivedKits = savedKits.filter(kit => kit.archived);
   document.getElementById('kit-history').innerHTML = activeKits.map(kit => `
-    <div class="kit-row ${kit.id === editingKitId ? 'editing' : ''}">
+    <div class="kit-row">
       <span><strong>${h(kit.client)}</strong><br><small>${Number(kit.screens)||0} pantallas · ${h(kit.status || 'Borrador')}</small></span>
       <span class="kit-actions">
         <strong>${fmt(kit.total)}</strong>
         <a class="kit-link" href="./mediakit.html?id=${kit.id}" target="_blank" rel="noopener">Ver público</a>
         <button class="icon-btn" type="button" data-action="copy-kit" data-id="${h(kit.id)}">Copiar</button>
-        <button class="icon-btn" type="button" data-action="edit-kit" data-id="${h(kit.id)}">Editar</button>
         <button class="icon-btn" type="button" data-action="download-kit" data-id="${h(kit.id)}">JSON</button>
         <button class="icon-btn" type="button" data-action="duplicate-kit" data-id="${h(kit.id)}">Duplicar</button>
-        <button class="icon-btn publish" type="button" data-action="mark-kit-sent" data-id="${h(kit.id)}">Enviado</button>
-        <button class="icon-btn publish" type="button" data-action="mark-kit-approved" data-id="${h(kit.id)}">Aprobado</button>
         <button class="icon-btn pause" type="button" data-action="archive-kit" data-id="${h(kit.id)}">Archivar</button>
       </span>
     </div>
@@ -984,7 +779,6 @@ function renderKitHistory(){
       <span class="kit-actions">
         <strong>${fmt(kit.total)}</strong>
         <a class="kit-link" href="./mediakit.html?id=${kit.id}" target="_blank" rel="noopener">Ver público</a>
-        <button class="icon-btn" type="button" data-action="edit-kit" data-id="${h(kit.id)}">Editar</button>
         <button class="icon-btn" type="button" data-action="restore-kit" data-id="${h(kit.id)}">Restaurar</button>
       </span>
     </div>
@@ -993,15 +787,12 @@ function renderKitHistory(){
 
 function renderMetrics(){
   const active = rows.filter(row => row.status === 'Activo');
-  const paused = rows.filter(row => row.status !== 'Activo');
-  const missingVideo = active.filter(row => !row.video);
-  const bestCpm = active.slice().sort((a,b)=>(a.precio/(imp(a)||1))-(b.precio/(imp(b)||1)))[0];
   const byZone = active.reduce((acc,row)=>{acc[row.b]=(acc[row.b]||0)+imp(row);return acc;},{});
   const byType = active.reduce((acc,row)=>{acc[row.tipo]=(acc[row.tipo]||0)+1;return acc;},{});
   const maxZone = Math.max(...Object.values(byZone),1);
   document.getElementById('zone-chart').innerHTML = Object.entries(byZone).sort((a,b)=>b[1]-a[1]).map(([zone,value])=>`
     <div class="chart-row">
-      <div class="chart-meta"><strong>${zone}</strong><span>${value.toLocaleString('es-AR')} imp/día</span></div>
+      <div class="chart-meta"><strong>${zone}</strong><span>${value.toLocaleString('es-AR')} imp/dia</span></div>
       <div class="bar"><div class="bar-fill" style="width:${(value/maxZone*100).toFixed(1)}%"></div></div>
     </div>
   `).join('');
@@ -1011,11 +802,6 @@ function renderMetrics(){
       <div class="bar"><div class="bar-fill" style="width:${(value/(active.length||1)*100).toFixed(1)}%"></div></div>
     </div>
   `).join('');
-  document.getElementById('metric-insights').innerHTML = [
-    paused.length ? `<div class="insight"><strong>${paused.length} pantallas pausadas</strong><span>Revisa si alguna puede volver al brochure para ampliar inventario vendible.</span></div>` : '',
-    missingVideo.length ? `<div class="insight"><strong>${missingVideo.length} activas sin video</strong><span>Agregar video mejora la confianza del cliente en brochure y media kit.</span></div>` : '',
-    bestCpm ? `<div class="insight"><strong>Mejor CPM: ${h(bestCpm.n)}</strong><span>${fmt((bestCpm.precio/(imp(bestCpm)*7))*1000)} estimado por mil impactos.</span></div>` : ''
-  ].filter(Boolean).join('') || '<div class="insight"><strong>Inventario saludable</strong><span>No hay alertas operativas con los filtros actuales.</span></div>';
 }
 
 function bindEvents(){
@@ -1034,11 +820,6 @@ function bindEvents(){
   });
   document.addEventListener('click', event => {
     const target = event.target.closest('[data-action]');
-    const rowTarget = event.target.closest('tr[data-row-id],.mobile-screen-card[data-row-id]');
-    if(!target && rowTarget && !event.target.closest('[data-bulk-screen]')){
-      selectRow(rowTarget.dataset.rowId);
-      return;
-    }
     if(!target)return;
     if(target.dataset.action === 'select')selectRow(target.dataset.id);
     if(target.dataset.action === 'toggle-status')togglePublication(target.dataset.id);
@@ -1059,9 +840,6 @@ function bindEvents(){
         persistState('Media kit duplicado');
       }
     }
-    if(target.dataset.action === 'edit-kit')editKit(target.dataset.id);
-    if(target.dataset.action === 'mark-kit-sent')updateKitStatus(target.dataset.id,'Enviado');
-    if(target.dataset.action === 'mark-kit-approved')updateKitStatus(target.dataset.id,'Aprobado');
     if(target.dataset.action === 'archive-kit'){
       savedKits = savedKits.map(item => item.id === target.dataset.id ? {...item, archived:true, archivedAt:new Date().toISOString()} : item);
       updatePublicKitArchive(target.dataset.id, true);
@@ -1074,42 +852,19 @@ function bindEvents(){
       renderKitHistory();
       persistState('Media kit restaurado');
     }
-    if(target.dataset.action === 'clear-filter'){
-      const id = target.dataset.filter;
-      if(id === 'search')document.getElementById(id).value = '';
-      else document.getElementById(id).value = 'Todos';
-      renderTable();
-    }
-    if(target.dataset.action === 'bulk-publish')bulkSetStatus('Activo');
-    if(target.dataset.action === 'bulk-pause')bulkSetStatus('Pausado');
   });
   document.addEventListener('change', event => {
-    if(event.target.matches('#bulk-select-visible')){
-      const ids = filteredRows().map(row => row.id);
-      ids.forEach(id => event.target.checked ? bulkSelected.add(id) : bulkSelected.delete(id));
-      renderTable();
-      return;
-    }
-    if(event.target.matches('[data-bulk-screen]')){
-      const id = Number(event.target.dataset.bulkScreen);
-      if(event.target.checked)bulkSelected.add(id);
-      else bulkSelected.delete(id);
-      updateBulkUi();
-      return;
-    }
     const target = event.target.closest('[data-kit-screen]');
     if(!target)return;
     const id = Number(target.dataset.kitScreen);
     if(target.checked)kitSelected.add(id);
     else kitSelected.delete(id);
-    setDirty(true);
     renderKitPreview();
   });
   document.getElementById('editor-form').addEventListener('submit', event => {
     event.preventDefault();
     const row = rows.find(item => item.id === selectedId);
     if(!row)return;
-    if(!validateEditor())return;
     row.n = document.getElementById('edit-name').value.trim() || row.n;
     row.b = document.getElementById('edit-zone').value.trim() || row.b;
     row.precio = Number(document.getElementById('edit-price').value) || row.precio;
@@ -1121,35 +876,18 @@ function bindEvents(){
     fillFilters();
     selectRow(row.id);
     renderKitBuilder();
-    setDirty(true);
-    showToast('Cambios aplicados al dashboard');
+    persistState('Cambios aplicados al dashboard');
   });
   document.getElementById('save-btn').addEventListener('click', () => persistState('Cambios disponibles para brochure y backend'));
   document.getElementById('export-btn').addEventListener('click', exportCsv);
-  document.getElementById('kit-save-btn').addEventListener('click', () => saveKit(false));
-  document.getElementById('kit-archive-btn').addEventListener('click', () => saveKit(true));
+  document.getElementById('kit-save-btn').addEventListener('click', saveKit);
   document.getElementById('settings-save').addEventListener('click', () => {
-    const whatsapp = document.getElementById('settings-whatsapp').value.trim();
-    if(whatsapp && !/^\+?\d[\d\s-]{7,}$/.test(whatsapp)){
-      showToast('Revisa el formato de WhatsApp');
-      return;
-    }
     brand.name = document.getElementById('settings-brand').value.trim() || brand.name;
     brand.logo = document.getElementById('settings-logo').value.trim() || brand.logo;
-    brand.whatsapp = whatsapp || brand.whatsapp;
+    brand.whatsapp = document.getElementById('settings-whatsapp').value.trim() || brand.whatsapp;
     applyBrand();
     renderKitPreview();
-    persistState('Configuración aplicada');
-  });
-  ['settings-brand','settings-logo'].forEach(id=>{
-    document.getElementById(id).addEventListener('input',()=>{
-      document.getElementById('settings-brand-preview').textContent = `${document.getElementById('settings-brand').value || brand.name} · ${document.getElementById('settings-logo').value || brand.logo}`;
-      setDirty(true);
-    });
-  });
-  ['settings-whatsapp','settings-validity','settings-terms'].forEach(id=>{
-    document.getElementById(id).addEventListener('input',()=>setDirty(true));
-    document.getElementById(id).addEventListener('change',()=>setDirty(true));
+    persistState('Configuracion aplicada');
   });
 }
 
@@ -1161,7 +899,6 @@ bindEvents();
 document.getElementById('settings-brand').value = brand.name;
 document.getElementById('settings-logo').value = brand.logo;
 document.getElementById('settings-whatsapp').value = brand.whatsapp || '';
-document.getElementById('settings-brand-preview').textContent = `${brand.name} · ${brand.logo}`;
 renderKitHistory();
 renderKitBuilder();
 selectRow(selectedId);

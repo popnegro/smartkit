@@ -5,13 +5,7 @@
   "duration": "1 mes",
   "durationValue": "1m",
   "days": 30,
-  "screenIds": [
-    1,
-    2,
-    3,
-    7,
-    13
-  ],
+  "screenIds": [1, 2, 3, 7, 13],
   "screenSnapshots": [
     {
       "id": 1,
@@ -97,23 +91,10 @@
   "createdAt": "2026-06-10T00:00:00.000Z",
   "validUntil": "2026-06-25",
   "validity": "15 dias",
-  "terms": "Inicio de campaña sujeto a disponibilidad y aprobación de piezas. Valores expresados en ARS. La reserva se confirma con orden de compra y material aprobado.",
+  "terms": "Inicio de campana sujeto a disponibilidad y aprobacion de piezas. Valores expresados en ARS. La reserva se confirma con orden de compra y material aprobado.",
   "brand": {
-    "name": "SmartKit DOOH",
+    "name": "SmartKit",
     "logo": "SK",
     "whatsapp": "5492613871088"
-  },
-  "executiveSummary": "Plan mensual recomendado para posicionar marca en corredores comerciales de Gran Mendoza, combinando puntos peatonales, vehiculares y centros de compra con alta frecuencia de exposición.",
-  "nextSteps": [
-    "Validar disponibilidad de pantallas y fechas de campaña.",
-    "Confirmar inversión, forma de pago y orden de compra.",
-    "Enviar piezas finales 72 hs hábiles antes del inicio."
-  ],
-  "digitalSignature": {
-    "algorithm": "HMAC-SHA-256",
-    "signer": "SmartKit Comercial",
-    "hash": "a254ba09a8c2b4a78acaa5f5b3d0c0aa9da76875f2dc0f386759ba75ff9e7175",
-    "value": "bbf82a7329d0a2dc965378874072fd35d3c5446f627d967ad1014b292aa4f343",
-    "signedAt": "2026-06-10T00:00:00.000Z"
   }
 }
