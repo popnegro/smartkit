@@ -96,6 +96,7 @@ tr.selected{background:#eef8ff}
 .kit-summary .kpi{box-shadow:none}
 .kit-list{display:grid;gap:8px}
 .kit-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel-soft);padding:10px}
+.kit-row.archived{background:#f8fafc;border-style:dashed;color:var(--muted)}
 .kit-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .kit-link{color:var(--primary-strong);font-size:12px;font-weight:950;text-decoration:none}
 .kit-link:hover{text-decoration:underline}
@@ -328,6 +329,10 @@ tr.selected{background:#eef8ff}
               </div>
             </div>
             <div class="kit-list panel-pad" id="kit-history"></div>
+            <details class="kit-archive panel-pad" id="kit-archive-wrap">
+              <summary>Archivados <span id="kit-archive-count">0</span></summary>
+              <div class="kit-list" id="kit-archive"></div>
+            </details>
           </div>
         </aside>
       </div>
@@ -412,6 +417,13 @@ function loadStoredState(){
 function publicKits(){
   try{return JSON.parse(localStorage.getItem(PUBLIC_KITS_STORAGE_KEY) || '[]') || [];}
   catch{return [];}
+}
+
+function updatePublicKitArchive(id, archived){
+  const kits = publicKits();
+  if(!kits.length)return;
+  const updated = kits.map(kit => kit.id === id ? {...kit, archived} : kit);
+  localStorage.setItem(PUBLIC_KITS_STORAGE_KEY, JSON.stringify(updated));
 }
 
 function persistState(message='Cambios guardados localmente'){
@@ -736,7 +748,9 @@ function saveKit(){
 }
 
 function renderKitHistory(){
-  document.getElementById('kit-history').innerHTML = savedKits.map(kit => `
+  const activeKits = savedKits.filter(kit => !kit.archived);
+  const archivedKits = savedKits.filter(kit => kit.archived);
+  document.getElementById('kit-history').innerHTML = activeKits.map(kit => `
     <div class="kit-row">
       <span><strong>${h(kit.client)}</strong><br><small>${Number(kit.screens)||0} pantallas · ${h(kit.status || 'Borrador')}</small></span>
       <span class="kit-actions">
@@ -745,10 +759,26 @@ function renderKitHistory(){
         <button class="icon-btn" type="button" data-action="copy-kit" data-id="${h(kit.id)}">Copiar</button>
         <button class="icon-btn" type="button" data-action="download-kit" data-id="${h(kit.id)}">JSON</button>
         <button class="icon-btn" type="button" data-action="duplicate-kit" data-id="${h(kit.id)}">Duplicar</button>
-        <button class="icon-btn pause" type="button" data-action="delete-kit" data-id="${h(kit.id)}">Eliminar</button>
+        <button class="icon-btn pause" type="button" data-action="archive-kit" data-id="${h(kit.id)}">Archivar</button>
       </span>
     </div>
   `).join('') || '<div class="kit-row"><span>No hay kits guardados.</span></div>';
+  const archiveWrap = document.getElementById('kit-archive-wrap');
+  const archiveCount = document.getElementById('kit-archive-count');
+  const archive = document.getElementById('kit-archive');
+  if(archiveWrap)archiveWrap.hidden = archivedKits.length === 0;
+  if(archiveWrap && archivedKits.length)archiveWrap.open = true;
+  if(archiveCount)archiveCount.textContent = archivedKits.length;
+  if(archive)archive.innerHTML = archivedKits.map(kit => `
+    <div class="kit-row archived">
+      <span><strong>${h(kit.client)}</strong><br><small>${Number(kit.screens)||0} pantallas · Archivado</small></span>
+      <span class="kit-actions">
+        <strong>${fmt(kit.total)}</strong>
+        <a class="kit-link" href="./mediakit.html?id=${kit.id}" target="_blank" rel="noopener">Ver público</a>
+        <button class="icon-btn" type="button" data-action="restore-kit" data-id="${h(kit.id)}">Restaurar</button>
+      </span>
+    </div>
+  `).join('');
 }
 
 function renderMetrics(){
@@ -806,10 +836,17 @@ function bindEvents(){
         persistState('Media kit duplicado');
       }
     }
-    if(target.dataset.action === 'delete-kit'){
-      savedKits = savedKits.filter(item => item.id !== target.dataset.id);
+    if(target.dataset.action === 'archive-kit'){
+      savedKits = savedKits.map(item => item.id === target.dataset.id ? {...item, archived:true, archivedAt:new Date().toISOString()} : item);
+      updatePublicKitArchive(target.dataset.id, true);
       renderKitHistory();
-      persistState('Media kit eliminado');
+      persistState('Media kit archivado');
+    }
+    if(target.dataset.action === 'restore-kit'){
+      savedKits = savedKits.map(item => item.id === target.dataset.id ? {...item, archived:false, restoredAt:new Date().toISOString()} : item);
+      updatePublicKitArchive(target.dataset.id, false);
+      renderKitHistory();
+      persistState('Media kit restaurado');
     }
   });
   document.addEventListener('change', event => {

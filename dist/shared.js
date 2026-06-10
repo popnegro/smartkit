@@ -27,7 +27,7 @@ const SmartKitShared = (() => {
   }
 
   function latestMediaKitId(currentId = '') {
-    const kits = storedPublicKits();
+    const kits = storedPublicKits().filter(kit => !kit.archived);
     return currentId || kits[0]?.id || '';
   }
 

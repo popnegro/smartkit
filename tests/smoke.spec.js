@@ -64,3 +64,19 @@ test('dashboard media kit section renders builder and history', async ({ page })
   await expect(page.locator('#kit-screen-list [data-kit-screen]').first()).toBeVisible();
   await expect(page.locator('#kit-history .kit-row').first()).toBeVisible();
 });
+
+test('dashboard archives and restores media kits without deleting public link', async ({ page }) => {
+  await page.goto('/dashboard.html');
+  await page.getByRole('button', { name: 'Media Kits' }).click();
+
+  const firstKit = page.locator('#kit-history .kit-row').first();
+  await expect(firstKit).toContainText('Bodega Trapiche');
+  await firstKit.getByRole('button', { name: 'Archivar' }).click();
+
+  await expect(page.locator('#kit-history')).not.toContainText('Bodega Trapiche');
+  await expect(page.locator('#kit-archive')).toContainText('Bodega Trapiche');
+  await expect(page.locator('#kit-archive').getByRole('link', { name: 'Ver público' }).first()).toHaveAttribute('href', /mediakit\.html\?id=demo-trapiche/);
+
+  await page.locator('#kit-archive').getByRole('button', { name: 'Restaurar' }).first().click();
+  await expect(page.locator('#kit-history')).toContainText('Bodega Trapiche');
+});
