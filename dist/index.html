@@ -48,7 +48,7 @@
       <div class="hero">
         <div class="hero-inner">
           <h1 id="hero-title">SmartKit</h1>
-          <p id="hero-copy">Planifica campañas DOOH, selecciona ubicaciones digitales y genera una reserva comercial en minutos.</p>
+          <p id="hero-copy">Selecciona pantallas, estima impactos y genera propuestas DOOH listas para enviar al cliente.</p>
           <div class="stats" id="hero-stats" role="group" aria-label="Resumen de inventario"></div>
         </div>
       </div>
@@ -72,20 +72,20 @@
             <div class="cards" id="cards"></div>
           </section>
 
-          <aside class="quote-panel" id="quote-panel" aria-label="Cotizador de campana" tabindex="-1">
+          <aside class="quote-panel" id="quote-panel" aria-label="Cotizador de campaña" tabindex="-1">
             <div class="quote-panel-head">
               <div>
-                <span class="quote-eyebrow">Plan de campana</span>
+                <span class="quote-eyebrow">Plan de campaña</span>
                 <h2>Cotizador</h2>
               </div>
-              <span class="quote-status" id="quote-status">Vacio</span>
+              <span class="quote-status" id="quote-status">Vacío</span>
             </div>
             <div class="quote-summary" aria-live="polite">
               <strong id="quote-summary-count">0 pantallas · Sin plan armado</strong>
-              <span id="quote-summary-detail">Agrega pantallas para estimar inversion</span>
+              <span id="quote-summary-detail">Agrega pantallas para estimar inversión</span>
             </div>
             <div class="quote-field control-panel">
-              <label for="duration-select">Duracion</label>
+              <label for="duration-select">Duración</label>
               <select id="duration-select" data-duration-select></select>
             </div>
             <div id="quote-list" class="quote-list"></div>
@@ -93,7 +93,7 @@
               <div class="quote-meta"><span>Pantallas</span><strong id="quote-count">0</strong></div>
               <div class="quote-meta"><span>Impactos estimados</span><strong id="quote-impacts">0</strong></div>
               <div>
-                <span class="muted small">Inversion estimada</span>
+                <span class="muted small">Inversión estimada</span>
                 <div id="quote-total" class="price">$0</div>
               </div>
             </div>
@@ -117,7 +117,16 @@
   </main>
 
   <div class="mobile-feedback" id="mobile-feedback" role="status" aria-live="polite" aria-atomic="true"></div>
-  <nav class="mobile-action-nav" id="mobile-action-nav" aria-label="Navegacion principal">
+  <div class="mobile-quote-cart" id="mobile-quote-cart" role="status" aria-live="polite" aria-atomic="true" aria-hidden="true" hidden>
+    <div class="mobile-quote-cart-copy">
+      <strong id="mobile-quote-cart-summary">Cotizador vacío</strong>
+      <span id="mobile-quote-cart-meta">Agrega pantallas para armar tu plan</span>
+    </div>
+    <button type="button" data-action="toggle-mobile-quote" aria-controls="quote-panel">
+      <span>Ver plan</span>
+    </button>
+  </div>
+  <nav class="mobile-action-nav" id="mobile-action-nav" aria-label="Navegación principal">
     <button class="mobile-nav-destination" type="button" data-view="brochure">
       <span>Brochure</span>
     </button>

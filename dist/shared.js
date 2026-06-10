@@ -1,9 +1,9 @@
 const SmartKitShared = (() => {
   const DEFAULT_BRAND = {
-    name: 'SmartKit',
+    name: 'SmartKit DOOH',
     logo: 'SK',
     whatsapp: '5492613871088',
-    heroCopy: 'Planifica campañas DOOH, selecciona ubicaciones digitales y genera una reserva comercial en minutos.'
+    heroCopy: 'Selecciona pantallas, estima impactos y genera propuestas DOOH listas para enviar al cliente.'
   };
   const PUBLIC_KITS_STORAGE_KEY = 'smartkit-public-kits';
 
@@ -85,6 +85,72 @@ const SmartKitShared = (() => {
     return `<div class="${h(className)} video-head" style="background:${h(background)}"><span class="media-fallback" aria-hidden="true">${h(initials)}</span>${video}</div>`;
   }
 
+  function signaturePayload(kit) {
+    const {
+      digitalSignature,
+      signature,
+      status,
+      ...payload
+    } = kit || {};
+    return payload;
+  }
+
+  function stableStringify(value) {
+    if (Array.isArray(value)) return `[${value.map(stableStringify).join(',')}]`;
+    if (value && typeof value === 'object') {
+      return `{${Object.keys(value).sort().map(key => `${JSON.stringify(key)}:${stableStringify(value[key])}`).join(',')}}`;
+    }
+    return JSON.stringify(value ?? null);
+  }
+
+  function toHex(buffer) {
+    return [...new Uint8Array(buffer)].map(byte => byte.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function sha256Hex(value) {
+    const bytes = new TextEncoder().encode(value);
+    const digest = await crypto.subtle.digest('SHA-256', bytes);
+    return toHex(digest);
+  }
+
+  async function signMediaKit(kit, options = {}) {
+    const payload = stableStringify(signaturePayload(kit));
+    const hash = await sha256Hex(payload);
+    const secret = String(options.secret || '');
+    if (!secret) return { algorithm: 'SHA-256', hash, signed: false };
+    const key = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+    const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payload));
+    return {
+      algorithm: 'HMAC-SHA-256',
+      signer: options.signer || 'SmartKit',
+      hash,
+      value: toHex(signature),
+      signedAt: new Date().toISOString()
+    };
+  }
+
+  async function verifyMediaKitSignature(kit, options = {}) {
+    const expected = await signMediaKit(kit, options);
+    const current = kit?.digitalSignature;
+    if (!current?.value) return { state: 'unsigned', ...expected };
+    const valid = current.algorithm === expected.algorithm && current.hash === expected.hash && current.value === expected.value;
+    return {
+      state: valid ? 'valid' : 'invalid',
+      algorithm: current.algorithm || expected.algorithm,
+      signer: current.signer || expected.signer,
+      hash: expected.hash,
+      value: current.value,
+      signedAt: current.signedAt || '',
+      expectedValue: expected.value
+    };
+  }
+
   return {
     DEFAULT_BRAND,
     PUBLIC_KITS_STORAGE_KEY,
@@ -95,8 +161,12 @@ const SmartKitShared = (() => {
     mediaHtml,
     safeAssetUrl,
     safeBackground,
+    sha256Hex,
+    signMediaKit,
     screenSnapshot,
+    signaturePayload,
     storedPublicKits,
+    verifyMediaKitSignature,
     updateMediaKitLinks
   };
 })();
