@@ -80,3 +80,15 @@ test('dashboard archives and restores media kits without deleting public link', 
   await page.locator('#kit-archive').getByRole('button', { name: 'Restaurar' }).first().click();
   await expect(page.locator('#kit-history')).toContainText('Bodega Trapiche');
 });
+
+test('dashboard saves new media kits archived by default', async ({ page }) => {
+  await page.goto('/dashboard.html');
+  await page.getByRole('button', { name: 'Media Kits' }).click();
+
+  await page.locator('#kit-client').fill('Cliente Archivado PMV');
+  await page.getByRole('button', { name: 'Guardar en archivados' }).click();
+
+  await expect(page.locator('#kit-history')).not.toContainText('Cliente Archivado PMV');
+  await expect(page.locator('#kit-archive')).toContainText('Cliente Archivado PMV');
+  await expect(page.locator('#kit-archive').getByRole('button', { name: 'Restaurar' }).first()).toBeVisible();
+});

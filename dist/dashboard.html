@@ -318,7 +318,7 @@ tr.selected{background:#eef8ff}
               <span class="eyebrow">Preview</span>
               <h2>Documento para cliente</h2>
             </div>
-            <button class="btn primary" type="button" id="kit-save-btn">Guardar kit</button>
+            <button class="btn primary" type="button" id="kit-save-btn">Guardar en archivados</button>
           </div>
           <div class="kit-doc" id="kit-preview"></div>
           <div class="panel">
@@ -741,10 +741,14 @@ function saveKit(){
     showToast('Selecciona al menos una pantalla');
     return;
   }
-  const kit = buildKitPayload('Borrador');
+  const kit = {
+    ...buildKitPayload('Borrador'),
+    archived: true,
+    archivedAt: new Date().toISOString()
+  };
   savedKits = [kit,...savedKits].slice(0,8);
   renderKitHistory();
-  persistState('Media kit guardado');
+  persistState('Media kit guardado en archivados');
 }
 
 function renderKitHistory(){
