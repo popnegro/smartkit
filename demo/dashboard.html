@@ -163,6 +163,7 @@ tr.selected{background:#eef8ff}
         <a class="btn ghost" href="./index.html">Ver brochure</a>
         <button class="btn" type="button" id="export-btn">Exportar CSV</button>
         <button class="btn primary" type="button" id="save-btn">Guardar cambios</button>
+        <span id="unsaved-changes-indicator" class="badge warning" hidden>Cambios sin guardar</span>
       </div>
     </header>
 
@@ -181,6 +182,12 @@ tr.selected{background:#eef8ff}
           <div>
             <span class="eyebrow">Inventario</span>
             <h2>Pantallas publicadas</h2>
+          </div>
+          <div id="bulk-actions" class="actions" style="margin-right:auto; margin-left:16px;" hidden>
+            <span class="badge warning" style="border-color: var(--warning);"><span id="bulk-count">0</span> seleccionadas</span>
+            <button class="btn success" data-bulk-action="Activo" style="min-height:32px; font-size:12px;">Publicar</button>
+            <button class="btn" data-bulk-action="Pausado" style="min-height:32px; font-size:12px;">Pausar</button>
+            <button class="btn ghost" data-action="clear-bulk" style="min-height:32px; font-size:12px;">Limpiar</button>
           </div>
           <span class="badge active" id="result-count">0 resultados</span>
         </div>
@@ -216,6 +223,7 @@ tr.selected{background:#eef8ff}
             <thead>
               <tr>
                 <th>Pantalla</th>
+                <th><input type="checkbox" id="select-all-screens"></th>
                 <th>Tipo</th>
                 <th>Impactos/dia</th>
                 <th>Precio semana</th>
@@ -376,8 +384,10 @@ tr.selected{background:#eef8ff}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="./config.js"></script>
+<script src="./shared.js"></script>
 <script src="./screens-data.js"></script>
 <script>
+const Shared = window.SmartKitShared;
 const config = window.APP_CONFIG || {};
 const activeIds = new Set(config.inventory?.activeScreenIds || []);
 const brand = {name:'SmartKit',logo:'SK',...(config.brand || {})};
@@ -386,25 +396,89 @@ const DASHBOARD_STORAGE_KEY = 'smartkit-dashboard-state';
 const PUBLIC_KITS_STORAGE_KEY = 'smartkit-public-kits';
 const fmt = value => '$' + Math.round(Number(value) || 0).toLocaleString('es-AR');
 const imp = screen => parseInt(String(screen.imp || '0').replace(/\./g,''),10) || 0;
-const h = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const h = Shared.escapeHtml; // Usar el helper compartido
 let selectedId = (config.inventory?.activeScreenIds || [SCREENS[0]?.id])[0];
 let rows = SCREENS.map(screen => ({
   ...screen,
+  // Asegurarse de que las propiedades base estén presentes para la fusión posterior
+  n: screen.n, b: screen.b, precio: screen.precio, video: screen.video,
   status: activeIds.has(screen.id) ? 'Activo' : 'Pausado',
   note: ''
 }));
 let currentSection = 'inventory';
 let kitSelected = new Set((config.inventory?.activeScreenIds || []).slice(0,3));
 let savedKits = [
-  {id:'demo-trapiche',client:'Bodega Trapiche',screens:5,total:1570000,status:'Enviado',screenIds:[1,2,3,4,5],duration:'1 semana',createdAt:'2026-06-10T00:00:00.000Z'},
-  {id:'demo-toyota',client:'Toyota Mendoza',screens:8,total:1825200,status:'Aprobado',screenIds:[1,2,3,4,5,6,7,10],duration:'1 semana',createdAt:'2026-06-10T00:00:00.000Z'}
+  {id:'demo-trapiche',client:'Bodega Trapiche',screens:5,total:1570000,status:'Enviado',screenIds:[1,2,3,4,5],duration:'1 semana',createdAt:'2026-06-10T00:00:00.000Z', archived: false},
+  {id:'demo-toyota',client:'Toyota Mendoza',screens:8,total:1825200,status:'Aprobado',screenIds:[1,2,3,4,5,6,7,10],duration:'1 semana',createdAt:'2026-06-10T00:00:00.000Z', archived: false}
 ];
+let selectedScreenIdsForBulk = new Set(); // Nuevo: para acciones en lote
+let hasUnsavedChanges = false; // Nuevo: para feedback de persistencia
 
-function loadStoredState(){
+async function loadDashboard(){
   let state = {};
   try{state = JSON.parse(localStorage.getItem(DASHBOARD_STORAGE_KEY) || '{}') || {};}
   catch{state = {};}
   if(state.brand && typeof state.brand === 'object')Object.assign(brand,state.brand);
+  
+  // Iniciar con los datos base de SCREENS
+  rows = SCREENS.map(screen => ({
+    ...screen,
+    status: activeIds.has(screen.id) ? 'Activo' : 'Pausado',
+    note: ''
+  }));
+
+  // Fusionar con los datos de Shared.fetchScreens (API/caché)
+  const screensSource = await Shared.fetchScreens();
+  const screensSourceById = new Map(screensSource.map(s => [s.id, s]));
+  rows = rows.map(row => ({
+    ...row, // Fila existente (de SCREENS)
+    ...(screensSourceById.get(row.id) || {}) // Sobrescribir con datos de API/caché
+  }));
+
+  // --- Supabase Integration Placeholder (Recomendación 3) ---
+  const supabaseClient = Shared.getSupabase();
+  if (supabaseClient && config.supabase?.url && !config.supabase.url.includes('tu-proyecto')) {
+    try {
+      // Cargar pantallas desde Supabase
+      const { data: supabaseScreens, error: screensError } = await supabaseClient
+        .from('screens') // Asumiendo una tabla 'screens' con columnas que coinciden con las propiedades de la pantalla
+        .select('*');
+      if (screensError) throw screensError;
+
+      if (supabaseScreens && supabaseScreens.length > 0) {
+        const supabaseById = new Map(supabaseScreens.map(s => [s.id, s]));
+        rows = rows.map(row => ({
+          ...row, // Fila existente (de SCREENS + API/caché)
+          ...(supabaseById.get(row.id) || {}) // Sobrescribir con datos de Supabase
+        }));
+        console.log('Dashboard: Inventario cargado desde Supabase.');
+      }
+
+      // Cargar kits guardados desde Supabase
+      const { data: supabaseKits, error: kitsError } = await supabaseClient
+        .from('mediakits') // Asumiendo una tabla 'mediakits'
+        .select('*');
+      if (kitsError) throw kitsError;
+      if (supabaseKits && supabaseKits.length > 0) {
+        savedKits = supabaseKits;
+        console.log('Dashboard: Media Kits cargados desde Supabase.');
+      }
+    } catch (error) {
+      console.error('Error cargando datos desde Supabase:', error);
+      // Fallback a localStorage si Supabase falla
+      console.log('Dashboard: Fallback a localStorage para inventario y Media Kits.');
+    }
+  }
+  // --- Fin Placeholder Supabase ---
+
+  // Cargamos inventario usando la lógica compartida (Caché + Red)
+  const screensSource = await Shared.fetchScreens();
+  rows = screensSource.map(screen => ({
+    ...screen,
+    status: activeIds.has(screen.id) ? 'Activo' : 'Pausado',
+    note: ''
+  }));
+
   if(Array.isArray(state.rows)){
     const storedById = new Map(state.rows.map(row => [row.id,row]));
     rows = rows.map(row => ({...row,...(storedById.get(row.id) || {})}));
@@ -412,6 +486,33 @@ function loadStoredState(){
   if(Array.isArray(state.savedKits) && state.savedKits.length)savedKits = state.savedKits;
   selectedId = rows.find(row => row.id === selectedId)?.id || rows[0]?.id;
   kitSelected = new Set(rows.filter(row => row.status === 'Activo').slice(0,3).map(row => row.id));
+
+  applyBrand();
+  fillFilters();
+  updateKpis();
+  renderKitHistory();
+  renderKitBuilder();
+  selectRow(selectedId);
+  setUnsavedChanges(false); // No hay cambios sin guardar al cargar
+}
+
+function applyBulkStatus(status) {
+  if (selectedScreenIdsForBulk.size === 0) return;
+  
+  const count = selectedScreenIdsForBulk.size;
+  rows = rows.map(row => {
+    if (selectedScreenIdsForBulk.has(row.id)) {
+      return { ...row, status: status };
+    }
+    return row;
+  });
+  
+  selectedScreenIdsForBulk.clear();
+  renderTable();
+  updateKpis();
+  renderKitBuilder();
+  setUnsavedChanges(true);
+  showToast(`${count} pantallas actualizadas a ${status}`);
 }
 
 function publicKits(){
@@ -440,9 +541,43 @@ function persistState(message='Cambios guardados localmente'){
     })),
     savedKits
   };
+
+  // --- Supabase Integration Placeholder (Recomendación 3) ---
+  const supabaseClient = Shared.getSupabase();
+  if (supabaseClient && config.supabase?.url && !config.supabase.url.includes('tu-proyecto')) {
+    try {
+      // Upsert de datos de pantallas
+      const { error: screensError } = await supabaseClient
+        .from('screens')
+        .upsert(state.rows, { onConflict: 'id' }); // Asumiendo 'id' como clave primaria
+      if (screensError) throw screensError;
+
+      // Upsert de datos de media kits
+      const { error: kitsError } = await supabaseClient
+        .from('mediakits')
+        .upsert(state.savedKits, { onConflict: 'id' }); // Asumiendo 'id' como clave primaria
+      if (kitsError) throw kitsError;
+
+      console.log('Dashboard: Datos guardados en Supabase.');
+      showToast(message + ' y Supabase');
+    } catch (error) {
+      console.error('Error guardando datos en Supabase:', error);
+      showToast(message + ' (Error al guardar en Supabase)');
+    }
+  } else {
+    showToast(message);
+  }
+  // --- Fin Placeholder Supabase ---
+
   localStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(state));
   localStorage.setItem(PUBLIC_KITS_STORAGE_KEY, JSON.stringify(savedKits));
-  showToast(message);
+  setUnsavedChanges(false);
+}
+
+function setUnsavedChanges(hasChanges) {
+  hasUnsavedChanges = hasChanges;
+  document.getElementById('save-btn').disabled = !hasChanges;
+  document.getElementById('unsaved-changes-indicator').hidden = !hasChanges;
 }
 
 function kitSlug(value){
@@ -566,9 +701,18 @@ function renderTable(){
     selectedId = list[0].id;
     selectedChanged = true;
   }
+  
+  const bulkBar = document.getElementById('bulk-actions');
+  const bulkCount = document.getElementById('bulk-count');
+  if (bulkBar && bulkCount) {
+    bulkBar.hidden = selectedScreenIdsForBulk.size === 0;
+    bulkCount.textContent = selectedScreenIdsForBulk.size;
+  }
+
   document.getElementById('result-count').textContent = `${list.length} ${list.length === 1 ? 'resultado' : 'resultados'}`;
   document.getElementById('screen-table').innerHTML = list.map(row => `
     <tr class="${row.id === selectedId ? 'selected' : ''}">
+      <td><input type="checkbox" class="screen-select-checkbox" data-id="${row.id}" ${selectedScreenIdsForBulk.has(row.id) ? 'checked' : ''}></td>
       <td>
         <div class="screen-cell">
           <span class="screen-icon">${h(row.e)}</span>
@@ -590,6 +734,14 @@ function renderTable(){
   if(selectedChanged){
     const row = rows.find(item => item.id === selectedId);
     if(row)updateEditor(row);
+  }
+  // Actualizar el estado del checkbox "Seleccionar todo"
+  const selectAllCheckbox = document.getElementById('select-all-screens');
+  if (selectAllCheckbox) {
+    const allVisibleScreenIds = new Set(list.map(row => row.id));
+    const allSelectedVisible = list.every(row => selectedScreenIdsForBulk.has(row.id));
+    selectAllCheckbox.checked = allSelectedVisible && list.length > 0;
+    selectAllCheckbox.indeterminate = !allSelectedVisible && list.some(row => selectedScreenIdsForBulk.has(row.id));
   }
 }
 
@@ -637,8 +789,8 @@ function togglePublication(id){
   updateKpis();
   renderTable();
   updateEditor(row);
-  renderKitBuilder();
-  persistState(row.status === 'Activo' ? 'Pantalla publicada en brochure' : 'Pantalla pausada del brochure');
+  renderKitBuilder(); // Re-renderizar el constructor de kits ya que las pantallas activas pueden haber cambiado
+  setUnsavedChanges(true); // Marcar como no guardado
 }
 
 function showToast(message){
@@ -658,7 +810,7 @@ function exportCsv(){
   link.download = 'smartkit-inventario.csv';
   link.click();
   URL.revokeObjectURL(link.href);
-  showToast('CSV exportado');
+  showToast('CSV exportado correctamente');
 }
 
 function setSection(section){
@@ -746,9 +898,9 @@ function saveKit(){
     archived: true,
     archivedAt: new Date().toISOString()
   };
-  savedKits = [kit,...savedKits].slice(0,8);
+  savedKits = [kit,...savedKits.filter(k => k.id !== kit.id)].slice(0,8); // Asegurarse de no duplicar al guardar
   renderKitHistory();
-  persistState('Media kit guardado en archivados');
+  setUnsavedChanges(true); // Marcar como no guardado
 }
 
 function renderKitHistory(){
@@ -837,20 +989,29 @@ function bindEvents(){
         const copy = {...kit,id:`${kit.id}-copy-${Date.now()}`,status:'Borrador',createdAt:new Date().toISOString()};
         savedKits = [copy,...savedKits].slice(0,8);
         renderKitHistory();
-        persistState('Media kit duplicado');
+        setUnsavedChanges(true); // Marcar como no guardado
       }
     }
     if(target.dataset.action === 'archive-kit'){
       savedKits = savedKits.map(item => item.id === target.dataset.id ? {...item, archived:true, archivedAt:new Date().toISOString()} : item);
       updatePublicKitArchive(target.dataset.id, true);
       renderKitHistory();
-      persistState('Media kit archivado');
+      setUnsavedChanges(true); // Marcar como no guardado
     }
     if(target.dataset.action === 'restore-kit'){
       savedKits = savedKits.map(item => item.id === target.dataset.id ? {...item, archived:false, restoredAt:new Date().toISOString()} : item);
       updatePublicKitArchive(target.dataset.id, false);
       renderKitHistory();
-      persistState('Media kit restaurado');
+      setUnsavedChanges(true); // Marcar como no guardado
+    }
+    
+    // Acciones en lote
+    if (target.dataset.bulkAction) {
+      applyBulkStatus(target.dataset.bulkAction);
+    }
+    if (target.dataset.action === 'clear-bulk') {
+      selectedScreenIdsForBulk.clear();
+      renderTable();
     }
   });
   document.addEventListener('change', event => {
@@ -861,22 +1022,63 @@ function bindEvents(){
     else kitSelected.delete(id);
     renderKitPreview();
   });
+
+  // Nuevo: Listener para el checkbox "Seleccionar todo"
+  document.getElementById('select-all-screens').addEventListener('change', event => {
+    const isChecked = event.target.checked;
+    const visibleRows = filteredRows();
+    selectedScreenIdsForBulk.clear();
+    if (isChecked) {
+      visibleRows.forEach(row => selectedScreenIdsForBulk.add(row.id));
+    }
+    renderTable(); // Re-renderizar para actualizar todos los checkboxes
+  });
+
+  // Nuevo: Listener para los checkboxes individuales de pantalla
+  document.getElementById('screen-table').addEventListener('change', event => {
+    const target = event.target.closest('.screen-select-checkbox');
+    if (!target) return;
+    const id = Number(target.dataset.id);
+    if (target.checked) {
+      selectedScreenIdsForBulk.add(id);
+    } else {
+      selectedScreenIdsForBulk.delete(id);
+    }
+    renderTable(); // Re-renderizar para actualizar el estado del checkbox "Seleccionar todo"
+  });
+
   document.getElementById('editor-form').addEventListener('submit', event => {
     event.preventDefault();
     const row = rows.find(item => item.id === selectedId);
-    if(!row)return;
+    if(!row) return;
+
+    // Validación básica
+    const newPrice = Number(document.getElementById('edit-price').value);
+    if (newPrice <= 0) {
+      showToast('El precio debe ser mayor a 0');
+      return;
+    }
+
+    // Validación: URL de video
+    const newVideoUrl = document.getElementById('edit-video').value.trim();
+    if (newVideoUrl && !Shared.safeAssetUrl(newVideoUrl)) { // Usando Shared.safeAssetUrl para validación
+      showToast('La URL del video no es válida. Debe ser un path local o una URL completa (https://)');
+      return;
+    }
+
     row.n = document.getElementById('edit-name').value.trim() || row.n;
     row.b = document.getElementById('edit-zone').value.trim() || row.b;
-    row.precio = Number(document.getElementById('edit-price').value) || row.precio;
+    row.precio = newPrice;
     row.status = document.getElementById('edit-status').value;
-    row.video = document.getElementById('edit-video').value.trim();
+    row.video = newVideoUrl; // Usar la URL validada
     row.note = document.getElementById('edit-note').value.trim();
     document.getElementById('last-action').textContent = `Actualizada #${row.id}`;
     updateKpis();
     fillFilters();
     selectRow(row.id);
     renderKitBuilder();
-    persistState('Cambios aplicados al dashboard');
+    setUnsavedChanges(true); // Marcar como no guardado
+    showToast('Cambios aplicados al dashboard (no guardados)'); // Clarificar feedback
   });
   document.getElementById('save-btn').addEventListener('click', () => persistState('Cambios disponibles para brochure y backend'));
   document.getElementById('export-btn').addEventListener('click', exportCsv);
@@ -887,21 +1089,19 @@ function bindEvents(){
     brand.whatsapp = document.getElementById('settings-whatsapp').value.trim() || brand.whatsapp;
     applyBrand();
     renderKitPreview();
-    persistState('Configuracion aplicada');
+    setUnsavedChanges(true); // Marcar como no guardado
+    showToast('Configuración aplicada al dashboard (no guardada)'); // Clarificar feedback
   });
 }
 
-loadStoredState();
-applyBrand();
-fillFilters();
-updateKpis();
+// Inicialización
 bindEvents();
-document.getElementById('settings-brand').value = brand.name;
-document.getElementById('settings-logo').value = brand.logo;
-document.getElementById('settings-whatsapp').value = brand.whatsapp || '';
-renderKitHistory();
-renderKitBuilder();
-selectRow(selectedId);
+loadDashboard().then(() => {
+  document.getElementById('settings-brand').value = brand.name;
+  document.getElementById('settings-logo').value = brand.logo;
+  document.getElementById('settings-whatsapp').value = brand.whatsapp || '';
+  setUnsavedChanges(false); // Asegurarse de que no haya cambios sin guardar en la carga inicial
+});
 </script>
 </body>
 </html>
