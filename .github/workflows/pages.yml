@@ -26,18 +26,9 @@ jobs:
 
       - uses: actions/configure-pages@v5
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Build static site
-        run: node build.js
-        working-directory: pmv
-
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: pmv/dist
+          path: ./dist
 
       - id: deployment
         uses: actions/deploy-pages@v4
