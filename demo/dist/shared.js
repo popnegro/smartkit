@@ -12,6 +12,27 @@ const SmartKitShared = (() => {
   const DASHBOARD_STORAGE_KEY = `${STORAGE_PREFIX}dashboard-state`;
   const AUTH_SESSION_KEY = `${STORAGE_PREFIX}admin-session`;
 
+  const TIPO_COL = {
+    Peatonal: '#0891b2',
+    Vehicular: '#b45309',
+    Mixto: '#4f46e5'
+  };
+
+  // Placeholder para fechas reservadas. En producción, esto vendría de una API.
+  const RESERVED_DATES = [
+    "2024-08-01", // Fecha específica
+    "2024-08-10 to 2024-08-15", // Rango de fechas
+    "2024-09-01",
+    "2024-09-05 to 2024-09-07"
+  ];
+
+  // Mapeo de estados para UI de Dashboard
+  const STATUS_THEMES = {
+    'Activo': { bg: '#dcfce7', text: '#166534', icon: 'check_circle' },
+    'Pausado': { bg: '#f1f5f9', text: '#475569', icon: 'pause_circle' },
+    'Mantenimiento': { bg: '#fef9c3', text: '#854d0e', icon: 'build' }
+  };
+
   // Helper para detectar entornos locales o de staging (Developer Experience)
   const isDev = () => 
     window.APP_CONFIG?.isStaging || 
@@ -106,13 +127,22 @@ const SmartKitShared = (() => {
     }[char]));
   }
 
+  // Nueva utilidad para Toasts mejorados
+  function notify(message, type = 'success') {
+    const event = new CustomEvent('smartkit:notify', { 
+      detail: { message, type, id: Date.now() } 
+    });
+    window.dispatchEvent(event);
+  }
+
   function formatMoney(value) {
     return '$' + Math.round(Number(value) || 0).toLocaleString('es-AR');
   }
 
   async function isAuthenticated() {
     const storage = getAuthStorage();
-    if (storage.getItem(AUTH_SESSION_KEY) === 'true') return true;
+    // Verificamos si existe un token JWT o una sesión de desarrollo activa
+    if (storage.getItem(AUTH_SESSION_KEY)) return true;
     const client = getSupabase();
     if (client) {
       try {
@@ -126,21 +156,41 @@ const SmartKitShared = (() => {
   async function login(email, password) {
     const storage = getAuthStorage();
     const devMode = isDev();
-    const masterKey = window.APP_CONFIG?.adminKey || 'admin2026';
-    if (devMode && !password) {
-      storage.setItem(AUTH_SESSION_KEY, 'true');
-      return true;
+
+    // 1. Intento de autenticación mediante el Servidor Express (JWT)
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      if (response.ok) {
+        const { token } = await response.json();
+        if (token) {
+          storage.setItem(AUTH_SESSION_KEY, token);
+          return true;
+        }
+      }
+    } catch (e) {
+      // DX: Solo loguear en desarrollo para no ensuciar la consola de producción
+      if (devMode) console.warn('Auth API no disponible, probando fallbacks...');
     }
-    if (password === masterKey) {
-      storage.setItem(AUTH_SESSION_KEY, 'true');
-      return true;
-    }
+
+    // 2. Fallback: Autenticación con Supabase (si está configurado)
     const client = getSupabase();
     if (client) {
       const { data, error } = await client.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      return !!data.session;
+      if (!error && data.session) return true;
     }
+
+    // 3. Fallback: Master Key (Solo para entornos de desarrollo/staging)
+    const masterKey = window.APP_CONFIG?.adminKey || 'admin2026';
+    if (devMode && (password === masterKey || (!password && !email))) {
+      storage.setItem(AUTH_SESSION_KEY, 'dev-session-active');
+      return true;
+    }
+
     return false;
   }
 
@@ -191,9 +241,20 @@ const SmartKitShared = (() => {
     return /^(assets\/|\.\/assets\/|https:\/\/)/.test(url) ? url : '';
   }
 
+  function isExpired(isoDate) {
+    if (!isoDate) return false;
+    const limit = new Date(isoDate);
+    limit.setHours(23, 59, 59, 999);
+    return new Date() > limit;
+  }
+
   function safeBackground(value) {
     const bg = String(value || '');
     return bg.startsWith('linear-gradient(') ? bg : '';
+  }
+
+  function markerHtml(s) {
+    return `<div class="marker" style="color:${TIPO_COL[s.type] || '#334155'}; border-color: currentColor;">${s.initials || '•'}</div>`;
   }
 
   function screenSnapshot(screen, duration = { mult: 1 }) {
@@ -205,6 +266,8 @@ const SmartKitShared = (() => {
       type: screen.tipo,
       format: screen.dim,
       resolution: screen.res,
+      lat: screen.lat,
+      lng: screen.lng,
       impactsDay: screen.imp,
       priceWeek: screen.precio,
       subtotal: Math.round(screen.precio * duration.mult),
@@ -214,22 +277,87 @@ const SmartKitShared = (() => {
     };
   }
 
+  /**
+   * Genera una representación canónica del objeto (ordenando llaves)
+   * para que el hash sea idéntico al generado por el backend.
+   */
+  function canonicalKit(kit) {
+    const { digitalSignature, ...payload } = kit;
+    return JSON.stringify(payload, Object.keys(payload).sort());
+  }
+
+  async function signMediaKit(kit, options = {}) {
+    const secret = options.secret || 'default-secret-change-me';
+    const encoder = new TextEncoder();
+
+    // 1. Generar la cadena canónica idéntica a la del backend
+    const canonicalStr = canonicalKit(kit);
+
+    // 2. Generar el hash SHA-256 de la cadena canónica (en formato hexadecimal)
+    const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(canonicalStr));
+    const hashHex = Array.from(new Uint8Array(hashBuffer))
+      .map(b => b.toString(16).padStart(2, '0')).join('');
+
+    // 3. Importar la clave para HMAC-SHA-256
+    const keyData = encoder.encode(secret);
+    const cryptoKey = await crypto.subtle.importKey(
+      'raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+    );
+
+    // 4. Firmar el HASH hexadecimal (no el payload directo) para coincidir con node:crypto
+    const signatureBuffer = await crypto.subtle.sign('HMAC', cryptoKey, encoder.encode(hashHex));
+    const signatureHex = Array.from(new Uint8Array(signatureBuffer))
+      .map(b => b.toString(16).padStart(2, '0')).join('');
+
+    return {
+      state: 'valid',
+      signer: options.signer || 'SmartKit System',
+      algorithm: 'HMAC-SHA256',
+      signedAt: new Date().toISOString(),
+      hash: hashHex,
+      isTrusted: true,
+      value: signatureHex
+    };
+  }
+
+  async function verifyMediaKitSignature(kit, options = {}) {
+    if (!kit.digitalSignature) return { state: 'unsigned' };
+    
+    const expected = await signMediaKit(kit, options);
+    if (expected.value === kit.digitalSignature.value) {
+      return { ...kit.digitalSignature, state: 'valid' };
+    }
+    return kit.digitalSignature || { state: 'unsigned' };
+  }
+
+  function getReservedDates() {
+    return RESERVED_DATES;
+  }
+
   return {
     DEFAULT_BRAND,
     PUBLIC_KITS_STORAGE_KEY,
+    DASHBOARD_STORAGE_KEY,
+    STATUS_THEMES,
     applyBrandHeader,
     isAuthenticated,
     login,
     logout,
+    isExpired,
     fetchScreens,
     escapeHtml,
+    notify,
     formatMoney,
+    markerHtml,
     latestMediaKitId,
+    signMediaKit,
+    verifyMediaKitSignature,
     safeAssetUrl,
     safeBackground,
     screenSnapshot,
     storedPublicKits,
-    updateMediaKitLinks
+    updateMediaKitLinks,
+    getReservedDates // Exponemos la función
   };
 })();
 

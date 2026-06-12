@@ -37,6 +37,32 @@ function shortHash(value = '') {
   return value ? `${value.slice(0, 16)}...${value.slice(-12)}` : 'No disponible';
 }
 
+function initKitMap(screens) {
+  const mapDiv = document.getElementById('mk-map-container');
+  if (!mapDiv || !window.L) return;
+
+  const map = L.map('mk-map-container', { zoomControl: false, attributionControl: false });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+
+  const points = [];
+  screens.forEach(s => {
+    // Intentar obtener coordenadas del snapshot o del inventario global como fallback
+    const lat = s.lat || SCREENS.find(os => os.id === s.id)?.lat;
+    const lng = s.lng || SCREENS.find(os => os.id === s.id)?.lng;
+
+    if (lat && lng) {
+      L.marker([lat, lng], {
+        icon: L.divIcon({ className: '', iconSize: [30, 30], html: Shared.markerHtml(s) })
+      }).addTo(map);
+      points.push([lat, lng]);
+    }
+  });
+
+  if (points.length > 0) {
+    map.fitBounds(L.latLngBounds(points), { padding: [40, 40] });
+  }
+}
+
 function renderSignature(signature) {
   const labels = {
     valid: ['Firma verificada', 'Autenticidad e integridad confirmadas para el contenido de esta propuesta.'],
@@ -83,6 +109,7 @@ async function renderKit(kit) {
   const whatsappHref = phone ? `https://wa.me/${phone}?text=${whatsappMessage}` : './index.html';
   const date = kit.createdAt ? new Date(kit.createdAt).toLocaleDateString('es-AR') : 'Fecha a confirmar';
   const validUntil = kit.validUntil ? new Date(`${kit.validUntil}T00:00:00`).toLocaleDateString('es-AR') : (kit.validity || '15 dias');
+  const expired = Shared.isExpired(kit.validUntil);
   const signature = await Shared.verifyMediaKitSignature(kit, {
     signer: config.signature?.signer || brand.name,
     secret: config.signature?.secret || ''
@@ -96,6 +123,7 @@ async function renderKit(kit) {
         <span class="quote-eyebrow">Propuesta DOOH</span>
         <h1>${h(kit.client || 'Cliente')}</h1>
         <p>${h(kit.contact || 'Contacto a confirmar')} · ${h(kit.duration || 'Duracion a confirmar')} · ${h(date)}</p>
+        ${expired ? `<span class="badge warning" style="margin-top:10px">ESTA PROPUESTA HA EXPIRADO</span>` : ''}
       </div>
       <div class="mk-summary" aria-label="Resumen de media kit">
         <div class="mk-kpi"><b>${screens.length}</b><span>Pantallas</span></div>
@@ -112,6 +140,7 @@ async function renderKit(kit) {
         </div>
         <a class="btn primary" href="./index.html">Cotizar cambios</a>
       </div>
+      <div id="mk-map-container" style="height: 300px; margin: 0 16px 16px; border-radius: 12px; background: #0a1323; border: 1px solid var(--line);"></div>
       <div class="mk-screen-list">
         ${screens.map(screen => `
           <article class="screen-card">
@@ -159,6 +188,8 @@ async function renderKit(kit) {
       </div>
     </section>
     ${renderSignature(signature)}`;
+
+  initKitMap(screens);
 }
 
 (async function init() {

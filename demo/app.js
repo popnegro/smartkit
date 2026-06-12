@@ -2,22 +2,25 @@ const Shared=window.SmartKitShared;
 const CONFIG=window.APP_CONFIG||{};
 const DEFAULT_BRAND=Shared.DEFAULT_BRAND;
 const PUBLIC_KITS_STORAGE_KEY=Shared.PUBLIC_KITS_STORAGE_KEY;
+const DASHBOARD_STORAGE_KEY=Shared.DASHBOARD_STORAGE_KEY;
 const DASHBOARD_STATE=(()=>{
-  try{return JSON.parse(localStorage.getItem('smartkit-dashboard-state')||'{}')||{};}
+  try{return JSON.parse(localStorage.getItem(DASHBOARD_STORAGE_KEY)||'{}')||{};}
   catch{return {};}
 })();
 const STORED_ROWS=Array.isArray(DASHBOARD_STATE.rows)?DASHBOARD_STATE.rows:[];
 const STORED_ROW_MAP=new Map(STORED_ROWS.map(row=>[row.id,row]));
-const SOURCE_SCREENS=SCREENS.map(screen=>{
-  const stored=STORED_ROW_MAP.get(screen.id)||{};
-  const merged={...screen,...stored};
-  merged.video=safeAssetUrl(stored.video)?stored.video:screen.video;
-  return merged;
-});
+
+// Centralizamos la lógica de mezcla para asegurar que el video y precio sean los del dashboard
+const SOURCE_SCREENS=SCREENS.map(screen=>({
+  ...screen,
+  ...(STORED_ROW_MAP.get(screen.id)||{})
+}));
+
 const BRAND={...DEFAULT_BRAND,...(CONFIG.brand||{}),...(DASHBOARD_STATE.brand||{})};
 const THEME=CONFIG.theme||{};
 const DEFAULT_ACTIVE_SCREEN_IDS=[1,2,3,4,5,6,7,10,13,16,18];
 let map, activeZone='Todos', activeSort='recommended', markers={}, selectedScreens=[], quoteDuration='1s', activeScreenId=null, mobileQuoteOpen=false, mobileNavOpen=false, mobileFiltersOpen=false, lastScreenTrigger=null, lastQuoteTrigger=null, lastFilterTrigger=null;
+let quoteDatePicker;
 const STORED_ACTIVE_SCREEN_IDS=Array.isArray(DASHBOARD_STATE.rows)?STORED_ROWS.filter(row=>row.status==='Activo').map(row=>row.id):null;
 const ACTIVE_SCREEN_IDS = STORED_ACTIVE_SCREEN_IDS || (Array.isArray(CONFIG.inventory?.activeScreenIds)&&CONFIG.inventory.activeScreenIds.length?CONFIG.inventory.activeScreenIds:DEFAULT_ACTIVE_SCREEN_IDS);
 const ACTIVE_SCREENS = ACTIVE_SCREEN_IDS.map(id=>SOURCE_SCREENS.find(s=>s.id===id)).filter(Boolean);
@@ -456,6 +459,22 @@ function fitMapToActiveZone(){
 }
 
 function selectedDuration(){
+  if (quoteDatePicker && quoteDatePicker.selectedDates.length === 2) {
+    const start = quoteDatePicker.selectedDates[0];
+    const end = quoteDatePicker.selectedDates[1];
+    const diffDays = Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24)) + 1;
+    
+    // Multiplicador lineal básico (puedes añadir descuentos aquí también)
+    const mult = diffDays / 7;
+
+    return {
+      v: 'custom',
+      l: `${diffDays} días`,
+      mult: mult,
+      days: diffDays,
+      range: [start, end]
+    };
+  }
   return DURATIONS.find(d=>d.v===quoteDuration)||DURATIONS[0];
 }
 
@@ -785,6 +804,27 @@ function bindEvents(){
 window.addEventListener('DOMContentLoaded',()=>{
   applyTheme();
   applyBrand();
+  
+  // Escuchar cambios desde otras pestañas (Dashboard)
+  window.addEventListener('storage', (e) => {
+    if (e.key === DASHBOARD_STORAGE_KEY) {
+      location.reload(); // Recarga simple para refrescar el estado global
+    }
+  });
+  
+  // Inicializar DatePicker en Brochure
+  quoteDatePicker = flatpickr("#duration-select", {
+    mode: "range",
+    dateFormat: "d/m/Y",
+    minDate: "today",
+    defaultDate: [new Date(), new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)],
+    disable: Shared.getReservedDates(), // Bloquea las fechas reservadas
+    onChange: function() {
+      renderQuote();
+      renderBrochure();
+    }
+  });
+
   updateMediaKitLinks();
   bindEvents();
   initMap();

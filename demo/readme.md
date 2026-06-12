@@ -50,9 +50,9 @@ npm test
 
 Las pantallas base viven en `screens-data.js`.
 
-El Gestor guarda cambios del navegador en `localStorage` con la clave `smartkit-dashboard-state`. Esos cambios son leidos por `index.html` cuando se abren en el mismo navegador.
+El Gestor guarda cambios del navegador en `localStorage` con la clave `sk_v1_dashboard-state`. Esos cambios son leidos por `index.html` cuando se abren en el mismo navegador.
 
-Los media kits generados localmente se guardan en `localStorage` con la clave `smartkit-public-kits`. `mediakit.html` usa primero `data/kits/{id}.json` y luego cae a ese almacenamiento local como fallback.
+Los media kits generados localmente se guardan en `localStorage` con la clave `sk_v1_public-kits`. `mediakit.html` usa primero `data/kits/{id}.json` y luego cae a ese almacenamiento local como fallback.
 
 Para persistencia multiusuario hace falta agregar un backend, CMS o archivo remoto.
 

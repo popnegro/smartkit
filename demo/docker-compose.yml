@@ -1,0 +1,21 @@
+services:
+  smartkit:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+      CORS_ORIGIN: https://smartkit.example.com
+      JWT_SECRET: change-me-with-a-64-char-random-secret
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD_HASH: "$$2a$$10$$replace-with-bcrypt-hash"
+      SIGNATURE_SECRET: change-me-with-a-second-random-secret
+      DATA_FILE: /app/backend/data/smartkit-db.json
+      PUBLIC_DIR: ./dist
+    volumes:
+      - smartkit-data:/app/backend/data
+    restart: unless-stopped
+
+volumes:
+  smartkit-data:

@@ -2,22 +2,25 @@ const Shared=window.SmartKitShared;
 const CONFIG=window.APP_CONFIG||{};
 const DEFAULT_BRAND=Shared.DEFAULT_BRAND;
 const PUBLIC_KITS_STORAGE_KEY=Shared.PUBLIC_KITS_STORAGE_KEY;
+const DASHBOARD_STORAGE_KEY=Shared.DASHBOARD_STORAGE_KEY;
 const DASHBOARD_STATE=(()=>{
-  try{return JSON.parse(localStorage.getItem('smartkit-dashboard-state')||'{}')||{};}
+  try{return JSON.parse(localStorage.getItem(DASHBOARD_STORAGE_KEY)||'{}')||{};}
   catch{return {};}
 })();
 const STORED_ROWS=Array.isArray(DASHBOARD_STATE.rows)?DASHBOARD_STATE.rows:[];
 const STORED_ROW_MAP=new Map(STORED_ROWS.map(row=>[row.id,row]));
-const SOURCE_SCREENS=SCREENS.map(screen=>{
-  const stored=STORED_ROW_MAP.get(screen.id)||{};
-  const merged={...screen,...stored};
-  merged.video=safeAssetUrl(stored.video)?stored.video:screen.video;
-  return merged;
-});
+
+// Centralizamos la lógica de mezcla para asegurar que el video y precio sean los del dashboard
+const SOURCE_SCREENS=SCREENS.map(screen=>({
+  ...screen,
+  ...(STORED_ROW_MAP.get(screen.id)||{})
+}));
+
 const BRAND={...DEFAULT_BRAND,...(CONFIG.brand||{}),...(DASHBOARD_STATE.brand||{})};
 const THEME=CONFIG.theme||{};
 const DEFAULT_ACTIVE_SCREEN_IDS=[1,2,3,4,5,6,7,10,13,16,18];
 let map, activeZone='Todos', activeSort='recommended', markers={}, selectedScreens=[], quoteDuration='1s', activeScreenId=null, mobileQuoteOpen=false, mobileNavOpen=false, mobileFiltersOpen=false, lastScreenTrigger=null, lastQuoteTrigger=null, lastFilterTrigger=null;
+let quoteDatePicker;
 const STORED_ACTIVE_SCREEN_IDS=Array.isArray(DASHBOARD_STATE.rows)?STORED_ROWS.filter(row=>row.status==='Activo').map(row=>row.id):null;
 const ACTIVE_SCREEN_IDS = STORED_ACTIVE_SCREEN_IDS || (Array.isArray(CONFIG.inventory?.activeScreenIds)&&CONFIG.inventory.activeScreenIds.length?CONFIG.inventory.activeScreenIds:DEFAULT_ACTIVE_SCREEN_IDS);
 const ACTIVE_SCREENS = ACTIVE_SCREEN_IDS.map(id=>SOURCE_SCREENS.find(s=>s.id===id)).filter(Boolean);
@@ -456,6 +459,22 @@ function fitMapToActiveZone(){
 }
 
 function selectedDuration(){
+  if (quoteDatePicker && quoteDatePicker.selectedDates.length === 2) {
+    const start = quoteDatePicker.selectedDates[0];
+    const end = quoteDatePicker.selectedDates[1];
+    const diffDays = Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24)) + 1;
+    
+    // Multiplicador lineal básico (puedes añadir descuentos aquí también)
+    const mult = diffDays / 7;
+
+    return {
+      v: 'custom',
+      l: `${diffDays} días`,
+      mult: mult,
+      days: diffDays,
+      range: [start, end]
+    };
+  }
   return DURATIONS.find(d=>d.v===quoteDuration)||DURATIONS[0];
 }
 
@@ -574,18 +593,66 @@ async function buildMediaKitFromQuote(){
   return kit;
 }
 
-async function generateMediaKit(id=null){
+/**
+ * Genera un Media Kit evitando el bloqueo de ventanas emergentes (popups).
+ * La ventana se abre de forma sincrónica inmediatamente tras el gesto del usuario.
+ */
+function generateMediaKit(id=null){
   ensureQuoteScreen(id);
-  const popup=window.open('about:blank','_blank','noopener');
-  const kit=await buildMediaKitFromQuote();
-  if(!kit)return;
-  const kits=[kit,...storedPublicKits().filter(item=>item.id!==kit.id)].slice(0,12);
-  localStorage.setItem(PUBLIC_KITS_STORAGE_KEY,JSON.stringify(kits));
-  updateMediaKitLinks(kit.id);
-  showGeneratedFeedback(kit);
-  const href=`./mediakit.html?id=${encodeURIComponent(kit.id)}`;
-  if(popup)popup.location.href=href;
-  else window.open(href,'_blank','noopener');
+  
+  // 1. Abrir la pestaña inmediatamente (Sincrónico) para garantizar que el navegador lo permita.
+  const popup = window.open('', '_blank');
+  
+  if (!popup) {
+    showFeedback('Ventana bloqueada. Por favor, habilita los popups para este sitio.');
+    return;
+  }
+
+  // 2. Mostrar un estado de carga en la nueva pestaña para mejorar la UX.
+  popup.document.write(`
+    <html>
+      <head>
+        <title>Generando Propuesta - ${h(BRAND.name)}</title>
+        <style>
+          body { margin: 0; background: #f6f8fb; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+          .container { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; color: #0f172a; }
+          .logo { width: 54px; height: 54px; background: ${THEME.primary || '#0369a1'}; color: white; border-radius: 14px; display: grid; place-items: center; font-weight: 950; font-size: 24px; margin-bottom: 24px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
+          .spinner { width: 36px; height: 36px; border: 3px solid #e2e8f0; border-top-color: ${THEME.primary || '#0369a1'}; border-radius: 50%; animation: spin 0.8s infinite linear; margin-bottom: 20px; }
+          h2 { margin: 0 0 8px; font-size: 22px; font-weight: 800; color: #1e293b; }
+          p { margin: 0; color: #64748b; font-size: 15px; max-width: 280px; line-height: 1.5; }
+          @keyframes spin { to { transform: rotate(360deg); } }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="logo">${h(BRAND.logo)}</div>
+          <div class="spinner"></div>
+          <h2>Preparando Media Kit</h2>
+          <p>Estamos procesando las pantallas y generando la firma de seguridad para <strong>${h(BRAND.name)}</strong>.</p>
+        </div>
+      </body>
+    </html>
+  `);
+  popup.document.close();
+
+  // 3. Ejecutar la lógica asíncrona (firma digital)
+  buildMediaKitFromQuote().then(kit => {
+    if (!kit) {
+      popup.close();
+      return;
+    }
+    const kits = [kit, ...storedPublicKits().filter(item => item.id !== kit.id)].slice(0, 12);
+    localStorage.setItem(PUBLIC_KITS_STORAGE_KEY, JSON.stringify(kits));
+    updateMediaKitLinks(kit.id);
+    showGeneratedFeedback(kit);
+    
+    // 4. Redirigir la ventana ya abierta al destino final.
+    popup.location.href = `./mediakit.html?id=${encodeURIComponent(kit.id)}`;
+  }).catch(err => {
+    console.error('Error al generar Media Kit:', err);
+    popup.close();
+    showFeedback('Error al generar el Media Kit');
+  });
 }
 
 function toggleQuoteScreen(id){
@@ -737,6 +804,27 @@ function bindEvents(){
 window.addEventListener('DOMContentLoaded',()=>{
   applyTheme();
   applyBrand();
+  
+  // Escuchar cambios desde otras pestañas (Dashboard)
+  window.addEventListener('storage', (e) => {
+    if (e.key === DASHBOARD_STORAGE_KEY) {
+      location.reload(); // Recarga simple para refrescar el estado global
+    }
+  });
+  
+  // Inicializar DatePicker en Brochure
+  quoteDatePicker = flatpickr("#duration-select", {
+    mode: "range",
+    dateFormat: "d/m/Y",
+    minDate: "today",
+    defaultDate: [new Date(), new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)],
+    disable: Shared.getReservedDates(), // Bloquea las fechas reservadas
+    onChange: function() {
+      renderQuote();
+      renderBrochure();
+    }
+  });
+
   updateMediaKitLinks();
   bindEvents();
   initMap();
