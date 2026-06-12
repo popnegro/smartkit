@@ -12,6 +12,12 @@ const SmartKitShared = (() => {
   const DASHBOARD_STORAGE_KEY = `${STORAGE_PREFIX}dashboard-state`;
   const AUTH_SESSION_KEY = `${STORAGE_PREFIX}admin-session`;
 
+  const TIPO_COL = {
+    Peatonal: '#0891b2',
+    Vehicular: '#b45309',
+    Mixto: '#4f46e5'
+  };
+
   // Helper para detectar entornos locales o de staging (Developer Experience)
   const isDev = () => 
     window.APP_CONFIG?.isStaging || 
@@ -191,9 +197,20 @@ const SmartKitShared = (() => {
     return /^(assets\/|\.\/assets\/|https:\/\/)/.test(url) ? url : '';
   }
 
+  function isExpired(isoDate) {
+    if (!isoDate) return false;
+    const limit = new Date(isoDate);
+    limit.setHours(23, 59, 59, 999);
+    return new Date() > limit;
+  }
+
   function safeBackground(value) {
     const bg = String(value || '');
     return bg.startsWith('linear-gradient(') ? bg : '';
+  }
+
+  function markerHtml(s) {
+    return `<div class="marker" style="color:${TIPO_COL[s.type] || '#334155'}; border-color: currentColor;">${s.initials || '•'}</div>`;
   }
 
   function screenSnapshot(screen, duration = { mult: 1 }) {
@@ -205,6 +222,8 @@ const SmartKitShared = (() => {
       type: screen.tipo,
       format: screen.dim,
       resolution: screen.res,
+      lat: screen.lat,
+      lng: screen.lng,
       impactsDay: screen.imp,
       priceWeek: screen.precio,
       subtotal: Math.round(screen.precio * duration.mult),
@@ -214,6 +233,23 @@ const SmartKitShared = (() => {
     };
   }
 
+  async function signMediaKit(kit, options = {}) {
+    // Simulación de firma digital (Placeholder para evitar errores en app.js)
+    return {
+      state: 'valid',
+      signer: options.signer || 'SmartKit System',
+      algorithm: 'HS256-Simulated',
+      signedAt: new Date().toISOString(),
+      hash: btoa(JSON.stringify(kit.id)).slice(0, 32),
+      value: 'sim-sig-' + Math.random().toString(36).slice(2)
+    };
+  }
+
+  async function verifyMediaKitSignature(kit) {
+    // Verificación simulada para mediakit.js
+    return kit.digitalSignature || { state: 'unsigned' };
+  }
+
   return {
     DEFAULT_BRAND,
     PUBLIC_KITS_STORAGE_KEY,
@@ -221,10 +257,14 @@ const SmartKitShared = (() => {
     isAuthenticated,
     login,
     logout,
+    isExpired,
     fetchScreens,
     escapeHtml,
     formatMoney,
+    markerHtml,
     latestMediaKitId,
+    signMediaKit,
+    verifyMediaKitSignature,
     safeAssetUrl,
     safeBackground,
     screenSnapshot,

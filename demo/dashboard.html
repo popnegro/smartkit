@@ -309,6 +309,20 @@ tr.selected{background:#eef8ff}
               <label for="kit-zone">Zona</label>
               <select id="kit-zone"></select>
             </div>
+            <div class="field">
+              <label for="kit-validity-override">Validez Propuesta</label>
+              <select id="kit-validity-override">
+                <option value="7">7 días</option>
+                <option value="15" selected>15 días</option>
+                <option value="30">30 días</option>
+              </select>
+            </div>
+          </div>
+          <div class="section-pad">
+            <div class="field">
+              <label for="kit-terms-override">Notas o términos específicos para este cliente</label>
+              <textarea id="kit-terms-override" placeholder="Ej: Precio especial por lanzamiento..."></textarea>
+            </div>
           </div>
           <div class="panel-head">
             <div>
@@ -471,14 +485,6 @@ async function loadDashboard(){
   }
   // --- Fin Placeholder Supabase ---
 
-  // Cargamos inventario usando la lógica compartida (Caché + Red)
-  const screensSource = await Shared.fetchScreens();
-  rows = screensSource.map(screen => ({
-    ...screen,
-    status: activeIds.has(screen.id) ? 'Activo' : 'Pausado',
-    note: ''
-  }));
-
   if(Array.isArray(state.rows)){
     const storedById = new Map(state.rows.map(row => [row.id,row]));
     rows = rows.map(row => ({...row,...(storedById.get(row.id) || {})}));
@@ -527,7 +533,7 @@ function updatePublicKitArchive(id, archived){
   localStorage.setItem(PUBLIC_KITS_STORAGE_KEY, JSON.stringify(updated));
 }
 
-function persistState(message='Cambios guardados localmente'){
+async function persistState(message='Cambios guardados localmente'){
   const state = {
     brand,
     rows: rows.map(row => ({
@@ -618,7 +624,9 @@ function buildKitPayload(status='Borrador'){
   const impacts = screens.reduce((sum,row)=>sum + imp(row) * duration.days,0);
   const createdAt = new Date();
   const validUntil = new Date(createdAt);
-  validUntil.setDate(validUntil.getDate() + 15);
+  const daysValidity = parseInt(document.getElementById('kit-validity-override').value) || 15;
+  validUntil.setDate(validUntil.getDate() + daysValidity);
+  
   return {
     id: `kit-${kitSlug(client)}-${createdAt.getTime()}`,
     client,
@@ -635,8 +643,8 @@ function buildKitPayload(status='Borrador'){
     status,
     createdAt: createdAt.toISOString(),
     validUntil: validUntil.toISOString().slice(0,10),
-    terms: document.getElementById('settings-terms').value.trim(),
-    validity: document.getElementById('settings-validity').value,
+    terms: document.getElementById('kit-terms-override').value.trim() || document.getElementById('settings-terms').value.trim(),
+    validity: `${daysValidity} días`,
     brand:{...brand}
   };
 }
