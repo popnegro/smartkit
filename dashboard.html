@@ -24,14 +24,15 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .main{min-width:0;padding:22px}
 .topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
 .eyebrow{display:block;color:var(--muted);font-size:11px;font-weight:950;letter-spacing:.04em;text-transform:uppercase}
-h1,h2,h3,p{margin-top:0}
-h1{font-size:28px;line-height:1.15;margin-bottom:6px}
+h1,h2,h3,p{margin:0}
+h1{font-size:24px;letter-spacing:-0.02em;line-height:1.2;margin-bottom:4px}
 h2{font-size:18px;line-height:1.2;margin-bottom:0}
 .topbar p{color:var(--muted);margin-bottom:0}
 .actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-.btn{min-height:40px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--text);font-weight:850;padding:0 12px}
+.btn{min-height:40px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--text);font-weight:850;padding:0 16px;transition: all 0.2s ease}
+.btn:hover{background: var(--panel-soft); border-color: var(--muted)}
 .btn.primary{background:var(--primary-strong);border-color:var(--primary-strong);color:#fff}
-.btn.success{background:var(--success);border-color:var(--success);color:#fff}
+.btn.success{background:var(--success);border-color:var(--success);color:#fff; box-shadow: 0 2px 4px rgba(22, 101, 52, 0.2)}
 .btn.ghost{background:transparent}
 .kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:16px}
 .kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px}
@@ -55,13 +56,14 @@ th,td{padding:12px 16px;border-bottom:1px solid var(--line);text-align:left;vert
 th{color:var(--muted);font-size:11px;font-weight:950;text-transform:uppercase;background:#fff;position:sticky;top:0;z-index:1}
 td{font-size:14px}
 tr.selected{background:#eef8ff}
+tr.selected td:first-child{box-shadow: inset 4px 0 0 var(--primary)}
 .screen-cell{display:flex;align-items:center;gap:10px;min-width:230px}
 .screen-icon{width:38px;height:38px;border-radius:10px;background:#e0f2fe;display:grid;place-items:center;font-size:19px}
 .screen-cell strong{display:block}
 .screen-cell span{display:block;color:var(--muted);font-size:12px}
 .badge{display:inline-flex;align-items:center;min-height:26px;border-radius:999px;border:1px solid var(--line);background:#fff;color:#334155;font-size:12px;font-weight:900;padding:0 9px;white-space:nowrap}
 .badge.active{background:#dcfce7;border-color:#86efac;color:#166534}
-.badge.paused{background:#f1f5f9;border-color:#cbd5e1;color:#475569}
+.badge.paused{background:#f8fafc;border-color:#cbd5e1;color:#64748b}
 .badge.warning{background:#fef3c7;border-color:#fcd34d;color:#92400e}
 .row-actions{display:flex;gap:6px;flex-wrap:wrap}
 .icon-btn{width:auto;min-width:36px;height:36px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--text);font-weight:950;padding:0 10px}
@@ -69,16 +71,31 @@ tr.selected{background:#eef8ff}
 .icon-btn.pause{border-color:#cbd5e1;background:#f8fafc;color:#475569}
 .drawer{display:grid;gap:14px;padding:16px;position:sticky;top:22px}
 .preview{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#0d1728;color:#fff}
-.preview-media{height:136px;display:grid;place-items:center;font-size:44px;background:linear-gradient(135deg,var(--primary-strong),#0f766e);position:relative}
+.preview-media{height:120px;display:grid;place-items:center;font-size:44px;background:linear-gradient(135deg,var(--primary-strong),#0f766e);position:relative}
 .preview-media video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .preview-body{padding:14px}
 .preview-body h3{margin-bottom:4px}
 .preview-body p{color:#cbd5e1;margin-bottom:10px}
+.editor{max-height: calc(100vh - 400px); overflow-y: auto; padding-right: 4px}
+.editor::-webkit-scrollbar{width:4px}
+.editor::-webkit-scrollbar-thumb{background:var(--line);border-radius:10px}
 .metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .metric{border:1px solid #213047;border-radius:10px;background:#111c31;padding:10px}
 .metric span{display:block;color:#94a3b8;font-size:12px}
 .metric b{display:block;font-size:16px}
 .editor{display:grid;gap:10px}
+/* Stepper Styles */
+.stepper-nav{display:flex;justify-content:center;gap:32px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.step-item{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;font-weight:850;opacity:0.5;transition:0.3s}
+.step-item.active{opacity:1;color:var(--primary-strong)}
+.step-item.completed{opacity:0.8;color:var(--success)}
+.step-num{width:26px;height:26px;border-radius:50%;background:var(--line);display:grid;place-items:center;color:var(--text);font-size:12px}
+.step-item.active .step-num{background:var(--primary-strong);color:#fff}
+.step-item.completed .step-num{background:var(--success);color:#fff}
+.step-panel{display:none}
+.step-panel.active{display:grid;gap:16px}
+.step-footer{display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+
 .status-line{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);border-radius:12px;background:var(--panel-soft);padding:10px 12px;color:var(--muted);font-size:13px}
 .status-line strong{color:var(--text)}
 .section[hidden]{display:none!important}
@@ -160,7 +177,6 @@ tr.selected{background:#eef8ff}
         <p id="page-copy">Administra inventario, disponibilidad, precios y vista comercial desde una sola superficie.</p>
       </div>
       <div class="actions">
-        <a class="btn ghost" href="./index.html">Ver brochure</a>
         <button class="btn" type="button" id="export-btn">Exportar CSV</button>
         <button class="btn primary" type="button" id="save-btn">Guardar cambios</button>
       </div>
@@ -276,55 +292,85 @@ tr.selected{background:#eef8ff}
 
     <section class="section" id="section-mediakits" hidden>
       <div class="kit-layout">
-        <section class="panel" aria-label="Constructor de media kit">
-          <div class="panel-head">
-            <div>
-              <span class="eyebrow">Media Kit</span>
-              <h2>Crear propuesta comercial</h2>
-            </div>
-            <span class="badge warning" id="kit-state">Borrador</span>
-          </div>
-          <div class="filters">
+        <section class="panel section-pad" aria-label="Constructor de media kit">
+          <nav class="stepper-nav">
+            <div class="step-item active" data-step-nav="1"><span class="step-num">1</span> Datos</div>
+            <div class="step-item" data-step-nav="2"><span class="step-num">2</span> Inventario</div>
+            <div class="step-item" data-step-nav="3"><span class="step-num">3</span> Revisión</div>
+          </nav>
+
+          <div class="step-panel active" data-step-panel="1">
+            <div class="panel-head compact"><div><span class="eyebrow">Paso 1</span><h2>Información del cliente</h2></div></div>
             <div class="field">
-              <label for="kit-client">Cliente</label>
-              <input id="kit-client" type="text" placeholder="Ej: Bodega Trapiche">
-            </div>
-            <div class="field">
-              <label for="kit-contact">Contacto</label>
-              <input id="kit-contact" type="text" placeholder="Nombre y apellido">
+              <label for="kit-client">Cliente / Campaña</label>
+              <input id="kit-client" type="text" placeholder="Ej: Bodega Trapiche - Lanzamiento Verano">
             </div>
             <div class="field">
-              <label for="kit-duration">Duracion</label>
+              <label for="kit-contact">Persona de contacto</label>
+              <input id="kit-contact" type="text" placeholder="Nombre y apellido o Departamento">
+            </div>
+            <div class="field">
+              <label for="kit-duration">Duración de la campaña</label>
               <select id="kit-duration"></select>
             </div>
-            <div class="field">
-              <label for="kit-zone">Zona</label>
-              <select id="kit-zone"></select>
+            <div class="step-footer">
+              <span></span>
+              <button class="btn primary" type="button" onclick="setKitStep(2)">Siguiente: Seleccionar pantallas</button>
             </div>
           </div>
-          <div class="panel-head">
-            <div>
-              <span class="eyebrow">Seleccion</span>
-              <h2>Pantallas del mediakit</h2>
+
+          <div class="step-panel" data-step-panel="2">
+            <div class="panel-head compact">
+              <div><span class="eyebrow">Paso 2</span><h2>Selección de pantallas</h2></div>
+              <span class="badge active" id="kit-selected-count">0 seleccionadas</span>
             </div>
-            <span class="badge active" id="kit-selected-count">0 seleccionadas</span>
+            <div class="filters" style="grid-template-columns: 1fr 1fr; padding:0; background:transparent; border:0">
+              <div class="field">
+                <label for="kit-search">Buscar pantalla</label>
+                <input id="kit-search" type="search" placeholder="Nombre o dirección...">
+              </div>
+              <div class="field">
+                <label for="kit-zone">Zona</label>
+                <select id="kit-zone"></select>
+              </div>
+            </div>
+            <div class="kit-screen-list" id="kit-screen-list"></div>
+            <div class="step-footer">
+              <button class="btn ghost" type="button" onclick="setKitStep(1)">Atrás</button>
+              <button class="btn primary" type="button" id="btn-to-step-3" onclick="setKitStep(3)">Siguiente: Revisar propuesta</button>
+            </div>
           </div>
-          <div class="kit-screen-list" id="kit-screen-list"></div>
+
+          <div class="step-panel" data-step-panel="3">
+            <div class="panel-head compact">
+              <div><span class="eyebrow">Paso 3</span><h2>Resumen y confirmación</h2></div>
+              <span class="badge warning" id="kit-state">Borrador listo</span>
+            </div>
+            <p class="muted">Revisa los totales y la validez antes de archivar el Media Kit. Podrás editar los datos de marca en la pestaña Configuración.</p>
+            <div class="kit-summary" id="kit-final-metrics">
+              <!-- Se llena dinamicamente -->
+            </div>
+            <div class="step-footer">
+              <button class="btn ghost" type="button" onclick="setKitStep(2)">Atrás</button>
+              <div class="actions">
+                <button class="btn success" type="button" id="kit-save-btn">Finalizar y Archivar</button>
+              </div>
+            </div>
+          </div>
         </section>
 
         <aside class="panel kit-preview" aria-label="Preview de media kit">
           <div class="panel-head compact">
             <div>
               <span class="eyebrow">Preview</span>
-              <h2>Documento para cliente</h2>
+              <h2>Vista del cliente</h2>
             </div>
-            <button class="btn primary" type="button" id="kit-save-btn">Archivar borrador</button>
           </div>
           <div class="kit-doc" id="kit-preview"></div>
           <div class="panel">
             <div class="panel-head">
               <div>
-                <span class="eyebrow">Historial</span>
+                <span class="eyebrow">Repositorio</span>
                 <h2>Kits generados</h2>
               </div>
             </div>
@@ -391,6 +437,7 @@ let selectedId = (config.inventory?.activeScreenIds || [SCREENS[0]?.id])[0];
 let rows = SCREENS.map(screen => ({
   ...screen,
   status: activeIds.has(screen.id) ? 'Activo' : 'Pausado',
+  video: screen.video || '',
   note: ''
 }));
 let currentSection = 'inventory';
@@ -681,6 +728,28 @@ function setSection(section){
   if(section==='metrics')renderMetrics();
 }
 
+function setKitStep(n){
+  const client = document.getElementById('kit-client').value.trim();
+  
+  // Validación básica
+  if(n > 1 && !client){
+    showToast('Por favor, indica el nombre del cliente');
+    document.getElementById('kit-client').focus();
+    return;
+  }
+  if(n === 3 && kitSelected.size === 0){
+    showToast('Selecciona al menos una pantalla para continuar');
+    return;
+  }
+
+  document.querySelectorAll('[data-step-nav]').forEach(el => el.classList.toggle('active', Number(el.dataset.stepNav) === n));
+  // Marcar completados
+  document.querySelectorAll('[data-step-nav]').forEach(el => {
+    el.classList.toggle('completed', Number(el.dataset.stepNav) < n);
+  });
+  document.querySelectorAll('[data-step-panel]').forEach(el => el.classList.toggle('active', Number(el.dataset.stepPanel) === n));
+}
+
 function selectedDuration(){
   return DURATIONS.find(duration => duration.v === document.getElementById('kit-duration').value) || DURATIONS[0];
 }
@@ -690,8 +759,10 @@ function kitScreens(){
 }
 
 function renderKitBuilder(){
+  const query = document.getElementById('kit-search')?.value.toLowerCase() || '';
   const zone = document.getElementById('kit-zone').value || 'Todos';
-  const visible = rows.filter(row => row.status === 'Activo' && (zone === 'Todos' || row.b === zone));
+  const visible = rows.filter(row => row.status === 'Activo' && (zone === 'Todos' || row.b === zone) && 
+    (!query || row.n.toLowerCase().includes(query) || row.dir.toLowerCase().includes(query)));
   document.getElementById('kit-screen-list').innerHTML = visible.map(row => `
     <label class="kit-screen">
       <input type="checkbox" data-kit-screen="${row.id}" ${kitSelected.has(row.id)?'checked':''}>
@@ -709,28 +780,26 @@ function renderKitPreview(){
   const client = document.getElementById('kit-client').value.trim() || 'Cliente sin nombre';
   const total = screens.reduce((sum,row)=>sum + row.precio * duration.mult,0);
   const impacts = screens.reduce((sum,row)=>sum + imp(row) * duration.days,0);
+  const cpm = screens.length ? fmt(total/(impacts||1)*1000) : '$0';
+  const terms = document.getElementById('settings-terms').value.trim();
+  
   document.getElementById('kit-selected-count').textContent = `${screens.length} ${screens.length===1?'seleccionada':'seleccionadas'}`;
   document.getElementById('kit-state').textContent = screens.length ? 'Borrador listo' : 'Borrador';
+  
+  const metricsHtml = `
+    <div class="kpi"><b>${screens.length}</b><span>Pantallas</span></div>
+    <div class="kpi"><b>${Math.round(impacts/1000).toLocaleString('es-AR')}k</b><span>Impactos</span></div>
+    <div class="kpi"><b>${fmt(total)}</b><span>Inversión</span></div>
+    <div class="kpi"><b>${cpm}</b><span>CPM</span></div>`;
+  
+  const metricsContainer = document.getElementById('kit-final-metrics');
+  if(metricsContainer) metricsContainer.innerHTML = metricsHtml;
+
   document.getElementById('kit-preview').innerHTML = `
-    <div class="kit-doc-hero">
-      <span class="eyebrow" style="color:#bae6fd">Media Kit</span>
-      <h2>${h(brand.name)} para ${h(client)}</h2>
-      <p>${h(document.getElementById('kit-contact').value.trim() || 'Contacto a confirmar')} · ${h(duration.l)}</p>
-    </div>
-    <div class="kit-doc-body">
-      <div class="kit-summary">
-        <div class="kpi"><b>${screens.length}</b><span>Pantallas</span></div>
-        <div class="kpi"><b>${Math.round(impacts/1000).toLocaleString('es-AR')}k</b><span>Impactos estimados</span></div>
-        <div class="kpi"><b>${fmt(total)}</b><span>Inversion</span></div>
-        <div class="kpi"><b>${screens.length ? fmt(total/(impacts||1)*1000) : '$0'}</b><span>CPM plan</span></div>
-      </div>
-      <div class="kit-list">
-        ${screens.length?screens.map(row=>`
-          <div class="kit-row">
-            <span><strong>${h(row.e)} ${h(row.n)}</strong><br><small>${h(row.b)} · ${h(row.dim)} · ${h(row.res)}</small></span>
-            <strong>${fmt(row.precio * duration.mult)}</strong>
-          </div>`).join(''):'<div class="kit-row"><span>Selecciona pantallas para generar el resumen comercial.</span></div>'}
-      </div>
+    <div class="kit-doc-hero"><span class="eyebrow" style="color:#bae6fd">Propuesta</span><h2>${h(client)}</h2><p>${h(duration.l)}</p></div>
+    <div class="kit-doc-body"><div class="kit-summary">${metricsHtml}</div>
+    <div class="kit-list">${screens.map(row=>`<div class="kit-row"><span><strong>${h(row.n)}</strong><br><small>${h(row.b)}</small></span><strong>${fmt(row.precio*duration.mult)}</strong></div>`).join('')}</div>
+    ${terms ? `<div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--line); font-size:11px; color:var(--muted); line-height:1.4"><strong>Condiciones legales:</strong><br>${h(terms)}</div>` : ''}
     </div>
   `;
 }
@@ -748,6 +817,7 @@ function saveKit(){
   };
   savedKits = [kit,...savedKits].slice(0,8);
   renderKitHistory();
+  setKitStep(1); // Reiniciar stepper al guardar
   persistState('Media kit guardado en archivados');
 }
 
@@ -787,19 +857,28 @@ function renderKitHistory(){
 
 function renderMetrics(){
   const active = rows.filter(row => row.status === 'Activo');
+  const totalReach = active.reduce((acc,row) => acc + imp(row), 0);
   const byZone = active.reduce((acc,row)=>{acc[row.b]=(acc[row.b]||0)+imp(row);return acc;},{});
   const byType = active.reduce((acc,row)=>{acc[row.tipo]=(acc[row.tipo]||0)+1;return acc;},{});
+  const colors = [
+    'linear-gradient(90deg,#0369a1,#0ea5e9)',
+    'linear-gradient(90deg,#0f766e,#2dd4bf)',
+    'linear-gradient(90deg,#7c3aed,#a78bfa)',
+    'linear-gradient(90deg,#c026d3,#e879f9)',
+    'linear-gradient(90deg,#ea580c,#fb923c)',
+    'linear-gradient(90deg,#be123c,#fb7185)'
+  ];
   const maxZone = Math.max(...Object.values(byZone),1);
-  document.getElementById('zone-chart').innerHTML = Object.entries(byZone).sort((a,b)=>b[1]-a[1]).map(([zone,value])=>`
+  document.getElementById('zone-chart').innerHTML = Object.entries(byZone).sort((a,b)=>b[1]-a[1]).map(([zone,value], i)=>`
     <div class="chart-row">
-      <div class="chart-meta"><strong>${zone}</strong><span>${value.toLocaleString('es-AR')} imp/dia</span></div>
-      <div class="bar"><div class="bar-fill" style="width:${(value/maxZone*100).toFixed(1)}%"></div></div>
+      <div class="chart-meta"><strong>${zone}</strong><span><b>${value.toLocaleString('es-AR')}</b> <small class="muted">(${((value/totalReach)*100).toFixed(1)}%)</small></span></div>
+      <div class="bar"><div class="bar-fill" style="width:${(value/maxZone*100).toFixed(1)}%; background:${colors[i % colors.length]}"></div></div>
     </div>
   `).join('');
-  document.getElementById('type-chart').innerHTML = Object.entries(byType).map(([type,value])=>`
+  document.getElementById('type-chart').innerHTML = Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([type,value], i)=>`
     <div class="chart-row">
-      <div class="chart-meta"><strong>${type}</strong><span>${value} pantalla${value===1?'':'s'}</span></div>
-      <div class="bar"><div class="bar-fill" style="width:${(value/(active.length||1)*100).toFixed(1)}%"></div></div>
+      <div class="chart-meta"><strong>${type}</strong><span><b>${value}</b> <small class="muted">(${((value/(active.length||1))*100).toFixed(1)}%)</small></span></div>
+      <div class="bar"><div class="bar-fill" style="width:${(value/(active.length||1)*100).toFixed(1)}%; background:${colors[(i+2) % colors.length]}"></div></div>
     </div>
   `).join('');
 }
@@ -818,6 +897,8 @@ function bindEvents(){
   ['kit-duration','kit-zone'].forEach(id=>{
     document.getElementById(id).addEventListener('change', renderKitBuilder);
   });
+  document.getElementById('kit-search').addEventListener('input', renderKitBuilder);
+  document.getElementById('settings-terms').addEventListener('input', renderKitPreview);
   document.addEventListener('click', event => {
     const target = event.target.closest('[data-action]');
     if(!target)return;
@@ -885,6 +966,8 @@ function bindEvents(){
     brand.name = document.getElementById('settings-brand').value.trim() || brand.name;
     brand.logo = document.getElementById('settings-logo').value.trim() || brand.logo;
     brand.whatsapp = document.getElementById('settings-whatsapp').value.trim() || brand.whatsapp;
+    brand.terms = document.getElementById('settings-terms').value.trim();
+    brand.validity = document.getElementById('settings-validity').value;
     applyBrand();
     renderKitPreview();
     persistState('Configuracion aplicada');
@@ -899,6 +982,8 @@ bindEvents();
 document.getElementById('settings-brand').value = brand.name;
 document.getElementById('settings-logo').value = brand.logo;
 document.getElementById('settings-whatsapp').value = brand.whatsapp || '';
+if(brand.terms) document.getElementById('settings-terms').value = brand.terms;
+if(brand.validity) document.getElementById('settings-validity').value = brand.validity;
 renderKitHistory();
 renderKitBuilder();
 selectRow(selectedId);
