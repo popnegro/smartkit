@@ -33,6 +33,9 @@ const SmartKitShared = (() => {
     'Mantenimiento': { bg: '#fef9c3', text: '#854d0e', icon: 'build' }
   };
 
+  // Helper para detectar si el usuario prefiere movimiento reducido
+  const prefersReducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
   // Helper para detectar entornos locales o de staging (Developer Experience)
   const isDev = () => 
     window.APP_CONFIG?.isStaging || 
@@ -59,7 +62,9 @@ const SmartKitShared = (() => {
   }
 
   async function fetchScreens(options = {}) {
-    const apiEndpoint = (window.APP_CONFIG?.api?.screensUrl) || 'https://api.ejemplo.com/v1/screens';
+    const apiEndpoint = window.APP_CONFIG?.api?.screensUrl || 
+      (isDev() ? '/api/screens' : 'https://api.smartkit.io/v1/screens');
+
     const cacheName = 'smartkit-inventory-v1';
     const isDashboard = window.location.pathname.includes('dashboard.html');
     const force = options.forceRefresh === true;
@@ -158,8 +163,10 @@ const SmartKitShared = (() => {
     const devMode = isDev();
 
     // 1. Intento de autenticación mediante el Servidor Express (JWT)
+    const apiBase = window.APP_CONFIG?.api?.baseUrl || '';
+
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch(`${apiBase}/api/auth/login`.replace('//', '/'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -257,6 +264,33 @@ const SmartKitShared = (() => {
     return `<div class="marker" style="color:${TIPO_COL[s.type] || '#334155'}; border-color: currentColor;">${s.initials || '•'}</div>`;
   }
 
+  // Helper para videos, usado en brochure y mediakit
+  function screenVideoHtml(s, eager = false) {
+    const videoUrl = safeAssetUrl(s.video);
+    if (!videoUrl) return `<span>${escapeHtml(s.e)}</span>`;
+    const sourceAttr = eager && !prefersReducedMotion() ? `src="${escapeHtml(videoUrl)}"` : `data-src="${escapeHtml(videoUrl)}"`;
+    const autoplay = prefersReducedMotion() ? '' : 'autoplay';
+    const preload = eager ? 'metadata' : 'none';
+    return `<span class="media-fallback" aria-hidden="true">${escapeHtml(s.e)}</span><video ${sourceAttr} ${autoplay} muted loop playsinline preload="${preload}" aria-label="Video de ${escapeHtml(s.n)}" onerror="this.hidden=true"></video>`;
+  }
+
+  // Carga videos de forma lazy
+  function loadLazyVideos(root = document) {
+    const videos = [...root.querySelectorAll('video[data-src]')];
+    if (!videos.length) return;
+    const load = video => {
+      if (video.src) return;
+      video.src = video.dataset.src;
+      video.removeAttribute('data-src');
+      video.load();
+      if (!prefersReducedMotion()) video.play().catch(() => {});
+    };
+    if (!('IntersectionObserver' in window)) { videos.slice(0, 4).forEach(load); return; }
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => { if (entry.isIntersecting) { load(entry.target); observer.unobserve(entry.target); } });
+    }, { rootMargin: '220px' });
+    videos.forEach(video => observer.observe(video));
+  }
   function screenSnapshot(screen, duration = { mult: 1 }) {
     return {
       id: screen.id,
@@ -286,52 +320,58 @@ const SmartKitShared = (() => {
     return JSON.stringify(payload, Object.keys(payload).sort());
   }
 
+  // Reference to the API client, will be available after api-client.js loads
+  let SmartKitApi = null;
+  // Function to get the API client, ensuring it's loaded
+  function getSmartKitApi() {
+    if (!SmartKitApi && window.SmartKitApi) {
+      SmartKitApi = window.SmartKitApi;
+    }
+    return SmartKitApi;
+  }
   async function signMediaKit(kit, options = {}) {
-    const secret = options.secret || 'default-secret-change-me';
-    const encoder = new TextEncoder();
-
-    // 1. Generar la cadena canónica idéntica a la del backend
-    const canonicalStr = canonicalKit(kit);
-
-    // 2. Generar el hash SHA-256 de la cadena canónica (en formato hexadecimal)
-    const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(canonicalStr));
-    const hashHex = Array.from(new Uint8Array(hashBuffer))
-      .map(b => b.toString(16).padStart(2, '0')).join('');
-
-    // 3. Importar la clave para HMAC-SHA-256
-    const keyData = encoder.encode(secret);
-    const cryptoKey = await crypto.subtle.importKey(
-      'raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
-    );
-
-    // 4. Firmar el HASH hexadecimal (no el payload directo) para coincidir con node:crypto
-    const signatureBuffer = await crypto.subtle.sign('HMAC', cryptoKey, encoder.encode(hashHex));
-    const signatureHex = Array.from(new Uint8Array(signatureBuffer))
-      .map(b => b.toString(16).padStart(2, '0')).join('');
-
-    return {
-      state: 'valid',
-      signer: options.signer || 'SmartKit System',
-      algorithm: 'HMAC-SHA256',
-      signedAt: new Date().toISOString(),
-      hash: hashHex,
-      isTrusted: true,
-      value: signatureHex
-    };
+    const api = getSmartKitApi();
+    if (api) {
+      try {
+        // Send the kit payload to the backend for signing
+        const signature = await api.signMediaKit(kit);
+        return signature;
+      } catch (e) {
+        console.error('Error al firmar Media Kit con el backend:', e);
+        notify('Error al firmar Media Kit (backend no disponible)', 'error');
+      }
+    }
+    // Fallback if API is not available or fails: return an unsigned state
+    return { state: 'unsigned', signer: 'Client-side (untrusted)', algorithm: 'None', signedAt: new Date().toISOString(), hash: '', isTrusted: false, value: '' };
   }
 
   async function verifyMediaKitSignature(kit, options = {}) {
     if (!kit.digitalSignature) return { state: 'unsigned' };
     
-    const expected = await signMediaKit(kit, options);
-    if (expected.value === kit.digitalSignature.value) {
-      return { ...kit.digitalSignature, state: 'valid' };
+    const api = getSmartKitApi();
+    if (api) {
+      try {
+        // Send the kit payload and its existing signature to the backend for verification
+        const verificationResult = await api.verifyMediaKitSignature(kit, kit.digitalSignature);
+        return verificationResult;
+      } catch (e) {
+        console.error('Error al verificar firma con el backend:', e);
+        notify('Error al verificar firma (backend no disponible)', 'error');
+      }
     }
-    return kit.digitalSignature || { state: 'unsigned' };
+
+    // Fallback if API is not available or fails: assume unsigned
+    return { ...kit.digitalSignature, state: 'unsigned', isTrusted: false };
   }
 
   function getReservedDates() {
     return RESERVED_DATES;
+  }
+
+  // Helper para generar el HTML del head de una card/preview con video
+  function mediaHtml(s, className, overlay = '', eager = className === 'media') {
+    const background = safeBackground(s.g);
+    return `<div class="${className} video-head" style="background:${background}">${screenVideoHtml(s, eager)}${overlay}</div>`;
   }
 
   return {

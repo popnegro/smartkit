@@ -12,6 +12,8 @@ export const config = {
   adminEmail: process.env.ADMIN_EMAIL || 'admin@smartkit.local',
   adminPasswordHash: process.env.ADMIN_PASSWORD_HASH || '',
   dataFile: process.env.DATA_FILE || './backend/data/smartkit-db.json',
+  dbType: process.env.DB_TYPE || 'json', // 'json' o 'sqlite'
+  dbPath: process.env.DB_PATH || './backend/data/smartkit.db',
   publicDir: process.env.PUBLIC_DIR || './dist',
   signatureSecret: process.env.SIGNATURE_SECRET || ''
 };

@@ -39,6 +39,14 @@ window.SmartKitApi = (() => {
     async mediaKit(id) {
       const data = await request(`/api/media-kits/${encodeURIComponent(id)}`);
       return data.mediaKit;
+    },
+    async signMediaKit(kitPayload) {
+      const data = await request('/api/media-kits/sign', { method: 'POST', body: JSON.stringify(kitPayload) });
+      return data.digitalSignature;
+    },
+    async verifyMediaKitSignature(kitPayload, digitalSignature) {
+      const data = await request('/api/media-kits/verify', { method: 'POST', body: JSON.stringify({ kit: kitPayload, digitalSignature }) });
+      return data.verificationResult;
     }
   };
 })();

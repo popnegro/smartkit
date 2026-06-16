@@ -31,7 +31,6 @@ const activeMetrics=(()=>{
   return {totalReach};
 })();
 const whatsappPhone=BRAND.whatsapp;
-const prefersReducedMotion=()=>window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 const escapeHtml=Shared.escapeHtml;
 
@@ -67,6 +66,31 @@ function latestMediaKitId(){
 
 function updateMediaKitLinks(id=latestMediaKitId()){
   Shared.updateMediaKitLinks(id);
+}
+
+/**
+ * Sincroniza el estado actual del cotizador con los Query Params de la URL.
+ * Permite compartir "borradores" simplemente copiando el link del navegador.
+ */
+function syncStateToUrl() {
+  const url = new URL(window.location);
+  if (selectedScreens.length > 0) {
+    url.searchParams.set('ids', selectedScreens.join(','));
+  } else {
+    url.searchParams.delete('ids');
+  }
+
+  const d = selectedDuration();
+  if (d.v === 'custom' && d.range) {
+    url.searchParams.set('duration', 'custom');
+    if (d.range[0]) url.searchParams.set('start', d.range[0].toISOString().slice(0, 10));
+    if (d.range[1]) url.searchParams.set('end', d.range[1].toISOString().slice(0, 10));
+  } else {
+    url.searchParams.set('duration', quoteDuration);
+    url.searchParams.delete('start');
+    url.searchParams.delete('end');
+  }
+  window.history.replaceState({}, '', url);
 }
 
 function screenSnapshot(s,duration){
@@ -315,7 +339,7 @@ function renderScreenCard(s){
       ${selectedScreens.includes(screen.id)?`<button type="button" aria-label="Quitar ${h(screen.n)}" data-action="toggle-quote" data-screen-id="${screen.id}">×</button>`:''}
     </div>`).join(''):'<div class="quote-empty">Agrega pantallas desde el brochure para armar tu plan.</div>';
   return `
-    ${screenHead(s,'media',`<span class="badge media-badge" style="background:${TIPO_COL[s.tipo]}22;color:${TIPO_COL[s.tipo]}">${h(s.tipo)}</span>`)}
+    ${Shared.mediaHtml(s,'media',`<span class="badge media-badge" style="background:${TIPO_COL[s.tipo]}22;color:${TIPO_COL[s.tipo]}">${h(s.tipo)}</span>`)}
       <button type="button" class="close" aria-label="Cerrar ficha" data-action="close-screen">×</button>
     <div class="content screen-card">
       <h2>${h(s.n)}</h2>
@@ -578,7 +602,7 @@ async function buildMediaKitFromQuote(){
     impacts:q.impacts,
     cpm:q.impacts?Math.round(q.total/q.impacts*1000):0,
     status:'Borrador',
-    createdAt:createdAt.toISOString(),
+    createdAt: createdAt.toISOString(),
     validUntil:validUntil.toISOString().slice(0,10),
     validity:'15 días',
     executiveSummary:`Plan recomendado de ${q.screens.length} ${q.screens.length===1?'pantalla':'pantallas'} para cubrir puntos de alto tránsito durante ${q.duration.l}, con ${Math.round(q.impacts).toLocaleString('es-AR')} impactos estimados y CPM de ${fmt(q.impacts?q.total/q.impacts*1000:0)}.`,
@@ -636,11 +660,24 @@ function generateMediaKit(id=null){
   popup.document.close();
 
   // 3. Ejecutar la lógica asíncrona (firma digital)
-  buildMediaKitFromQuote().then(kit => {
+  buildMediaKitFromQuote().then(async kit => {
     if (!kit) {
       popup.close();
       return;
     }
+
+    // NUEVO: Intentar persistencia en backend antes de redirigir
+    try {
+      const response = await fetch('/api/media-kits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(kit)
+      });
+      if (response.ok) console.log('Kit sincronizado con el servidor');
+    } catch (e) {
+      console.warn('Backend no disponible, operando en modo local (localStorage)');
+    }
+
     const kits = [kit, ...storedPublicKits().filter(item => item.id !== kit.id)].slice(0, 12);
     localStorage.setItem(PUBLIC_KITS_STORAGE_KEY, JSON.stringify(kits));
     updateMediaKitLinks(kit.id);
@@ -663,6 +700,7 @@ function toggleQuoteScreen(id){
   renderQuote();
   if(activeScreenId)openScreen(activeScreenId);
   if(screen)showFeedback(wasSelected?'Quitado del cotizador':'Agregado al cotizador');
+  syncStateToUrl();
 }
 
 function ensureQuoteScreen(id){
@@ -671,6 +709,7 @@ function ensureQuoteScreen(id){
     renderBrochure();
     renderQuote();
     if(activeScreenId)openScreen(activeScreenId);
+    syncStateToUrl();
   }
 }
 
@@ -761,8 +800,10 @@ function bindEvents(){
   document.addEventListener('change',event=>{
     if(event.target.matches('[data-duration-select]')){
       quoteDuration=event.target.value;
+      if (quoteDatePicker && quoteDuration !== 'custom') quoteDatePicker.clear();
       renderQuote();
       renderBrochure();
+      syncStateToUrl();
       return;
     }
     if(event.target.matches('[data-screen-duration-select]')){
@@ -770,6 +811,7 @@ function bindEvents(){
       renderQuote();
       openScreen(Number(event.target.dataset.screenId));
       renderBrochure();
+      syncStateToUrl();
       return;
     }
     if(event.target.matches('[data-zone-select]')){
@@ -805,6 +847,18 @@ window.addEventListener('DOMContentLoaded',()=>{
   applyTheme();
   applyBrand();
   
+  // Cargar estado inicial desde URL (Borradores compartibles)
+  const params = new URLSearchParams(window.location.search);
+  const idsParam = params.get('ids');
+  if (idsParam) {
+    selectedScreens = idsParam.split(',').map(Number).filter(id => !isNaN(id));
+  }
+  const durParam = params.get('duration');
+  if (durParam) {
+    const exists = DURATIONS.some(d => d.v === durParam) || durParam === 'custom';
+    quoteDuration = exists ? durParam : '1s';
+  }
+
   // Escuchar cambios desde otras pestañas (Dashboard)
   window.addEventListener('storage', (e) => {
     if (e.key === DASHBOARD_STORAGE_KEY) {
@@ -813,15 +867,27 @@ window.addEventListener('DOMContentLoaded',()=>{
   });
   
   // Inicializar DatePicker en Brochure
+  const startParam = params.get('start');
+  const endParam = params.get('end');
+  let defaultRange = [];
+  
+  if (quoteDuration === 'custom') {
+    const startDate = startParam ? new Date(startParam) : new Date();
+    const endDate = endParam ? new Date(endParam) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    defaultRange = [startDate, endDate];
+  }
+
   quoteDatePicker = flatpickr("#duration-select", {
     mode: "range",
     dateFormat: "d/m/Y",
     minDate: "today",
-    defaultDate: [new Date(), new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)],
+    defaultDate: defaultRange,
     disable: Shared.getReservedDates(), // Bloquea las fechas reservadas
     onChange: function() {
+      if (quoteDatePicker.selectedDates.length === 2) quoteDuration = 'custom';
       renderQuote();
       renderBrochure();
+      syncStateToUrl();
     }
   });
 

@@ -1,5 +1,4 @@
 window.APP_CONFIG = {
-  isStaging: true,
   brand: {
     name: 'SmartKit',
     logo: 'SK',

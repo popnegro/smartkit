@@ -636,11 +636,24 @@ function generateMediaKit(id=null){
   popup.document.close();
 
   // 3. Ejecutar la lógica asíncrona (firma digital)
-  buildMediaKitFromQuote().then(kit => {
+  buildMediaKitFromQuote().then(async kit => {
     if (!kit) {
       popup.close();
       return;
     }
+
+    // NUEVO: Intentar persistencia en backend antes de redirigir
+    try {
+      const response = await fetch('/api/media-kits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(kit)
+      });
+      if (response.ok) console.log('Kit sincronizado con el servidor');
+    } catch (e) {
+      console.warn('Backend no disponible, operando en modo local (localStorage)');
+    }
+
     const kits = [kit, ...storedPublicKits().filter(item => item.id !== kit.id)].slice(0, 12);
     localStorage.setItem(PUBLIC_KITS_STORAGE_KEY, JSON.stringify(kits));
     updateMediaKitLinks(kit.id);

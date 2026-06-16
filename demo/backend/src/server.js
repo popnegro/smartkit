@@ -8,11 +8,17 @@ import { screensRouter } from './routes/screens.js';
 import { mediaKitsRouter } from './routes/mediaKits.js';
 import { errorHandler, notFound } from './utils/errors.js';
 
+// Importamos la inicialización de la base de datos
+import { getDb } from './database.js';
+
 assertProductionConfig();
 
 const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.resolve(__dirname, '../../..', config.publicDir);
+
+// Inicializar DB si estamos en modo SQLite
+if (config.dbType === 'sqlite') getDb();
 
 securityMiddleware(app);
 app.use(express.json({ limit: '1mb' }));
