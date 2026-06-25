@@ -243,6 +243,40 @@ function isRecommended(s){
   return activeSort==='recommended'&&byScore;
 }
 
+/**
+ * Renderiza esqueletos de carga (skeleton loaders) para el catálogo de pantallas en el brochure.
+ */
+function renderBrochureSkeleton() {
+  const container = document.getElementById('cards');
+  if (!container) return;
+  
+  const skeletonCard = `
+    <article class="card">
+      <div class="thumb skeleton" style="height: 144px;"></div>
+      <div class="card-body" style="display: grid; gap: 12px; padding: 18px;">
+        <div class="row card-head" style="justify-content: flex-end;">
+          <div class="skeleton" style="width: 50px; height: 12px;"></div>
+        </div>
+        <div class="skeleton" style="width: 80%; height: 22px; margin-top: -4px;"></div>
+        <div class="skeleton" style="width: 100%; height: 14px;"></div>
+        <div class="skeleton" style="width: 60%; height: 14px;"></div>
+        <div class="product-tags" style="display: flex; gap: 6px; margin-bottom: 8px;">
+          <div class="skeleton" style="width: 74px; height: 24px; border-radius: 999px;"></div>
+          <div class="skeleton" style="width: 62px; height: 24px; border-radius: 999px;"></div>
+        </div>
+        <div class="skeleton" style="width: 90%; height: 12px; margin-bottom: 4px;"></div>
+        <div class="skeleton" style="width: 110px; height: 26px; margin-top: 2px;"></div>
+        <div class="card-actions" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px;">
+          <div class="skeleton" style="height: 44px; border-radius: 10px;"></div>
+          <div class="skeleton" style="height: 44px; border-radius: 10px;"></div>
+        </div>
+      </div>
+    </article>
+  `;
+  
+  container.innerHTML = Array(4).fill(skeletonCard).join('');
+}
+
 function loadLazyVideos(root=document){
   const videos=[...root.querySelectorAll('video[data-src]')];
   if(!videos.length)return;
@@ -306,7 +340,7 @@ function renderBrochureCard(s, eagerVideo=false){
         <h3 class="card-title">${h(s.n)}</h3>
         <p class="muted small card-address">${h(s.dir)}</p>
         <p class="card-use-case">${h(screenUseCase(s))}</p>
-        <div class="product-tags card-product-tags">
+        <div class="product-tags card-product-tags" style="margin-bottom: 8px;">
           <span class="product-tag availability-${availability.tone}">${h(availability.label)}</span>
           <span class="product-tag">CPM ${fmt(screenCpm(s))}</span>
         </div>
@@ -545,7 +579,6 @@ function renderQuote(){
     const mobileCartMeta=document.getElementById(`${panel.prefix}mobile-quote-cart-meta`);
     const quotePanel=whatsapp?.closest('.quote-panel');
     const hasScreens=q.screens.length>0;
-    if(durationSelect)durationSelect.innerHTML=durationHtml;
     if(list)list.innerHTML=listHtml;
     if(list)list.classList.toggle('is-empty',!hasScreens);
     if(count)count.textContent=q.screens.length;
@@ -623,6 +656,13 @@ async function buildMediaKitFromQuote(){
  */
 function generateMediaKit(id=null){
   ensureQuoteScreen(id);
+  
+  // UX: Feedback visual inmediato en el botón
+  const btn = document.getElementById('quote-mediakit');
+  if(btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span>Procesando...</span>`;
+  }
   
   // 1. Abrir la pestaña inmediatamente (Sincrónico) para garantizar que el navegador lo permita.
   const popup = window.open('', '_blank');
@@ -847,6 +887,9 @@ window.addEventListener('DOMContentLoaded',()=>{
   applyTheme();
   applyBrand();
   
+  // Mostrar esqueletos inmediatamente durante la carga inicial
+  renderBrochureSkeleton();
+
   // Cargar estado inicial desde URL (Borradores compartibles)
   const params = new URLSearchParams(window.location.search);
   const idsParam = params.get('ids');
@@ -896,5 +939,9 @@ window.addEventListener('DOMContentLoaded',()=>{
   initMap();
   const initialView=new URLSearchParams(window.location.search).get('view')==='map'?'map':'brochure';
   setView(initialView,false);
-  renderBrochure();
+  
+  // Simulación de retraso para visualizar la animación del skeleton loader (600ms)
+  setTimeout(() => {
+    renderBrochure();
+  }, 600);
 });

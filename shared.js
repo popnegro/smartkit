@@ -3,7 +3,9 @@ const SmartKitShared = (() => {
     name: 'SmartKit',
     logo: 'SK',
     whatsapp: '5492613871088',
-    heroCopy: 'Planifica campañas DOOH, selecciona ubicaciones digitales y genera una reserva comercial en minutos.'
+    heroCopy: 'Planifica campañas DOOH, selecciona ubicaciones digitales y genera una reserva comercial en minutos.',
+    terms: 'Inicio de campaña sujeto a disponibilidad y aprobación de piezas. Valores expresados en ARS.',
+    validity: '15 días'
   };
   const PUBLIC_KITS_STORAGE_KEY = 'smartkit-public-kits';
 
@@ -148,6 +150,24 @@ const SmartKitShared = (() => {
     return `<div class="${h(className)} video-head" style="background:${h(background)}"><span class="media-fallback" aria-hidden="true">${h(initials)}</span>${video}</div>`;
   }
 
+  async function clearAllData() {
+    // 1. Eliminar LocalStorage relacionado con la app
+    localStorage.removeItem(PUBLIC_KITS_STORAGE_KEY);
+    localStorage.removeItem('smartkit-dashboard-state');
+    localStorage.removeItem('sk_auth_token');
+    localStorage.removeItem('sk_v1_dashboard-state'); // Prefijo usado en versiones demo
+    localStorage.removeItem('sk_v1_public-kits');
+
+    // 2. Eliminar Cache API (Service Worker / Fetch Cache)
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(key => caches.delete(key)));
+    }
+
+    console.log('Caché y datos locales eliminados correctamente.');
+    location.reload(); // Recargar para limpiar estados en memoria
+  }
+
   return {
     DEFAULT_BRAND,
     PUBLIC_KITS_STORAGE_KEY,
@@ -162,7 +182,8 @@ const SmartKitShared = (() => {
     signMediaKit,
     storedPublicKits,
     updateMediaKitLinks,
-    verifyMediaKitSignature
+    verifyMediaKitSignature,
+    clearAllData
   };
 })();
 

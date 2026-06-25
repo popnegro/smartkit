@@ -1,33 +1,24 @@
 const Shared=window.SmartKitShared;
-const CONFIG=window.APP_CONFIG||{};
+const API=window.SmartKitAPI;
 const DEFAULT_BRAND=Shared.DEFAULT_BRAND;
-const PUBLIC_KITS_STORAGE_KEY=Shared.PUBLIC_KITS_STORAGE_KEY;
-const DASHBOARD_STATE=(()=>{
-  try{return JSON.parse(localStorage.getItem('smartkit-dashboard-state')||'{}')||{};}
-  catch{return {};}
-})();
-const STORED_ROWS=Array.isArray(DASHBOARD_STATE.rows)?DASHBOARD_STATE.rows:[];
-const STORED_ROW_MAP=new Map(STORED_ROWS.map(row=>[row.id,row]));
-const SOURCE_SCREENS=SCREENS.map(screen=>{
-  const stored=STORED_ROW_MAP.get(screen.id)||{};
-  const merged={...screen,...stored};
-  merged.video=safeAssetUrl(stored.video)?stored.video:screen.video;
-  return merged;
-});
-const BRAND={...DEFAULT_BRAND,...(CONFIG.brand||{}),...(DASHBOARD_STATE.brand||{})};
-const THEME=CONFIG.theme||{};
+
+let SOURCE_SCREENS = [];
+let ACTIVE_SCREENS = [];
+let BRAND = { ...DEFAULT_BRAND };
+
 const DEFAULT_ACTIVE_SCREEN_IDS=[1,2,3,4,5,6,7,10,13,16,18];
 let map, activeZone='Todos', activeSort='recommended', markers={}, selectedScreens=[], quoteDuration='1s', activeScreenId=null, mobileQuoteOpen=false, mobileNavOpen=false, mobileFiltersOpen=false, lastScreenTrigger=null, lastQuoteTrigger=null, lastFilterTrigger=null;
-const STORED_ACTIVE_SCREEN_IDS=Array.isArray(DASHBOARD_STATE.rows)?STORED_ROWS.filter(row=>row.status==='Activo').map(row=>row.id):null;
-const ACTIVE_SCREEN_IDS = STORED_ACTIVE_SCREEN_IDS || (Array.isArray(CONFIG.inventory?.activeScreenIds)&&CONFIG.inventory.activeScreenIds.length?CONFIG.inventory.activeScreenIds:DEFAULT_ACTIVE_SCREEN_IDS);
-const ACTIVE_SCREENS = ACTIVE_SCREEN_IDS.map(id=>SOURCE_SCREENS.find(s=>s.id===id)).filter(Boolean);
+
+const DURATIONS = [
+  {v:'1s', l:'1 semana', mult:1, days:7},
+  {v:'15d', l:'15 días', mult:2, days:15},
+  {v:'1m', l:'1 mes', mult:4, days:30}
+];
+
 const fmt=Shared.formatMoney;
-const zones=['Todos',...new Set(ACTIVE_SCREENS.map(s=>s.b))];
-const activeMetrics=(()=>{
-  const totalReach=ACTIVE_SCREENS.reduce((acc,s)=>acc+impNum(s),0);
-  return {totalReach};
-})();
-const whatsappPhone=BRAND.whatsapp;
+let zones = ['Todos'];
+let activeMetrics = { totalReach: 0 };
+
 const prefersReducedMotion=()=>window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 const escapeHtml=Shared.escapeHtml;
@@ -51,23 +42,6 @@ function safeAssetUrl(value){
 
 function kitSlug(value){
   return String(value || 'media-kit')
-    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')
-    .slice(0,48) || 'media-kit';
-}
-
-const storedPublicKits=Shared.storedPublicKits;
-
-function latestMediaKitId(){
-  return Shared.latestMediaKitId();
-}
-
-function updateMediaKitLinks(id=latestMediaKitId()){
-  Shared.updateMediaKitLinks(id);
-}
-
-function screenSnapshot(s,duration){
-  return Shared.screenSnapshot(s,duration);
 }
 
 function screenCpm(s){
@@ -401,7 +375,7 @@ function renderBrochure(){
   const minPrice=ACTIVE_SCREENS.reduce((min,s)=>Math.min(min,s.precio),Infinity);
   document.getElementById('hero-stats').innerHTML=`
     <div class="stat"><b>${ACTIVE_SCREENS.length}</b><span>Pantallas activas</span></div>
-    <div class="stat"><b>${Math.round(activeMetrics.totalReach*7/1000)}k</b><span>Reach semanal</span></div>
+    <div class="stat"><b>${Math.round(activeMetrics.totalReach/1000)}k</b><span>Impactos/día</span></div>
     <div class="stat"><b>${Number.isFinite(minPrice)?fmt(minPrice):'$0'}</b><span>Desde / semana</span></div>
     <div class="stat"><b>${zones.length-1}</b><span>Zonas</span></div>`;
 
@@ -734,13 +708,22 @@ function bindEvents(){
   });
 }
 
-window.addEventListener('DOMContentLoaded',()=>{
-  applyTheme();
+async function initApp() {
+  try {
+    SOURCE_SCREENS = await API.screens.getAll();
+    ACTIVE_SCREENS = SOURCE_SCREENS.filter(s => s.status === 'Activo');
+    zones = ['Todos', ...new Set(ACTIVE_SCREENS.map(s => s.b))];
+    activeMetrics.totalReach = ACTIVE_SCREENS.reduce((acc, s) => acc + impNum(s), 0);
+  } catch (err) {
+    console.error('Failed to load screens', err);
+  }
+
   applyBrand();
-  updateMediaKitLinks();
+  Shared.updateMediaKitLinks();
   bindEvents();
   initMap();
-  const initialView=new URLSearchParams(window.location.search).get('view')==='map'?'map':'brochure';
-  setView(initialView,false);
   renderBrochure();
-});
+  setView('brochure', false);
+}
+
+window.addEventListener('DOMContentLoaded', initApp);

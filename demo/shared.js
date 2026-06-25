@@ -21,9 +21,9 @@ const SmartKitShared = (() => {
   // Placeholder para fechas reservadas. En producción, esto vendría de una API.
   const RESERVED_DATES = [
     "2024-08-01", // Fecha específica
-    "2024-08-10 to 2024-08-15", // Rango de fechas
+    { from: "2024-08-10", to: "2024-08-15" }, // Rango de fechas
     "2024-09-01",
-    "2024-09-05 to 2024-09-07"
+    { from: "2024-09-05", to: "2024-09-07" }
   ];
 
   // Mapeo de estados para UI de Dashboard
@@ -192,8 +192,8 @@ const SmartKitShared = (() => {
     }
 
     // 3. Fallback: Master Key (Solo para entornos de desarrollo/staging)
-    const masterKey = window.APP_CONFIG?.adminKey || 'admin2026';
-    if (devMode && (password === masterKey || (!password && !email))) {
+    const masterKey = window.APP_CONFIG?.adminKey;
+    if (devMode && masterKey && password === masterKey) {
       storage.setItem(AUTH_SESSION_KEY, 'dev-session-active');
       return true;
     }
