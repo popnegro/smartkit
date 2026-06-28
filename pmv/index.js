@@ -19,7 +19,9 @@ app.use(cors(corsOptions)); // Configuración de CORS más restrictiva
 app.use(express.json()); // Permite procesar JSON en el cuerpo de las peticiones
 
 // --- Base de Datos Simulada con JSON ---
-const DB_PATH = path.join(__dirname, 'inventory.json');
+// En Vercel, __dirname apunta a /var/task/api, pero el archivo está en /var/task/
+// Por eso, subimos un nivel para encontrar inventory.json
+const DB_PATH = path.join(__dirname, '..', 'inventory.json');
 
 // Función para leer la base de datos desde el archivo
 const readDB = () => {
@@ -32,7 +34,12 @@ const readDB = () => {
 };
 
 // Función para escribir en la base de datos
-const writeDB = (data) => fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
+const writeDB = (data) => {
+  // En un entorno serverless de solo lectura como Vercel, esta operación fallará.
+  // Para una demo, los cambios solo existirán en memoria durante la vida de la función.
+  // No lanzamos un error para permitir que la demo funcione, aunque no persista.
+  try { fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2)); } catch (e) { console.warn('Could not write to DB file in this environment.'); }
+};
 
 // --- Middleware de Validación ---
 const validate = (req, res, next) => {
@@ -154,3 +161,6 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`SmartKit Server running at http://localhost:${PORT}`);
 });
+
+// Exportar la app para Vercel
+module.exports = app;

@@ -169,15 +169,21 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const response = await fetch(url, options);
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        // Intenta parsear el error, si no, usa el texto de estado
+        let errorMsg = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMsg = errorData.errors ? errorData.errors.map(e => e.msg).join(', ') : (errorData.message || errorMsg);
+        } catch (e) { /* No hacer nada si el cuerpo del error no es JSON */ }
+        throw new Error(errorMsg);
       }
       // Para DELETE, puede que no haya cuerpo de respuesta
-      if (options.method === 'DELETE') return true;
+      if (response.status === 204) return true;
       return await response.json();
     } catch (error) {
       console.error(`Error performing ${options.method || 'GET'} on ${url}:`, error);
-      alert(`Operation failed: ${error.message}. Please check the console.`);
+      // Reemplazar alert con una notificación toast
+      showToast(`Operation failed: ${error.message}`, 'error');
       return false;
     }
   }
@@ -193,4 +199,16 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   init();
+
+  // Función de utilidad para mostrar notificaciones (debe ser estilizada con CSS)
+  function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.add('show');
+      setTimeout(() => toast.remove(), 3000);
+    }, 100);
+  }
 });

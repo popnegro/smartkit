@@ -2,8 +2,10 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   // --- CONFIGURACIÓN ---
-  // En una aplicación real, la clave pública debería venir del backend o de variables de entorno.
-  const MERCADOPAGO_PUBLIC_KEY = 'YOUR_PUBLIC_KEY';
+  // La clave pública se lee desde un atributo data-* en el body para mayor flexibilidad.
+  const MERCADOPAGO_PUBLIC_KEY = document.body.dataset.mpPublicKey || 'YOUR_PUBLIC_KEY_FALLBACK';
+  const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://api.tu-dominio.com';
+
 
   /**
    * Módulo para gestionar la subida de archivos con drag & drop.
@@ -70,10 +72,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const bricksBuilder = mp.bricks();
 
     const renderCardPaymentBrick = async () => {
+      // TODO: Leer el monto dinámicamente del resumen de la campaña.
+      const amountElement = document.querySelector('.amounts strong');
+      const amountText = amountElement ? amountElement.textContent.replace(/[^0-9,.-]+/g,"").replace(/[.,]/g, "") : '0';
+      const amount = parseFloat(amountText) / 100;
+
       const settings = {
         initialization: {
-          amount: 24201206.15, // Idealmente, este valor debería leerse del DOM para ser dinámico.
-          payer: { email: "user@example.com" },
+          amount: amount || 100, // Usar el monto dinámico o un fallback.
+          payer: { email: "test_user@test.com" }, // TODO: Usar el email del usuario logueado.
         },
         customization: {
           visual: {
@@ -88,14 +95,35 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         callbacks: {
           onReady: () => console.log("Card Brick está listo."),
-          onSubmit: (formData) => {
-            console.log("Enviando datos al backend:", formData);
-            // Aquí iría la lógica para enviar `formData` a tu backend.
-            // Para este prototipo, simulamos un éxito.
-            const toastSuccess = document.querySelector("[data-success-toast]");
-            if (toastSuccess) {
-              toastSuccess.hidden = false;
+          onSubmit: async (formData) => {
+            // Deshabilitar el botón de pago para evitar envíos múltiples
+            const payButton = document.querySelector('#cardPaymentBrick_container .mp-bricks-form__submit-button');
+            if (payButton) payButton.disabled = true;
+
+            // Lógica para enviar datos al backend
+            try {
+              const response = await fetch(`${API_BASE_URL}/payments/process`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+              });
+
+              const result = await response.json();
+
+              if (!response.ok) {
+                throw new Error(result.message || 'Payment processing failed.');
+              }
+
+              // Éxito: mostrar notificación y/o redirigir
+              const toastSuccess = document.querySelector("[data-success-toast]");
+              if (toastSuccess) toastSuccess.hidden = false;
               window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            } catch (error) {
+              console.error("Error sending payment to backend:", error);
+              alert(`Error: ${error.message}`);
+            } finally {
+              if (payButton) payButton.disabled = false; // Reactivar el botón
             }
           },
           onError: (error) => console.error("Error en el Card Brick:", error),
