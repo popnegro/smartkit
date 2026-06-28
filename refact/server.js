@@ -74,23 +74,22 @@ initializeDatabase();
 // Usamos memoryStorage para no guardar el archivo en el disco del servidor efímero
 const upload = multer({ storage: multer.memoryStorage() });
 
-app.post('/api/upload', upload.single('media'), (req, res) => {
+app.post('/api/upload', upload.single('media'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'No se subió ningún archivo.' });
   }
 
   const filename = req.file.originalname;
   const fileBuffer = req.file.buffer;
-
-  put(filename, fileBuffer, { access: 'public' })
-    .then(blob => {
-      console.log('POST /api/upload -> Archivo subido a Vercel Blob:', blob.url);
-      res.json({ url: blob.url });
-    })
-    .catch(err => {
-      console.error('Error al subir a Vercel Blob:', err);
-      res.status(500).json({ message: 'Error al subir el archivo.' });
-    });
+  
+  try {
+    const blob = await put(filename, fileBuffer, { access: 'public' });
+    console.log('POST /api/upload -> Archivo subido a Vercel Blob:', blob.url);
+    res.json({ url: blob.url });
+  } catch (err) {
+    console.error('Error al subir a Vercel Blob:', err);
+    res.status(500).json({ message: 'Error al subir el archivo.' });
+  }
 });
 
 // --- PANTALLAS (Screens) ---
