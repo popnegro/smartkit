@@ -1,8 +1,8 @@
+require('dotenv').config(); // Carga las variables de entorno desde .env
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const { put } = require('@vercel/blob');
 
 const app = express();
 const PORT = 3001; // Cambiamos el puerto a 3001
@@ -11,22 +11,14 @@ const PORT = 3001; // Cambiamos el puerto a 3001
 app.use(cors()); // Permite peticiones desde otros dominios (tu index.html)
 app.use(express.json()); // Permite al servidor entender JSON en el body de las peticiones
 
-// Crear directorio de subidas si no existe
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
-}
-
-// Servir archivos estáticos (frontend y subidas)
+// Servir archivos estáticos (frontend)
 app.use(express.static(__dirname));
-app.use('/uploads', express.static(uploadsDir));
 
 /*
 ================================================================
   SERVIR ARCHIVOS ESTÁTICOS (Frontend)
 ================================================================
 */
-
 /*
 ================================================================
   SIMULACIÓN DE BASE DE DATOS EN MEMORIA
@@ -79,26 +71,26 @@ initializeDatabase();
 */
 
 // --- UPLOAD ---
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.random().toString(36).substring(2, 9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({ storage: storage });
+// Usamos memoryStorage para no guardar el archivo en el disco del servidor efímero
+const upload = multer({ storage: multer.memoryStorage() });
 
 app.post('/api/upload', upload.single('media'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'No se subió ningún archivo.' });
   }
-  // Devolvemos la ruta pública del archivo
-  const fileUrl = `/uploads/${req.file.filename}`;
-  console.log('POST /api/upload -> Archivo subido:', fileUrl);
-  res.json({ url: fileUrl });
+
+  const filename = req.file.originalname;
+  const fileBuffer = req.file.buffer;
+
+  put(filename, fileBuffer, { access: 'public' })
+    .then(blob => {
+      console.log('POST /api/upload -> Archivo subido a Vercel Blob:', blob.url);
+      res.json({ url: blob.url });
+    })
+    .catch(err => {
+      console.error('Error al subir a Vercel Blob:', err);
+      res.status(500).json({ message: 'Error al subir el archivo.' });
+    });
 });
 
 // --- PANTALLAS (Screens) ---
