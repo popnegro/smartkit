@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -28,16 +28,18 @@
       </header>
 
       <main class="smartkit-map-page">
+        <h1 class="sr-only">Mapa interactivo para planificación de campañas DOOH</h1>
         <section class="smartkit-toolbar" aria-label="Map controls">
-          <div class="mode-tabs" aria-label="Inventory mode">
-            <button class="active" type="button">Peatonal</button>
-            <button type="button">Vehicular</button>
-            <button type="button">Mixto</button>
+          <div class="mode-tabs" role="tablist" aria-label="Tipo de inventario">
+            <button role="tab" aria-selected="true" aria-controls="inventory-panel" class="active" type="button">Peatonal</button>
+            <button role="tab" aria-selected="false" aria-controls="inventory-panel" type="button">Vehicular</button>
+            <button role="tab" aria-selected="false" aria-controls="inventory-panel" type="button">Mixto</button>
           </div>
 
           <div class="map-search search-control">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21 21-4.35-4.35"/><circle cx="11" cy="11" r="7"/></svg>
-            <input type="search" placeholder="Buscar ubicación, pantalla o zona">
+            <label for="map-search-input" class="sr-only">Buscar ubicación</label>
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21 21-4.35-4.35"/><circle cx="11" cy="11" r="7"/></svg>
+            <input type="search" id="map-search-input" placeholder="Buscar ubicación, pantalla o zona">
           </div>
         </section>
 
@@ -45,7 +47,7 @@
           <aside class="inventory-panel sk-card" aria-label="Inventario disponible">
             <div class="panel-heading">
               <div>
-                <span class="eyebrow-mini">Inventario disponible</span>
+                <p class="eyebrow-mini">Inventario disponible</p>
                 <h1>Pantallas</h1>
               </div>
               <button class="ghost-button compact" type="button">Filtros</button>
@@ -58,7 +60,7 @@
 
             <div class="screen-list smartkit-card-list">
               <article class="screen-card smartkit-screen-card selected">
-                <div class="screen-image" role="img" aria-label="Outdoor screen at Lujan"></div>
+                <img class="screen-image" src="placeholder-screen-1.jpg" alt="Pantalla exterior en Luján de Cuyo." loading="lazy">
                 <div class="screen-info">
                   <div class="card-title-row">
                     <h2>Lujan (Terramalva)</h2>
@@ -74,7 +76,7 @@
               </article>
 
               <article class="screen-card smartkit-screen-card">
-                <div class="screen-image" role="img" aria-label="Outdoor screen at Viamonte"></div>
+                <img class="screen-image" src="placeholder-screen-2.jpg" alt="Pantalla exterior en la intersección de Viamonte y Almirante Brown." loading="lazy">
                 <div class="screen-info">
                   <div class="card-title-row">
                     <h2>Viamonte y Alte Brown</h2>
@@ -90,7 +92,7 @@
               </article>
 
               <article class="screen-card smartkit-screen-card">
-                <div class="screen-image" role="img" aria-label="Outdoor screen at Chacras"></div>
+                <img class="screen-image" src="placeholder-screen-3.jpg" alt="Pantalla gigante en Chacras de Coria." loading="lazy">
                 <div class="screen-info">
                   <div class="card-title-row">
                     <h2>Chacras</h2>
@@ -108,21 +110,21 @@
           </aside>
 
           <section class="dark-map-stage" aria-label="Mapa oscuro de ubicaciones">
-            <div class="dark-map-grid"></div>
-            <span class="dark-road road-one"></span>
-            <span class="dark-road road-two"></span>
-            <span class="dark-road road-three"></span>
-            <span class="dark-zone zone-one"></span>
-            <span class="dark-zone zone-two"></span>
+            <div class="dark-map-grid" aria-hidden="true"></div>
+            <span class="dark-road road-one" aria-hidden="true"></span>
+            <span class="dark-road road-two" aria-hidden="true"></span>
+            <span class="dark-road road-three" aria-hidden="true"></span>
+            <span class="dark-zone zone-one" aria-hidden="true"></span>
+            <span class="dark-zone zone-two" aria-hidden="true"></span>
             <span class="map-label dark-label label-mendoza">Mendoza</span>
             <span class="map-label dark-label label-lasheras">Las Heras</span>
             <span class="map-label dark-label label-godoy">Godoy Cruz</span>
-            <span class="cluster dark-cluster" style="left: 38%; top: 42%;">1</span>
-            <span class="cluster dark-cluster" style="left: 46%; top: 46%;">1</span>
-            <span class="cluster dark-cluster big" style="left: 48%; top: 58%;">17</span>
-            <span class="cluster dark-cluster big" style="left: 58%; top: 64%;">5</span>
-            <span class="cluster dark-cluster" style="left: 68%; top: 70%;">1</span>
-            <span class="cluster dark-cluster big" style="left: 42%; top: 77%;">4</span>
+            <div class="cluster dark-cluster" style="--x: 38%; --y: 42%;" aria-label="1 pantalla en esta zona">1</div>
+            <div class="cluster dark-cluster" style="--x: 46%; --y: 46%;" aria-label="1 pantalla en esta zona">1</div>
+            <div class="cluster dark-cluster big" style="--x: 48%; --y: 58%;" aria-label="17 pantallas en esta zona">17</div>
+            <div class="cluster dark-cluster big" style="--x: 58%; --y: 64%;" aria-label="5 pantallas en esta zona">5</div>
+            <div class="cluster dark-cluster" style="--x: 68%; --y: 70%;" aria-label="1 pantalla en esta zona">1</div>
+            <div class="cluster dark-cluster big" style="--x: 42%; --y: 77%;" aria-label="4 pantallas en esta zona">4</div>
 
             <div class="map-floating-card">
               <strong>Lujan (Terramalva)</strong>
@@ -131,7 +133,7 @@
           </section>
 
           <aside class="quote-panel-card sk-card" aria-label="Plan de campaña">
-            <span class="eyebrow-mini">Plan de campaña</span>
+            <p class="eyebrow-mini">Plan de campaña</p>
             <h2>Cotizador</h2>
             <div class="quote-empty">
               <strong>1 pantalla</strong>

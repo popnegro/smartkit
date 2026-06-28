@@ -1,159 +1,196 @@
-document.querySelectorAll('.nav-item').forEach(button => {
-  button.addEventListener('click', () => {
-    const target = button.getAttribute('data-target');
-    
-    // Actualizar botones de navegación
-    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-    button.classList.add('active');
-    
-    // Cambiar visibilidad de secciones
-    document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
-    document.getElementById(target).classList.add('active');
-    
-    // Actualizar título de cabecera
-    const titles = { overview: "Dashboard Overview", inventory: "Inventory Management", mediakits: "Media Kits", contacts: "Customer Contacts" };
-    document.getElementById('view-title').textContent = titles[target];
-  });
-});
+'use strict';
 
-// --- Conexión con Base de Datos (Simulada con Fetch) ---
+document.addEventListener('DOMContentLoaded', () => {
+  // --- STATE ---
+  let inventoryData = []; // Caché en memoria para los datos del inventario
 
-// Detectar si estamos en local o producción
-const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://localhost:3000'
-  : 'https://api.tu-dominio-produccion.com';
+  // --- CONFIG ---
+  const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:3000'
+    : 'https://api.tu-dominio-produccion.com';
+  const API_URL = `${API_BASE_URL}/inventory`;
 
-const API_URL = `${API_BASE_URL}/inventory`;
+  // --- DOM SELECTORS ---
+  const viewTitle = document.getElementById('view-title');
+  const inventoryTableBody = document.getElementById('inventory-table-body');
+  const sidebarNav = document.querySelector('.sidebar-nav');
+  const addForm = document.getElementById('add-form');
+  const editForm = document.getElementById('edit-form');
+  const addModal = document.getElementById('add-modal');
+  const editModal = document.getElementById('edit-modal');
 
-async function loadInventory() {
-  const tbody = document.getElementById('inventory-table-body');
-  
-  try {
-    const response = await fetch(API_URL);
-    const data = await response.json();
+  // --- RENDER FUNCTIONS ---
+  const renderTable = () => {
+    inventoryTableBody.innerHTML = ''; // Limpiar tabla
+    if (inventoryData.length === 0) {
+      inventoryTableBody.innerHTML = '<tr><td colspan="5">No inventory items found.</td></tr>';
+      return;
+    }
 
-    tbody.innerHTML = data.map(item => `
-    <tr>
-      <td>${item.name}</td>
-      <td>${item.location}</td>
-      <td>$${item.price.toLocaleString()}</td>
-      <td><span class="status-pill">${item.status}</span></td>
-      <td>
-        <button class="ghost-button compact" onclick="openEditModal(${JSON.stringify(item).replace(/"/g, '&quot;')})">Edit</button>
-        <button class="ghost-button compact danger" onclick="deleteScreen(${item.id})">Delete</button>
-      </td>
-    </tr>
-  `).join('');
-  } catch (error) {
-    console.error('Error loading inventory:', error);
-    tbody.innerHTML = '<tr><td colspan="5">Error loading data from server</td></tr>';
-  }
-}
-
-// Abrir Modal con datos cargados
-window.openEditModal = (item) => {
-  document.getElementById('edit-id').value = item.id;
-  document.getElementById('edit-name').value = item.name;
-  document.getElementById('edit-price').value = item.price;
-  document.getElementById('edit-modal').style.display = 'grid';
-};
-
-// Funciones para el Modal de Agregar
-window.openAddModal = () => {
-  document.getElementById('add-form').reset();
-  document.getElementById('add-modal').style.display = 'grid';
-};
-
-window.closeAddModal = () => {
-  document.getElementById('add-modal').style.display = 'none';
-};
-
-// Cerrar Modal
-window.closeModal = () => {
-  document.getElementById('edit-modal').style.display = 'none';
-};
-
-// Guardar nueva pantalla (POST)
-document.getElementById('add-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  
-  const newData = {
-    name: document.getElementById('add-name').value,
-    location: document.getElementById('add-location').value,
-    price: parseFloat(document.getElementById('add-price').value)
+    inventoryData.forEach(item => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${escapeHTML(item.name)}</td>
+        <td>${escapeHTML(item.location)}</td>
+        <td>$${item.price.toLocaleString()}</td>
+        <td><span class="status-pill ${item.status.toLowerCase()}">${escapeHTML(item.status)}</span></td>
+        <td>
+          <button class="ghost-button compact" data-action="open-edit-modal" data-id="${item.id}">Edit</button>
+          <button class="ghost-button compact danger" data-action="delete-screen" data-id="${item.id}">Delete</button>
+        </td>
+      `;
+      inventoryTableBody.appendChild(tr);
+    });
   };
 
-  try {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newData)
-    });
-
-    if (response.ok) {
-      alert('New screen added to inventory!');
-      closeAddModal();
-      loadInventory(); // Recargar la tabla
-    } else {
-      throw new Error('Failed to create screen');
-    }
-  } catch (error) {
-    console.error('Error creating screen:', error);
-    alert('Error connecting to server.');
-  }
-});
-
-// Eliminar pantalla (DELETE)
-window.deleteScreen = async (id) => {
-  if (confirm('Are you sure you want to delete this screen?')) {
-    try {
-      const response = await fetch(`${API_URL}/${id}`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        loadInventory(); // Recargar la tabla
-      } else {
-        throw new Error('Delete failed');
+  // --- API CALLS ---
+  const api = {
+    async getInventory() {
+      try {
+        const response = await fetch(API_URL);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        inventoryData = await response.json();
+        renderTable();
+      } catch (error) {
+        console.error('Error loading inventory:', error);
+        inventoryTableBody.innerHTML = '<tr><td colspan="5">Error loading data from server.</td></tr>';
       }
-    } catch (error) {
-      console.error('Error deleting screen:', error);
-      alert('Error connecting to server.');
+    },
+    async addScreen(data) {
+      return performFetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+    },
+    async updateScreen(id, data) {
+      return performFetch(`${API_URL}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+    },
+    async deleteScreen(id) {
+      return performFetch(`${API_URL}/${id}`, { method: 'DELETE' });
     }
-  }
-};
-
-// Guardar cambios en la Base de Datos
-document.getElementById('edit-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  
-  const updatedData = {
-    id: document.getElementById('edit-id').value,
-    name: document.getElementById('edit-name').value,
-    price: parseFloat(document.getElementById('edit-price').value)
   };
 
-  console.log('Sending to DB:', updatedData);
+  // --- EVENT HANDLERS ---
+  const handleNavClick = (e) => {
+    const button = e.target.closest('button[role="tab"]');
+    if (!button) return;
 
-  try {
-    const response = await fetch(`${API_URL}/${updatedData.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedData)
-    });
+    const targetId = button.dataset.target;
+    const targetSection = document.getElementById(targetId);
 
-    if (response.ok) {
-      alert('Inventory updated successfully!');
-      closeModal();
-      loadInventory(); // Recargar tabla con datos frescos
-    } else {
-      throw new Error('Update failed');
+    // Actualizar botones y secciones
+    document.querySelectorAll('.sidebar-nav [role="tab"]').forEach(b => b.setAttribute('aria-selected', 'false'));
+    button.setAttribute('aria-selected', 'true');
+
+    document.querySelectorAll('.admin-section').forEach(s => s.hidden = true);
+    if (targetSection) targetSection.hidden = false;
+
+    // Actualizar título
+    const titles = { overview: "Dashboard Overview", inventory: "Inventory Management", mediakits: "Media Kits", contacts: "Customer Contacts" };
+    viewTitle.textContent = titles[targetId] || 'Dashboard';
+  };
+
+  const handleGeneralClick = (e) => {
+    const action = e.target.dataset.action;
+    if (!action) return;
+
+    const id = e.target.dataset.id;
+
+    switch (action) {
+      case 'open-add-modal':
+        addForm.reset();
+        addModal.hidden = false;
+        addModal.querySelector('input').focus();
+        break;
+      case 'open-edit-modal':
+        const item = inventoryData.find(i => i.id === parseInt(id));
+        if (item) {
+          editForm.querySelector('#edit-id').value = item.id;
+          editForm.querySelector('#edit-name').value = item.name;
+          editForm.querySelector('#edit-price').value = item.price;
+          editModal.hidden = false;
+          editModal.querySelector('input').focus();
+        }
+        break;
+      case 'close-modal':
+        e.target.closest('.modal-overlay').hidden = true;
+        break;
+      case 'delete-screen':
+        if (confirm('Are you sure you want to delete this screen?')) {
+          api.deleteScreen(id).then(success => {
+            if (success) api.getInventory();
+          });
+        }
+        break;
     }
-  } catch (error) {
-    console.error('Error updating:', error);
-    alert('Could not update inventory. Is the server running?');
-  }
-});
+  };
 
-// Carga inicial
-document.addEventListener('DOMContentLoaded', loadInventory);
+  const handleAddSubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = {
+      name: formData.get('name'),
+      location: formData.get('location'),
+      price: parseFloat(formData.get('price'))
+    };
+
+    const success = await api.addScreen(data);
+    if (success) {
+      addModal.hidden = true;
+      api.getInventory();
+    }
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const id = formData.get('id');
+    const data = {
+      name: formData.get('name'),
+      price: parseFloat(formData.get('price'))
+    };
+
+    const success = await api.updateScreen(id, data);
+    if (success) {
+      editModal.hidden = true;
+      api.getInventory();
+    }
+  };
+
+  // --- UTILITY FUNCTIONS ---
+  const escapeHTML = str => str.toString().replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
+
+  async function performFetch(url, options) {
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+      // Para DELETE, puede que no haya cuerpo de respuesta
+      if (options.method === 'DELETE') return true;
+      return await response.json();
+    } catch (error) {
+      console.error(`Error performing ${options.method || 'GET'} on ${url}:`, error);
+      alert(`Operation failed: ${error.message}. Please check the console.`);
+      return false;
+    }
+  }
+
+  // --- INITIALIZATION ---
+  const init = () => {
+    sidebarNav.addEventListener('click', handleNavClick);
+    document.body.addEventListener('click', handleGeneralClick);
+    addForm.addEventListener('submit', handleAddSubmit);
+    editForm.addEventListener('submit', handleEditSubmit);
+
+    api.getInventory(); // Carga inicial de datos
+  };
+
+  init();
+});

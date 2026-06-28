@@ -1,18 +1,28 @@
 .admin-body { display: flex; min-height: 100vh; background: var(--sk-bg); }
 .admin-sidebar { width: 260px; background: var(--sk-surface); border-right: 1px solid var(--sk-border); display: flex; flex-direction: column; position: fixed; height: 100vh; }
 .sidebar-header { padding: 30px 24px; }
-.sidebar-nav { flex: 1; padding: 0 12px; }
-.nav-item { width: 100%; text-align: left; padding: 12px 16px; margin-bottom: 4px; border: 0; background: transparent; border-radius: var(--sk-radius-sm); color: var(--sk-muted); cursor: pointer; font-weight: 500; transition: all 0.2s; }
-.nav-item:hover, .nav-item.active { background: var(--sk-primary-soft); color: var(--sk-primary); }
+.sidebar-nav { flex: 1; }
+.sidebar-nav ul { list-style: none; padding: 0 12px; margin: 0; }
+.sidebar-nav li { margin-bottom: 4px; }
+.nav-item { width: 100%; text-align: left; padding: 12px 16px; border: 0; background: transparent; border-radius: var(--sk-radius-sm); color: var(--sk-muted); cursor: pointer; font-weight: 500; transition: all 0.2s; }
+.nav-item:hover, .nav-item[aria-selected="true"] { background: var(--sk-primary-soft); color: var(--sk-primary); }
 .sidebar-footer { padding: 20px; border-top: 1px solid var(--sk-border); }
+.sidebar-footer .full-width { width: 100%; }
 
 .admin-content { flex: 1; margin-left: 260px; padding: 40px; }
 .content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
-.content-header h2 { margin: 0; font-size: 28px; color: var(--sk-text); }
+.content-header h1 { margin: 0; font-size: 28px; color: var(--sk-text); }
 .user-profile { display: flex; align-items: center; gap: 12px; font-weight: 600; }
+.user-circle { width: 36px; height: 36px; border-radius: 50%; background: var(--sk-primary-soft); color: var(--sk-primary); display: grid; place-items: center; font-weight: 700; }
 
-.admin-section { display: none; }
-.admin-section.active { display: block; animation: fadeIn 0.3s ease; }
+/* Ocultar secciones y modales con el atributo 'hidden' en lugar de clases */
+.admin-section[hidden],
+.modal-overlay[hidden] {
+  display: none;
+}
+
+/* Mostrar la sección activa (la que no tiene 'hidden') */
+.admin-section { display: block; animation: fadeIn 0.3s ease; }
 
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; }
 .stat-card { padding: 24px; text-align: center; }
@@ -22,10 +32,13 @@
 .table-container { overflow: hidden; margin-top: 20px; }
 table { width: 100%; border-collapse: collapse; text-align: left; }
 th { padding: 16px; background: var(--sk-surface-soft); color: var(--sk-muted); font-size: 13px; text-transform: uppercase; }
+table caption { caption-side: bottom; text-align: left; padding: 10px 0; font-size: 12px; color: var(--sk-muted); }
 td { padding: 16px; border-top: 1px solid var(--sk-border); color: var(--sk-text-soft); }
 .status-pill { padding: 4px 12px; border-radius: 99px; background: #dcfce7; color: #166534; font-size: 12px; font-weight: 600; }
+.status-pill.inactive { background: #fee2e2; color: #991b1b; }
 
 .section-header { margin-bottom: 20px; display: flex; justify-content: flex-end; }
+.blue-button { border-radius: var(--sk-radius-sm); }
 
 .ghost-button.danger { color: var(--sk-danger); border-color: var(--sk-danger); }
 .ghost-button.danger:hover { background: var(--sk-danger); color: #fff; }
@@ -38,7 +51,13 @@ td { padding: 16px; border-top: 1px solid var(--sk-border); color: var(--sk-text
   display: grid; place-items: center; z-index: 1000;
   backdrop-filter: blur(4px);
 }
-.modal-content { width: 400px; padding: 30px; }
+.modal-content { width: 100%; max-width: 420px; padding: 30px; }
+.modal-content h2 { font-size: 22px; margin: 0 0 24px; }
 .form-group { margin-bottom: 15px; }
 .form-group label { display: block; margin-bottom: 5px; font-size: 14px; font-weight: 600; }
 .form-group input { width: 100%; padding: 10px; border: 1px solid var(--sk-border); border-radius: var(--sk-radius-sm); }
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+
+/* Media Kits y Contactos (placeholder) */
+.mediakit-grid { display: grid; gap: 20px; }
+.mediakit-card { padding: 20px; }

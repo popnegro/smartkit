@@ -518,6 +518,84 @@ select:focus {
   transform: translateY(0);
 }
 
+/* --- Estilos para HTML Refactorizado --- */
+
+/* Accesibilidad: Ocultar visualmente pero mantener para lectores de pantalla */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Navegación principal y de pie de página */
+.nav-menu ul,
+.footer-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: inherit; /* Hereda el 'gap' del contenedor padre */
+}
+
+@media (max-width: 980px) {
+  .nav-menu ul {
+    flex-direction: column;
+    width: 100%;
+  }
+}
+
+/* Líneas del botón de menú hamburguesa */
+.hamburger-line {
+  display: block;
+  width: 19px;
+  height: 2px;
+  margin: 4px auto;
+  border-radius: 99px;
+  background: var(--blue-dark);
+}
+
+/* Métricas del Hero */
+.hero-stats ul {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 26px;
+}
+
+.hero-stats li {
+  padding: 18px;
+  border-radius: var(--radius);
+  background: rgba(230, 247, 255, 0.7);
+}
+
+/* Tarjeta de previsualización del Planner */
+.map-preview img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  background: #f0f5ff;
+  display: block;
+}
+
+.progress-list .progress-bar {
+  height: 9px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--primary) var(--w, 0%), var(--gray) var(--w, 0%));
+}
+
+/* Testimonios */
+.testimonial blockquote, .testimonial figcaption { margin: 0; }
+.testimonial blockquote { line-height: 1.7; color: #6f7885; }
+.testimonial figcaption { margin-top: 16px; color: var(--blue-dark); font-weight: 700; }
+
 @keyframes float {
   0%,
   100% {
