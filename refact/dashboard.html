@@ -356,7 +356,10 @@ tr.sel td{background:#eef2ff}
           <div class="panel" style="margin-bottom:14px">
             <div class="panel-head">
               <div><span class="eyebrow">Preview</span><h2>Documento</h2></div>
-              <button class="btn ok" id="btn-save-kit">Archivar propuesta</button>
+              <div style="display:flex; gap: 8px;">
+                <button class="btn" id="btn-dl-kit-pdf">Descargar PDF</button>
+                <button class="btn ok" id="btn-save-kit">Archivar propuesta</button>
+              </div>
             </div>
             <div class="kit-doc" id="kit-preview"></div>
           </div>
@@ -1288,12 +1291,39 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('btn-save-kit')?.addEventListener('click',saveKit);
 });
 
+function downloadKitAsPDF() {
+  const element = $('kit-preview');
+  if (!element || kitSelected.size === 0) {
+    toast('No hay pantallas seleccionadas para generar el PDF.', 'err');
+    return;
+  }
+
+  const clientSelect = $('kit-client-select');
+  const clientName = clientSelect.value ? clientSelect.options[clientSelect.selectedIndex].text : 'Propuesta';
+  const date = new Date().toISOString().split('T')[0];
+  const filename = `MediaKit-${clientName.replace(/ /g, '_')}-${date}.pdf`;
+
+  const opt = {
+    margin:       [0.5, 0.5, 0.5, 0.5], // pulgadas [top, left, bottom, right]
+    filename:     filename,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true },
+    jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+  };
+  html2pdf().from(element).set(opt).save();
+}
 // ── Init ──
 document.readyState==='loading'
   ?document.addEventListener('DOMContentLoaded',boot)
   :boot();
 
 })();
+</script>
+<script>
+  // Evento para el nuevo botón de PDF
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('btn-dl-kit-pdf')?.addEventListener('click', downloadKitAsPDF);
+  });
 </script>
 </body>
 </html>
