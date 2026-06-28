@@ -4,10 +4,6 @@
 (function(){
 'use strict';
 
-// ── Keys ──
-const K_STATE='sk_v1_dashboard-state';
-const K_KITS='sk_v1_public-kits';
-const K_CFG='sk_v1_config';
 
 // ── API ──
 const API_URL = ''; // En Vercel, la API está en el mismo dominio
@@ -17,7 +13,6 @@ let screens=[];       // merged screens (base + overrides)
 let filtered=[];      // current filter result
 let selected=new Set(); // selected screen IDs
 let currentEdit=null; // screen being edited
-let dirtyScreens=new Set(); // screens with unsaved changes
 let cfg={};
 let sortKey='nombre', sortDir=1;
 let kitSelected=new Set(); // IDs selected for current kit
@@ -37,11 +32,6 @@ function toast(msg,type=''){
   clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2400);
 }
 
-function markDirty(){
-  dirtyScreens.add(currentEdit);
-  $('unsaved').style.display='inline-flex';
-}
-
 // ── Boot ──
 function boot(){
   loadCfg();
@@ -51,8 +41,6 @@ function boot(){
   setupFilters();
   setupTable();
   setupBulk();
-  setupExport();
-  setupSave();
   setupSettings();
   setupClients();
   setupCreation();
@@ -167,47 +155,61 @@ function createNewScreen() {
 
 // ── Screens ──
 function loadScreens(){
-  // Cargar desde la API en lugar de datos locales
-  fetch(`${API_URL}/api/screens/all`)
-    .then(res => res.json())
-    .then(data => {
-      screens = data; // Los datos ahora vienen del servidor
-      filtered=[...screens];
-      buildZoneFilter();
-      buildKitZoneFilter();
-      renderTable();
-      renderKPIs();
-      renderMetrics();
-      renderKitScreenList();
-      renderKitHistory();
-    })
-    .catch(err => {
-      console.error("Error al cargar pantallas:", err);
-      toast('Error al conectar con el servidor', 'err');
-      $('screen-tbody').innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--danger)">No se pudo conectar al servidor. Asegurate de que esté corriendo con <code>node server.js</code>.</td></tr>`;
-    });
+  const savedScreens = localStorage.getItem('sk_screens');
+  if (savedScreens) {
+    console.log('Cargando pantallas desde localStorage...');
+    screens = JSON.parse(savedScreens);
+    initializeUI();
+  } else {
+    console.log('Cargando pantallas desde API por primera vez...');
+    fetch(`${API_URL}/api/screens/all`)
+      .then(res => res.json())
+      .then(data => {
+        screens = data;
+        saveScreensToLocal(); // Guardar en localStorage la primera vez
+        initializeUI();
+      })
+      .catch(err => {
+        console.error("Error al cargar pantallas:", err);
+        toast('Error al conectar con el servidor', 'err');
+        $('screen-tbody').innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--danger)">No se pudo conectar al servidor.</td></tr>`;
+      });
+  }
 }
 
-function saveChanges(){
-  if (dirtyScreens.size === 0) {
-    toast('No hay cambios para guardar.');
-    return;
+function initializeUI() {
+  filtered = [...screens];
+  buildZoneFilter();
+  buildKitZoneFilter();
+  renderTable();
+  renderKPIs();
+  renderMetrics();
+  renderKitScreenList();
+  renderKitHistory();
+}
+
+function saveScreensToLocal() {
+  try {
+    localStorage.setItem('sk_screens', JSON.stringify(screens));
+    console.log('Pantallas guardadas en localStorage.');
+  } catch (e) {
+    console.error('Error al guardar en localStorage:', e);
+    toast('No se pudieron guardar los cambios en el navegador.', 'err');
   }
-  const screensToUpdate = [...dirtyScreens].map(id => screens.find(s => s.id === id));
-  fetch(`${API_URL}/api/screens`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(screensToUpdate)
-  })
-  .then(res => res.json())
-  .then(() => {
-    dirtyScreens.clear(); $('unsaved').style.display='none';
-    toast('Cambios guardados en el servidor', 'ok');
-  })
-  .catch(err => {
-    console.error("Error al guardar cambios:", err);
-    toast('Error al guardar cambios en el servidor', 'err');
-  });
+}
+
+function resetAndReload() {
+  if (confirm('¿Restaurar los datos de fábrica? Se perderán todos los cambios locales.')) {
+    localStorage.removeItem('sk_screens');
+    window.location.reload();
+  }
+}
+
+function setupSave(){
+  $('btn-save').textContent = 'Restaurar Fábrica';
+  $('btn-save').addEventListener('click', resetAndReload);
+  $('btn-export').style.display = 'none'; // Ocultamos exportar ya que es local
+  $('unsaved').style.display = 'none'; // Ya no es necesario
 }
 
 function setupNav(){
@@ -229,9 +231,7 @@ function switchSection(sec){
     settings:'Marca, condiciones y configuración global.'};
   $('page-title').textContent=titles[sec]||'';
   $('page-desc').textContent=descs[sec]||'';
-  const showBtns=sec==='inventory';
-  $('btn-export').style.display=showBtns?'':'none';
-  $('btn-save').style.display=showBtns?'':'none';
+  $('btn-save').style.display = sec === 'inventory' ? '' : 'none';
   // Auto-close mobile nav on selection
   $('app').classList.remove('mobile-nav-open');
 }
@@ -341,8 +341,8 @@ function renderTable(){
     btn.addEventListener('click',()=>{
       const s=screens.find(x=>x.id===btn.dataset.id); if(!s) return;
       s.status=s.status==='Activo'?'Pausado':'Activo';
-      dirtyScreens.add(s.id); $('unsaved').style.display='inline-flex';
-      renderTable(); renderKPIs(); toast(`${s.nombre}: ${s.status}`);
+      saveScreensToLocal();
+      renderTable(); renderKPIs(); toast(`${s.nombre}: ${s.status}`, 'ok');
     });
   });
 }
@@ -387,8 +387,7 @@ function openEditor(id){
       <div class="field"><label>Estado</label>
         <select id="ed-status"><option ${s.status==='Activo'?'selected':''}>Activo</option><option ${s.status==='Pausado'?'selected':''}>Pausado</option></select>
       </div>
-      <div class="field"><label>Subir video o imagen</label><input id="ed-file" type="file" accept="video/*,image/*"></div>
-      <input id="ed-video" type="hidden" value="${esc(s.video||'')}">
+      <div class="field"><label>URL del video/imagen</label><input id="ed-video" type="text" value="${esc(s.video||'')}" placeholder="https://ejemplo.com/video.mp4"></div>
       <div class="field"><label>Nota interna</label><textarea id="ed-note">${esc(s.nota||'')}</textarea></div>
       <button class="btn ok" id="btn-apply">Aplicar cambios</button>
     </div>
@@ -402,32 +401,6 @@ function openEditor(id){
     editorPanel.addEventListener('click', closeEditorOnOverlayClick);
     editorPanel.querySelector('.panel-head')?.addEventListener('click', closeEditorOnOverlayClick);
   }
-
-  // Manejar subida de archivo
-  $('ed-file')?.addEventListener('change', e => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append('media', file);
-
-    toast('Subiendo archivo...');
-
-    fetch(`${API_URL}/api/upload`, { method: 'POST', body: formData })
-      .then(res => res.ok ? res.json() : Promise.reject('Error en la subida'))
-      .then(data => {
-        const newUrl = data.url;
-        $('ed-video').value = newUrl; // Guardar la nueva URL en el campo oculto
-        
-        const hero = $('prev-hero');
-        if (hero) {
-          hero.innerHTML = `<video src="${esc(newUrl)}" autoplay muted loop playsinline></video>`;
-        }
-        
-        toast('Archivo subido con éxito', 'ok');
-      })
-      .catch(err => toast('Falló la subida del archivo', 'err'));
-  });
 }
 
 function closeEditorOnOverlayClick(e) {
@@ -448,8 +421,9 @@ function applyEdit(id){
   s.status=$('ed-status')?.value||s.status;
   s.video=$('ed-video')?.value||'';
   s.nota=$('ed-note')?.value||'';
-  markDirty(); renderTable(); renderKPIs(); renderMetrics();
-  toast(`${s.nombre} actualizada`);
+  saveScreensToLocal();
+  renderTable(); renderKPIs(); renderMetrics();
+  toast(`${s.nombre} actualizada localmente`, 'ok');
   $('ed-title').textContent=s.nombre;
 }
 
@@ -511,8 +485,8 @@ function setupBulk(){
   document.querySelectorAll('[data-bulk]').forEach(btn=>{
     btn.addEventListener('click',()=>{
       const st=btn.dataset.bulk;
-      selected.forEach(id=>{const s=screens.find(x=>x.id===id); if(s){s.status=st;dirtyScreens.add(id);}});
-      $('unsaved').style.display='inline-flex';
+      selected.forEach(id=>{const s=screens.find(x=>x.id===id); if(s){s.status=st;}});
+      saveScreensToLocal();
       selected.clear(); updateBulk(); renderTable(); renderKPIs();
       toast(`${st==='Activo'?'Publicadas':'Pausadas'} las pantallas seleccionadas`);
     });
@@ -542,23 +516,6 @@ function renderKPIs(){
     <div class="kpi"><b>${fmtImp(reach)}</b><span>Impactos diarios</span></div>
     <div class="kpi"><b>${fmt(rev)}</b><span>Potencial semanal</span></div>
     <div class="kpi"><b>${fmt(Math.round(cpm))}</b><span>CPM promedio</span></div>`;
-}
-
-// ── Export ──
-function setupExport(){
-  $('btn-export')?.addEventListener('click',()=>{
-    const rows=[['ID','Nombre','Zona','Tipo','Impactos/día','Precio/sem','Estado']];
-    filtered.forEach(s=>rows.push([s.id,s.nombre,s.zona,s.tipo,s.impactos,s.precio,s.status]));
-    const csv=rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
-    const a=document.createElement('a');
-    a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
-    a.download='smartkit-inventario.csv'; a.click();
-    toast('CSV exportado');
-  });
-}
-
-function setupSave(){
-  $('btn-save')?.addEventListener('click',saveChanges);
 }
 
 // ── Metrics ──
@@ -786,7 +743,7 @@ function archiveKit(id){
 function deleteKit(id){
   if(!confirm('¿Eliminar esta propuesta? Esta acción no se puede deshacer.')) return;
 
-  fetch(`${API_-URL}/api/kits/${id}`, {
+  fetch(`${API_URL}/api/kits/${id}`, {
     method: 'DELETE',
   })
   .then(res => {

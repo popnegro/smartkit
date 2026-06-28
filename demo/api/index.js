@@ -1,30 +1,17 @@
 require('dotenv').config(); // Carga las variables de entorno desde .env
 const express = require('express');
 const cors = require('cors');
-const multer = require('multer');
-const { put } = require('@vercel/blob');
 
 const app = express();
-const PORT = 3001; // Cambiamos el puerto a 3001
 
 // Middlewares
 app.use(cors()); // Permite peticiones desde otros dominios (tu index.html)
 app.use(express.json()); // Permite al servidor entender JSON en el body de las peticiones
 
-// Servir archivos estáticos (frontend)
-app.use(express.static(__dirname));
-
-/*
-================================================================
-  SERVIR ARCHIVOS ESTÁTICOS (Frontend)
-================================================================
-*/
 /*
 ================================================================
   SIMULACIÓN DE BASE DE DATOS EN MEMORIA
 ================================================================
-En un PMV real, esto sería reemplazado por llamadas a una
-base de datos como PostgreSQL, MongoDB, o un servicio como Supabase.
 */
 
 let db;
@@ -70,46 +57,24 @@ initializeDatabase();
 ================================================================
 */
 
-// --- UPLOAD ---
-// Usamos memoryStorage para no guardar el archivo en el disco del servidor efímero
-const upload = multer({ storage: multer.memoryStorage() });
-
-app.post('/api/upload', upload.single('media'), async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ message: 'No se subió ningún archivo.' });
-  }
-
-  const filename = req.file.originalname;
-  const fileBuffer = req.file.buffer;
-  
-  try {
-    const blob = await put(filename, fileBuffer, { access: 'public' });
-    console.log('POST /api/upload -> Archivo subido a Vercel Blob:', blob.url);
-    res.json({ url: blob.url });
-  } catch (err) {
-    console.error('Error al subir a Vercel Blob:', err);
-    res.status(500).json({ message: 'Error al subir el archivo.' });
-  }
-});
-
 // --- PANTALLAS (Screens) ---
 
 // GET /api/screens/all -> Devuelve todas las pantallas para el dashboard
 app.get('/api/screens/all', (req, res) => {
-  console.log('GET /api/screens/all -> Devolviendo', db.screens.length, 'pantallas');
+  if (!db) initializeDatabase();
   res.json(db.screens);
 });
 
 // GET /api/screens -> Devuelve todas las pantallas para el brochure (antes solo activas)
 app.get('/api/screens', (req, res) => {
-  console.log('GET /api/screens -> Devolviendo', db.screens.length, 'pantallas para brochure');
+  if (!db) initializeDatabase();
   res.json(db.screens);
 });
 
 // PUT /api/screens -> Actualiza una o más pantallas
 app.put('/api/screens', (req, res) => {
   const screensToUpdate = req.body; // Se espera un array de pantallas
-  console.log('PUT /api/screens -> Actualizando', screensToUpdate.length, 'pantallas');
+  if (!db) initializeDatabase();
   screensToUpdate.forEach(updatedScreen => {
     const index = db.screens.findIndex(s => s.id === updatedScreen.id);
     if (index !== -1) {
@@ -122,53 +87,48 @@ app.put('/api/screens', (req, res) => {
 // POST /api/screens -> Crea una nueva pantalla
 app.post('/api/screens', (req, res) => {
   const newScreenData = req.body;
-  
   if (!newScreenData || !newScreenData.nombre) {
     return res.status(400).json({ message: 'El nombre de la pantalla es requerido.' });
   }
-
+  if (!db) initializeDatabase();
   const newScreen = {
     id: 'sc-' + Date.now().toString(36) + Math.random().toString(36).substring(2, 5),
     ...newScreenData,
   };
-
-  console.log('POST /api/screens -> Creando nueva pantalla:', newScreen.id);
   db.screens.push(newScreen);
-  
   res.status(201).json(newScreen);
 });
-
 
 // --- CONFIGURACIÓN (Config) ---
 
 // GET /api/config -> Devuelve la configuración
 app.get('/api/config', (req, res) => {
-  console.log('GET /api/config -> Devolviendo configuración');
+  if (!db) initializeDatabase();
   res.json(db.config);
 });
 
 // PUT /api/config -> Actualiza la configuración
 app.put('/api/config', (req, res) => {
-  console.log('PUT /api/config -> Actualizando configuración');
-  db.config = { ...db.config, ...req.body };
+  const newConfig = req.body;
+  if (!db) initializeDatabase();
+  db.config = { ...db.config, ...newConfig };
   res.json({ message: 'Configuración actualizada.' });
 });
-
 
 // --- MEDIA KITS ---
 
 // GET /api/kits -> Devuelve todos los kits
 app.get('/api/kits', (req, res) => {
-  console.log('GET /api/kits -> Devolviendo', Object.keys(db.kits).length, 'kits');
+  if (!db) initializeDatabase();
   res.json(db.kits);
 });
 
 // GET /api/kits/:id -> Devuelve un kit específico
 app.get('/api/kits/:id', (req, res) => {
   const { id } = req.params;
+  if (!db) initializeDatabase();
   const kit = db.kits[id];
   if (kit) {
-    console.log('GET /api/kits/:id -> Devolviendo kit', id);
     res.json(kit);
   } else {
     res.status(404).json({ message: 'Kit no encontrado.' });
@@ -178,22 +138,20 @@ app.get('/api/kits/:id', (req, res) => {
 // POST /api/kits -> Guarda un nuevo kit
 app.post('/api/kits', (req, res) => {
   const kitData = req.body;
+  if (!db) initializeDatabase();
   const newId = 'kit-' + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
-  const newKit = {
-    ...kitData,
-    id: newId,
-  };
-  console.log('POST /api/kits -> Guardando nuevo kit', newKit.id);
-  db.kits[newKit.id] = newKit;
+  const newKit = { ...kitData, id: newId };
+  db.kits[newId] = newKit;
   res.status(201).json(newKit);
 });
 
 // PUT /api/kits/:id -> Actualiza un kit existente (ej: para archivar)
 app.put('/api/kits/:id', (req, res) => {
   const { id } = req.params;
+  const dataToUpdate = req.body;
+  if (!db) initializeDatabase();
   if (db.kits[id]) {
-    console.log('PUT /api/kits/:id -> Actualizando kit', id);
-    db.kits[id] = { ...db.kits[id], ...req.body };
+    db.kits[id] = { ...db.kits[id], ...dataToUpdate };
     res.json(db.kits[id]);
   } else {
     res.status(404).json({ message: 'Kit no encontrado.' });
@@ -203,22 +161,20 @@ app.put('/api/kits/:id', (req, res) => {
 // DELETE /api/kits/:id -> Elimina un kit
 app.delete('/api/kits/:id', (req, res) => {
   const { id } = req.params;
+  if (!db) initializeDatabase();
   if (db.kits[id]) {
-    console.log('DELETE /api/kits/:id -> Eliminando kit', id);
     delete db.kits[id];
-    res.status(204).send(); // 204 No Content: Éxito, sin contenido que devolver
+    res.status(204).send();
   } else {
-    console.log('DELETE /api/kits/:id -> Kit no encontrado', id);
     res.status(404).json({ message: 'Kit no encontrado.' });
   }
 });
-
 
 // --- CLIENTES (CRM) ---
 
 // GET /api/clients -> Devuelve todos los clientes
 app.get('/api/clients', (req, res) => {
-  console.log('GET /api/clients -> Devolviendo', Object.keys(db.clients).length, 'clientes');
+  if (!db) initializeDatabase();
   res.json(Object.values(db.clients));
 });
 
@@ -228,19 +184,16 @@ app.post('/api/clients', (req, res) => {
   if (!clientData || !clientData.name) {
     return res.status(400).json({ message: 'El nombre del cliente es requerido.' });
   }
-
+  if (!db) initializeDatabase();
   const newId = 'cli-' + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
   const newClient = {
     id: newId,
     ...clientData,
     createdAt: new Date().toISOString(),
   };
-  console.log('POST /api/clients -> Creando nuevo cliente:', newClient.id);
   db.clients[newId] = newClient;
   res.status(201).json(newClient);
 });
 
-// Iniciar el servidor
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor de SmartKit corriendo en http://localhost:${PORT}`); // El mensaje se actualizará solo
-});
+// Exportar la app para Vercel
+module.exports = app;
