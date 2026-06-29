@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartKit · Dashboard</title>
+<style>
+:root{--pri:#0369a1;--pdk:#075985;--teal:#0f766e;--bg:#f6f8fb;--panel:#fff;--soft:#f8fafc;--tx:#0f172a;--mu:#475569;--ln:#d9e2ec;--ok:#166534;--warn:#92400e;--danger:#991b1b;--r:12px;--sh:0 1px 2px rgba(15,23,42,.07),0 6px 20px rgba(15,23,42,.05);--sw:240px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font-family:Inter,-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;line-height:1.5}
+button,input,select,textarea{font:inherit;outline:none}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #fbbf24;outline-offset:2px}
+
+/* ── APP SHELL ── */
+.app{min-height:100vh;display:grid;grid-template-columns:var(--sw) 1fr;transition:grid-template-columns .22s ease}
+.app.nav-collapsed{--sw:68px}
+
+/* ── SIDEBAR ── */
+.sidebar{background:#fff;border-right:1px solid var(--ln);display:flex;flex-direction:column;gap:14px;padding:16px 12px;position:sticky;top:0;height:100vh;overflow:hidden;z-index:40}
+.sb-toggle{width:28px;height:28px;border:1px solid var(--ln);border-radius:7px;background:var(--bg);color:var(--mu);display:grid;place-items:center;font-size:16px;line-height:1;align-self:flex-end;transition:transform .22s}
+.app.nav-collapsed .sb-toggle{transform:rotate(180deg)}
+.brand{display:flex;align-items:center;gap:10px;min-height:40px;overflow:hidden}
+.logo{width:36px;height:36px;border-radius:9px;background:var(--pdk);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px;flex-shrink:0}
+.brand-text strong{display:block;font-size:14px;font-weight:700;white-space:nowrap}
+.brand-text span{display:block;color:var(--mu);font-size:11px;white-space:nowrap}
+nav.menu{display:grid;gap:4px}
+.nav-btn{width:100%;min-height:40px;border:0;border-radius:9px;background:transparent;color:var(--mu);font-weight:600;font-size:13px;display:flex;align-items:center;gap:10px;padding:0 10px;text-align:left;white-space:nowrap;transition:all .12s;overflow:hidden}
+.nav-btn:hover{background:var(--bg);color:var(--tx)}
+.nav-btn.on{background:#e0f2fe;color:var(--pdk)}
+.nav-btn i{font-style:normal;font-size:17px;width:22px;text-align:center;flex-shrink:0}
+.nav-btn span{overflow:hidden;white-space:nowrap}
+.app.nav-collapsed .nav-btn{padding:0;justify-content:center}
+.app.nav-collapsed .brand-text,.app.nav-collapsed .nav-btn span,.app.nav-collapsed .sb-footer{display:none}
+.sb-footer{margin-top:auto;border-top:1px solid var(--ln);padding-top:12px;font-size:11px;color:var(--mu)}
+.sb-footer a{color:var(--pdk);font-weight:600;text-decoration:none}
+.sb-footer a:hover{text-decoration:underline}
+
+/* ── MAIN ── */
+.main{min-width:0;padding:20px;display:flex;flex-direction:column;gap:16px}
+
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.eyebrow{display:block;color:var(--mu);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.topbar h1{font-size:26px;font-weight:800;line-height:1.15;margin-bottom:2px}
+.topbar p{color:var(--mu);font-size:13px}
+.actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.badge-warn{background:#fef3c7;border:1px solid #fcd34d;color:#92400e;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px}
+
+/* ── BUTTONS ── */
+.btn{min-height:36px;border:1px solid var(--ln);border-radius:9px;background:#fff;color:var(--tx);font-weight:600;font-size:13px;padding:0 13px;transition:all .12s;white-space:nowrap}
+.btn:hover{border-color:#94a3b8}
+.btn.pri{background:var(--pdk);border-color:var(--pdk);color:#fff}
+.btn.pri:hover{background:var(--pri)}
+.btn.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn.ok:hover{background:#15803d}
+.btn.ghost{background:transparent;border-color:transparent}
+.btn.ghost:hover{background:var(--bg)}
+.btn.sm{min-height:30px;font-size:12px;padding:0 10px;border-radius:7px}
+.btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+
+/* ── KPIs ── */
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:11px}
+.kpi{background:var(--panel);border:1px solid var(--ln);border-radius:var(--r);box-shadow:var(--sh);padding:13px}
+.kpi b{display:block;font-size:22px;font-weight:800;line-height:1.1;margin-bottom:2px}
+.kpi span{color:var(--mu);font-size:12px}
+.kpi.highlight{border-color:#bae6fd;background:#f0f9ff}
+.kpi.highlight b{color:var(--pdk)}
+
+/* ── PANEL ── */
+.panel{background:var(--panel);border:1px solid var(--ln);border-radius:var(--r);box-shadow:var(--sh)}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 15px;border-bottom:1px solid var(--ln)}
+.panel-head h2{font-size:15px;font-weight:700}
+.panel-pad{padding:13px 15px}
+
+/* ── LAYOUT ── */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;align-items:start}
+
+/* ── FILTERS ── */
+.filters{display:flex;gap:9px;padding:11px 14px;border-bottom:1px solid var(--ln);background:var(--soft);flex-wrap:wrap;align-items:flex-end}
+.field{display:grid;gap:4px;min-width:120px}
+.field.grow{flex:1}
+.field label{color:var(--mu);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.field input,.field select{min-height:36px;border:1px solid var(--ln);border-radius:8px;background:#fff;color:var(--tx);padding:0 9px;font-size:13px;width:100%}
+.field input[type=search]{padding-left:9px}
+.field textarea{border:1px solid var(--ln);border-radius:8px;background:#fff;color:var(--tx);padding:8px 9px;font-size:13px;width:100%;min-height:76px;resize:vertical}
+.price-tag{font-family:monospace;font-weight:700;color:var(--pdk);font-size:11px;background:#e0f2fe;padding:1px 5px;border-radius:4px}
+
+/* ── TABLE ── */
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:700px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--ln);text-align:left;vertical-align:middle}
+th{color:var(--mu);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;background:#fff;position:sticky;top:0;z-index:2;white-space:nowrap}
+th.sort{cursor:pointer;user-select:none}
+th.sort:hover{color:var(--pri)}
+th.sort-on{color:var(--pdk)}
+td{font-size:13px}
+tr:hover td{background:#fafbfd}
+tr.sel td{background:#eef8ff}
+.sc-cell{display:flex;align-items:center;gap:9px;min-width:180px}
+.sc-icon{width:34px;height:34px;border-radius:8px;background:#e0f2fe;display:grid;place-items:center;font-size:16px;font-weight:800;color:var(--pdk);flex-shrink:0}
+.sc-icon.v{background:#ccfbf1;color:#065f46}
+.sc-icon.m{background:#ede9fe;color:#5b21b6}
+.sc-name{font-weight:600;font-size:13px;line-height:1.3}
+.sc-zone{color:var(--mu);font-size:11px}
+.badge{display:inline-flex;align-items:center;height:22px;border-radius:999px;font-size:11px;font-weight:700;padding:0 8px;border:1px solid transparent;white-space:nowrap}
+.bd-ok{background:#dcfce7;border-color:#86efac;color:#166534}
+.bd-mu{background:#f1f5f9;border-color:#cbd5e1;color:#475569}
+.bd-warn{background:#fef3c7;border-color:#fcd34d;color:#92400e}
+.bd-p{background:#dbeafe;color:#1e40af;border-color:#bfdbfe}
+.bd-v{background:#ccfbf1;color:#065f46;border-color:#99f6e4}
+.bd-m{background:#ede9fe;color:#5b21b6;border-color:#c4b5fd}
+.row-acts{display:flex;gap:5px}
+.icon-btn{min-width:30px;height:30px;border:1px solid var(--ln);border-radius:7px;background:#fff;color:var(--mu);font-size:11px;font-weight:700;padding:0 7px;transition:all .12s}
+.icon-btn:hover{border-color:#94a3b8;color:var(--tx)}
+.icon-btn.pub{border-color:#86efac;background:#dcfce7;color:var(--ok)}
+.icon-btn.paus{border-color:#cbd5e1;background:#f8fafc;color:var(--mu)}
+
+/* ── EDITOR DRAWER ── */
+.drawer{display:grid;gap:12px;padding:15px;position:sticky;top:20px}
+.preview{border:1px solid var(--ln);border-radius:11px;overflow:hidden}
+.preview-hero{height:110px;background:linear-gradient(135deg,var(--pdk),var(--teal));display:grid;place-items:center;color:#fff;font-size:32px;font-weight:800;position:relative;overflow:hidden}
+.preview-hero video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.preview-body{padding:12px;background:#0d1728;color:#fff}
+.preview-body h3{font-size:14px;margin-bottom:3px}
+.preview-body p{color:#94a3b8;font-size:12px;margin-bottom:10px}
+.metrics-mini{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.metric-mini{border:1px solid #213047;border-radius:8px;background:#111c31;padding:8px}
+.metric-mini span{display:block;color:#94a3b8;font-size:11px}
+.metric-mini b{display:block;font-size:14px;font-weight:700}
+.status-line{display:flex;align-items:center;justify-content:space-between;gap:9px;border:1px solid var(--ln);border-radius:9px;background:var(--soft);padding:9px 11px;color:var(--mu);font-size:12px}
+.status-line strong{color:var(--tx)}
+.empty-sel{padding:32px;text-align:center;color:var(--mu);font-size:13px}
+
+/* ── MEDIA KIT BUILDER ── */
+.kit-layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:14px;align-items:start}
+.kit-list{display:grid;gap:7px;max-height:380px;overflow:auto;padding:12px}
+.kit-row{display:grid;grid-template-columns:auto 1fr auto;gap:9px;align-items:center;border:1px solid var(--ln);border-radius:9px;background:#fff;padding:9px 11px}
+.kit-row input[type=checkbox]{width:16px;height:16px;accent-color:var(--pdk);cursor:pointer}
+.kit-doc{border:1px solid var(--ln);border-radius:11px;overflow:hidden}
+.kit-doc-hero{padding:16px;background:linear-gradient(135deg,var(--pdk),var(--teal));color:#fff}
+.kit-doc-hero h3{font-size:18px;font-weight:800;margin-bottom:3px}
+.kit-doc-body{padding:14px;display:grid;gap:12px}
+.kit-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kit-kpi{background:var(--soft);border:1px solid var(--ln);border-radius:9px;padding:10px}
+.kit-kpi b{display:block;font-size:18px;font-weight:800;color:var(--pdk)}
+.kit-kpi span{font-size:11px;color:var(--mu)}
+.kit-sc-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--ln);font-size:13px}
+.kit-sc-row:last-child{border-bottom:0}
+.kit-terms{font-size:11px;color:var(--mu);background:var(--soft);border:1px solid var(--ln);border-radius:8px;padding:9px}
+.kit-history{display:grid;gap:7px;padding:12px}
+.kit-hist-row{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--ln);border-radius:9px;padding:9px 11px;background:#fff}
+.kit-hist-row.arch{opacity:.55;background:var(--soft);border-style:dashed}
+
+/* ── METRICS ── */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.chart-rows{display:grid;gap:10px;padding:14px}
+.chart-row{}
+.chart-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--mu);margin-bottom:4px}
+.bar-track{height:8px;border-radius:999px;background:#e2e8f0;overflow:hidden}
+.bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--pdk),#22d3ee);transition:width .6s ease}
+
+/* ── SETTINGS ── */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+/* ── BULK ACTIONS ── */
+.bulk-bar{display:none;align-items:center;gap:8px;padding:9px 14px;background:#fef3c7;border-bottom:1px solid #fcd34d}
+.bulk-bar.show{display:flex}
+
+/* ── TOAST ── */
+.toast{position:fixed;left:50%;bottom:20px;z-index:9999;transform:translate(-50%,10px);opacity:0;pointer-events:none;background:#0f172a;color:#fff;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:600;box-shadow:var(--sh);transition:all .15s}
+.toast.show{transform:translate(-50%,0);opacity:1}
+.toast.ok{background:var(--ok)}
+.toast.err{background:var(--danger)}
+
+/* ── SECTION TOGGLE ── */
+.section{display:none}
+.section.on{display:block}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1050px){.kpis{grid-template-columns:repeat(3,1fr)}.layout,.kit-layout{grid-template-columns:1fr}.charts-grid,.settings-grid{grid-template-columns:1fr}}
+@media(max-width:700px){.app{grid-template-columns:1fr}.sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid var(--ln);flex-direction:row;flex-wrap:wrap;padding:10px 12px;gap:8px}.sb-toggle,.sb-footer{display:none}.nav{flex-direction:row}.kpis{grid-template-columns:1fr 1fr}.main{padding:14px}}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <button class="sb-toggle" id="sb-toggle" title="Colapsar menú">‹</button>
+    <div class="brand">
+      <div class="logo" id="dash-logo">SK</div>
+      <div class="brand-text">
+        <strong id="dash-brand">SmartKit</strong>
+        <span>Gestión DOOH</span>
+      </div>
+    </div>
+    <nav class="menu">
+      <button class="nav-btn on" data-sec="inventory"><i>📦</i><span>Inventario</span></button>
+      <button class="nav-btn" data-sec="mediakits"><i>📄</i><span>Media Kits</span></button>
+      <button class="nav-btn" data-sec="metrics"><i>📈</i><span>Métricas</span></button>
+      <button class="nav-btn" data-sec="settings"><i>⚙️</i><span>Configuración</span></button>
+    </nav>
+    <div class="sb-footer">
+      <a href="index.html" target="_blank">← Ir al brochure público</a><br>
+      <span style="margin-top:4px;display:block">Cambios en localStorage</span>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main class="main">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div>
+        <span class="eyebrow">Dashboard</span>
+        <h1 id="page-title">Gestión de pantallas</h1>
+        <p id="page-desc">Inventario, precios, disponibilidad y propuestas comerciales.</p>
+      </div>
+      <div class="actions">
+        <button class="btn" id="btn-export">Exportar CSV</button>
+        <button class="btn pri" id="btn-save">Guardar cambios</button>
+        <span class="badge-warn" id="unsaved" style="display:none">Cambios sin guardar</span>
+      </div>
+    </header>
+
+    <!-- KPIs -->
+    <section class="kpis" id="kpis-row"></section>
+
+    <!-- ══ INVENTORY ══ -->
+    <section class="section on" id="sec-inventory">
+      <div class="layout">
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <span class="eyebrow">Inventario</span>
+              <h2>Pantallas</h2>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="badge bd-ok" id="result-count">0 resultados</span>
+            </div>
+          </div>
+
+          <!-- Bulk bar -->
+          <div class="bulk-bar" id="bulk-bar">
+            <span class="badge bd-warn"><span id="bulk-count">0</span> seleccionadas</span>
+            <button class="btn sm ok" data-bulk="Activo">Publicar</button>
+            <button class="btn sm" data-bulk="Pausado">Pausar</button>
+            <button class="btn sm ghost" id="bulk-clear">Limpiar selección</button>
+          </div>
+
+          <!-- Filters -->
+          <div class="filters">
+            <div class="field grow"><label>Buscar</label><input type="search" id="f-search" placeholder="Nombre, zona…"></div>
+            <div class="field"><label>Zona</label><select id="f-zone"></select></div>
+            <div class="field"><label>Tipo</label>
+              <select id="f-type">
+                <option>Todos</option><option>Peatonal</option><option>Vehicular</option><option>Mixto</option>
+              </select>
+            </div>
+            <div class="field"><label>Estado</label>
+              <select id="f-status">
+                <option>Todos</option><option>Activo</option><option>Pausado</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:36px"><input type="checkbox" id="sel-all"></th>
+                  <th class="sort" data-k="nombre">Pantalla</th>
+                  <th class="sort" data-k="tipo">Tipo</th>
+                  <th class="sort" data-k="impactos">Impactos/día</th>
+                  <th class="sort" data-k="precio">Precio/sem</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="screen-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Editor drawer -->
+        <aside class="panel drawer" id="editor-panel">
+          <div class="panel-head" style="border-bottom:1px solid var(--ln)">
+            <div><span class="eyebrow">Detalle</span><h2 id="ed-title">Seleccioná una pantalla</h2></div>
+          </div>
+          <div id="editor-body"><p class="empty-sel">Hacé clic en ✏️ de cualquier pantalla para editar.</p></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ══ MEDIA KITS ══ -->
+    <section class="section" id="sec-mediakits">
+      <div class="kit-layout">
+        <div class="panel">
+          <div class="panel-head">
+            <div><span class="eyebrow">Media Kit</span><h2>Constructor de propuesta</h2></div>
+            <span class="badge bd-warn" id="kit-draft-badge">Borrador</span>
+          </div>
+          <div class="filters">
+            <div class="field grow"><label>Cliente</label><input id="kit-client" placeholder="Ej: Bodega Trapiche"></div>
+            <div class="field"><label>Contacto</label><input id="kit-contact" placeholder="Nombre"></div>
+            <div class="field"><label>Duración</label>
+              <select id="kit-dur">
+                <option value="1">1 semana</option><option value="2">2 semanas</option>
+                <option value="4" selected>4 semanas</option><option value="8">8 semanas</option>
+                <option value="12">12 semanas</option>
+              </select>
+            </div>
+            <div class="field"><label>Zona</label><select id="kit-zone"></select></div>
+            <div class="field"><label>Validez</label>
+              <select id="kit-validity"><option value="7">7 días</option><option value="15" selected>15 días</option><option value="30">30 días</option></select>
+            </div>
+          </div>
+          <div class="panel-pad">
+            <div class="field"><label>Notas para el cliente</label><textarea id="kit-notes" placeholder="Ej: Precio especial por lanzamiento…"></textarea></div>
+          </div>
+          <div class="panel-head">
+            <div><span class="eyebrow">Selección</span><h2>Pantallas del kit</h2></div>
+            <span class="badge bd-ok" id="kit-sel-count">0 seleccionadas</span>
+          </div>
+          <div class="kit-list" id="kit-screen-list"></div>
+        </div>
+
+        <aside>
+          <div class="panel" style="margin-bottom:14px">
+            <div class="panel-head">
+              <div><span class="eyebrow">Preview</span><h2>Documento</h2></div>
+              <button class="btn ok" id="btn-save-kit">Archivar propuesta</button>
+            </div>
+            <div class="kit-doc" id="kit-preview"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><div><span class="eyebrow">Historial</span><h2>Propuestas generadas</h2></div></div>
+            <div class="kit-history" id="kit-history"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ══ METRICS ══ -->
+    <section class="section" id="sec-metrics">
+      <div class="charts-grid">
+        <div class="panel">
+          <div class="panel-head"><div><span class="eyebrow">Métricas</span><h2>Reach diario por zona</h2></div></div>
+          <div class="chart-rows" id="chart-zones"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><div><span class="eyebrow">Distribución</span><h2>Tipos de tránsito</h2></div></div>
+          <div class="chart-rows" id="chart-types"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ SETTINGS ══ -->
+    <section class="section" id="sec-settings">
+      <div class="settings-grid">
+        <div class="panel">
+          <div class="panel-head"><div><span class="eyebrow">Marca</span><h2>Datos visibles</h2></div></div>
+          <div class="panel-pad" style="display:grid;gap:11px">
+            <div class="field"><label>Nombre de marca</label><input id="cfg-brand" type="text"></div>
+            <div class="field"><label>Logo corto (2 letras)</label><input id="cfg-logo" type="text" maxlength="3"></div>
+            <div class="field"><label>WhatsApp comercial</label><input id="cfg-wa" type="text" placeholder="5492616000000"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><div><span class="eyebrow">Plantilla</span><h2>Condiciones del media kit</h2></div></div>
+          <div class="panel-pad" style="display:grid;gap:11px">
+            <div class="field"><label>Validez por defecto</label>
+              <select id="cfg-validity"><option value="7">7 días</option><option value="15">15 días</option><option value="30">30 días</option></select>
+            </div>
+            <div class="field"><label>Condiciones generales</label>
+              <textarea id="cfg-terms" style="min-height:100px"></textarea>
+            </div>
+            <div class="field"><label>Hero title (brochure)</label><input id="cfg-hero" type="text"></div>
+            <button class="btn ok" id="btn-cfg-save">Guardar configuración</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════
+   screens-data.js (embedded)
+══════════════════════════════════════════════ */
+const BASE_SCREENS = [
+  {id:'sc-01',nombre:'Sarmiento y 9 de Julio',zona:'Centro',tipo:'Peatonal',impactos:14200,precio:95000,status:'Activo',lat:-32.8894,lng:-68.8458,nota:'Esquina comercial de máximo tránsito.'},
+  {id:'sc-02',nombre:'Palmares Open Mall',zona:'Palmares',tipo:'Mixto',impactos:22500,precio:145000,status:'Activo',lat:-32.9121,lng:-68.8306,nota:'Acceso principal al shopping.'},
+  {id:'sc-03',nombre:'Las Heras y Mitre',zona:'Las Heras',tipo:'Peatonal',impactos:8800,precio:68000,status:'Activo',lat:-32.8716,lng:-68.8388,nota:'Zona comercial barrial.'},
+  {id:'sc-04',nombre:'Av. Aristides frente al Parque',zona:'Ciudad',tipo:'Vehicular',impactos:31000,precio:185000,status:'Activo',lat:-32.8908,lng:-68.8762,nota:'Avenida principal. Ideal autos y commuters.'},
+  {id:'sc-05',nombre:'Guaymallén Centro',zona:'Guaymallén',tipo:'Peatonal',impactos:11400,precio:78000,status:'Activo',lat:-32.8955,lng:-68.8212,nota:'Centro comercial de Guaymallén.'},
+  {id:'sc-06',nombre:'Maipú Ruta 7',zona:'Maipú',tipo:'Vehicular',impactos:19600,precio:112000,status:'Activo',lat:-32.9812,lng:-68.7757,nota:'Tránsito hacia bodegas y aeropuerto.'},
+  {id:'sc-07',nombre:'Villanueva Gomensoro',zona:'Las Heras',tipo:'Mixto',impactos:9300,precio:72000,status:'Activo',lat:-32.8658,lng:-68.8415,nota:'Zona residencial-comercial.'},
+  {id:'sc-08',nombre:'Godoy Cruz Belgrano',zona:'Godoy Cruz',tipo:'Vehicular',impactos:25800,precio:155000,status:'Activo',lat:-32.9246,lng:-68.8488,nota:'Corredor vehicular de alto volumen.'},
+  {id:'sc-09',nombre:'Chacras de Coria Acceso',zona:'Luján',tipo:'Vehicular',impactos:16700,precio:125000,status:'Activo',lat:-33.0158,lng:-68.8642,nota:'Ideal turismo y bodegas.'},
+  {id:'sc-10',nombre:'Terminal de Ómnibus',zona:'Centro',tipo:'Peatonal',impactos:18400,precio:118000,status:'Activo',lat:-32.8868,lng:-68.8284,nota:'Alta rotación. Público diverso 24h.'},
+];
+
+/* ═══════════════════════════════════════════
+   CONFIG
+══════════════════════════════════════════════ */
+const DEFAULT_CFG = {
+  brand:'SmartKit',logo:'SK',whatsapp:'5492616000000',
+  terms:'Inicio de campaña sujeto a disponibilidad y aprobación de piezas. Valores en ARS.',
+  heroTitle:'Pantallas DOOH · Mendoza',validityDays:15,
+};
+
+/* ═══════════════════════════════════════════
+   DASHBOARD APP
+══════════════════════════════════════════════ */
+(function(){
+'use strict';
+
+// ── Keys ──
+const K_STATE='sk_v1_dashboard-state';
+const K_KITS='sk_v1_public-kits';
+const K_CFG='sk_v1_config';
+
+// ── State ──
+let screens=[];       // merged screens (base + overrides)
+let filtered=[];      // current filter result
+let selected=new Set(); // selected screen IDs
+let currentEdit=null; // screen being edited
+let dirtyScreens=new Set(); // screens with unsaved changes
+let cfg={};
+let sortKey='nombre', sortDir=1;
+let kitSelected=new Set(); // IDs selected for current kit
+let currentSection='inventory';
+
+// ── Helpers ──
+const $=id=>document.getElementById(id);
+const fmt=n=>'$'+Math.round(n).toLocaleString('es-AR');
+const fmtImp=n=>n>=1000?(n/1000).toFixed(1)+'k':String(n);
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const badgeClass={Peatonal:'bd-p',Vehicular:'bd-v',Mixto:'bd-m'};
+
+let toastTimer;
+function toast(msg,type=''){
+  const t=$('toast'); t.textContent=msg; t.className='toast show'+(type?' '+type:'');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+function markDirty(){
+  dirtyScreens.add(currentEdit);
+  $('unsaved').style.display='inline-flex';
+}
+
+// ── Boot ──
+function boot(){
+  loadCfg();
+  loadScreens();
+  setupSidebar();
+  setupNav();
+  setupFilters();
+  setupTable();
+  setupBulk();
+  setupExport();
+  setupSave();
+  setupSettings();
+  switchSection('inventory');
+}
+
+// ── Config ──
+function loadCfg(){
+  try{ cfg={...DEFAULT_CFG,...JSON.parse(localStorage.getItem(K_CFG)||'{}')}; }
+  catch{ cfg={...DEFAULT_CFG}; }
+  applyBrand();
+  loadSettingsForm();
+}
+
+function applyBrand(){
+  const el=id=>document.getElementById(id);
+  ['dash-logo'].forEach(id=>{const e=el(id);if(e)e.textContent=cfg.logo;});
+  ['dash-brand'].forEach(id=>{const e=el(id);if(e)e.textContent=cfg.brand;});
+}
+
+function loadSettingsForm(){
+  const v=(id,val)=>{const e=$(id);if(e)e.value=val??'';};
+  v('cfg-brand',cfg.brand); v('cfg-logo',cfg.logo); v('cfg-wa',cfg.whatsapp);
+  v('cfg-terms',cfg.terms); v('cfg-hero',cfg.heroTitle);
+  const sel=$('cfg-validity'); if(sel) sel.value=cfg.validityDays||15;
+}
+
+function setupSettings(){
+  $('btn-cfg-save')?.addEventListener('click',()=>{
+    cfg.brand=$('cfg-brand')?.value||'SmartKit';
+    cfg.logo=$('cfg-logo')?.value||'SK';
+    cfg.whatsapp=$('cfg-wa')?.value||'';
+    cfg.terms=$('cfg-terms')?.value||'';
+    cfg.heroTitle=$('cfg-hero')?.value||'';
+    cfg.validityDays=parseInt($('cfg-validity')?.value)||15;
+    localStorage.setItem(K_CFG,JSON.stringify(cfg));
+    applyBrand();
+    toast('Configuración guardada',  'ok');
+  });
+}
+
+// ── Screens ──
+function loadScreens(){
+  let overlay={};
+  try{ overlay=JSON.parse(localStorage.getItem(K_STATE)||'{}'); }catch{}
+  screens=BASE_SCREENS.map(s=>({...s,...(overlay[s.id]||{})}));
+  filtered=[...screens];
+  buildZoneFilter();
+  buildKitZoneFilter();
+  renderTable();
+  renderKPIs();
+  renderMetrics();
+  renderKitScreenList();
+  renderKitHistory();
+}
+
+function saveChanges(){
+  const overlay={};
+  screens.forEach(s=>{
+    const base=BASE_SCREENS.find(b=>b.id===s.id);
+    if(!base) return;
+    const diff={};
+    ['nombre','zona','precio','status','video','nota'].forEach(k=>{
+      if(s[k]!==base[k]) diff[k]=s[k];
+    });
+    if(Object.keys(diff).length) overlay[s.id]=diff;
+  });
+  localStorage.setItem(K_STATE,JSON.stringify(overlay));
+  dirtyScreens.clear();
+  $('unsaved').style.display='none';
+  toast('Cambios guardados. El brochure los refleja al recargar.','ok');
+}
+
+// ── Sidebar ──
+function setupSidebar(){
+  $('sb-toggle')?.addEventListener('click',()=>$('app').classList.toggle('nav-collapsed'));
+}
+
+function setupNav(){
+  document.querySelectorAll('[data-sec]').forEach(btn=>{
+    btn.addEventListener('click',()=>switchSection(btn.dataset.sec));
+  });
+}
+
+function switchSection(sec){
+  currentSection=sec;
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('on',b.dataset.sec===sec));
+  const el=$('sec-'+sec); if(el) el.classList.add('on');
+  const titles={inventory:'Gestión de pantallas',mediakits:'Media Kits',metrics:'Métricas',settings:'Configuración'};
+  const descs={inventory:'Inventario, disponibilidad y precios desde una sola superficie.',
+    mediakits:'Creá y gestioná propuestas comerciales para clientes.',
+    metrics:'Reach diario, distribución por zona y tipo de tránsito.',
+    settings:'Marca, condiciones y configuración global.'};
+  $('page-title').textContent=titles[sec]||'';
+  $('page-desc').textContent=descs[sec]||'';
+  const showBtns=sec==='inventory';
+  $('btn-export').style.display=showBtns?'':'none';
+  $('btn-save').style.display=showBtns?'':'none';
+}
+
+// ── Filters ──
+function buildZoneFilter(){
+  const sel=$('f-zone'); if(!sel) return;
+  const zones=['Todos',...new Set(screens.map(s=>s.zona))];
+  sel.innerHTML=zones.map(z=>`<option>${z}</option>`).join('');
+}
+
+function buildKitZoneFilter(){
+  ['kit-zone'].forEach(id=>{
+    const sel=$(id); if(!sel) return;
+    const zones=['Todas',...new Set(screens.map(s=>s.zona))];
+    sel.innerHTML=zones.map(z=>`<option>${z}</option>`).join('');
+  });
+}
+
+function setupFilters(){
+  ['f-search','f-zone','f-type','f-status'].forEach(id=>{
+    $(id)?.addEventListener('input',applyFilters);
+    $(id)?.addEventListener('change',applyFilters);
+  });
+}
+
+function applyFilters(){
+  const q=($('f-search')?.value||'').toLowerCase();
+  const zone=$('f-zone')?.value||'Todos';
+  const tipo=$('f-type')?.value||'Todos';
+  const st=$('f-status')?.value||'Todos';
+  filtered=screens.filter(s=>{
+    if(q&&!((s.nombre||'').toLowerCase().includes(q)||(s.zona||'').toLowerCase().includes(q))) return false;
+    if(zone!=='Todos'&&s.zona!==zone) return false;
+    if(tipo!=='Todos'&&s.tipo!==tipo) return false;
+    if(st!=='Todos'&&s.status!==st) return false;
+    return true;
+  });
+  renderTable();
+}
+
+// ── Table ──
+function setupTable(){
+  document.querySelectorAll('th.sort').forEach(th=>{
+    th.addEventListener('click',()=>{
+      if(sortKey===th.dataset.k) sortDir*=-1; else {sortKey=th.dataset.k;sortDir=1;}
+      document.querySelectorAll('th.sort').forEach(t=>t.classList.remove('sort-on'));
+      th.classList.add('sort-on');
+      renderTable();
+    });
+  });
+  $('sel-all')?.addEventListener('change',e=>{
+    if(e.target.checked) filtered.forEach(s=>selected.add(s.id));
+    else selected.clear();
+    renderTable();
+    updateBulk();
+  });
+}
+
+function renderTable(){
+  const tbody=$('screen-tbody'); if(!tbody) return;
+  const sorted=[...filtered].sort((a,b)=>{
+    const av=a[sortKey]??'', bv=b[sortKey]??'';
+    return typeof av==='number'?(av-bv)*sortDir:String(av).localeCompare(String(bv))*sortDir;
+  });
+  const rc=$('result-count'); if(rc) rc.textContent=`${sorted.length} resultado${sorted.length!==1?'s':''}`;
+
+  tbody.innerHTML=sorted.map(s=>{
+    const isSel=selected.has(s.id);
+    const ini=esc((s.nombre||'').substring(0,2).toUpperCase());
+    const iconCls={Vehicular:'v',Mixto:'m'}[s.tipo]||'';
+    return `<tr class="${isSel?'sel':''}" data-id="${esc(s.id)}">
+      <td><input type="checkbox" class="row-cb" data-id="${esc(s.id)}" ${isSel?'checked':''}></td>
+      <td>
+        <div class="sc-cell">
+          <div class="sc-icon ${iconCls}">${ini}</div>
+          <div><div class="sc-name">${esc(s.nombre)}</div><div class="sc-zone">${esc(s.zona)}</div></div>
+        </div>
+      </td>
+      <td><span class="badge ${badgeClass[s.tipo]||''}">${esc(s.tipo)}</span></td>
+      <td>${fmtImp(s.impactos)}</td>
+      <td><span style="font-family:monospace;font-weight:700;color:var(--pdk)">${fmt(s.precio)}</span></td>
+      <td><span class="badge ${s.status==='Activo'?'bd-ok':'bd-mu'}">${esc(s.status)}</span></td>
+      <td>
+        <div class="row-acts">
+          <button class="icon-btn" data-action="edit" data-id="${esc(s.id)}" title="Editar">✏️</button>
+          <button class="icon-btn ${s.status==='Activo'?'paus':'pub'}" data-action="toggle-status" data-id="${esc(s.id)}" title="${s.status==='Activo'?'Pausar':'Publicar'}">
+            ${s.status==='Activo'?'⏸':'▶️'}
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // Row events
+  tbody.querySelectorAll('.row-cb').forEach(cb=>{
+    cb.addEventListener('change',e=>{
+      e.target.checked?selected.add(e.target.dataset.id):selected.delete(e.target.dataset.id);
+      const row=e.target.closest('tr'); if(row) row.classList.toggle('sel',e.target.checked);
+      updateBulk();
+    });
+  });
+  tbody.querySelectorAll('[data-action="edit"]').forEach(btn=>{
+    btn.addEventListener('click',()=>openEditor(btn.dataset.id));
+  });
+  tbody.querySelectorAll('[data-action="toggle-status"]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const s=screens.find(x=>x.id===btn.dataset.id); if(!s) return;
+      s.status=s.status==='Activo'?'Pausado':'Activo';
+      dirtyScreens.add(s.id); $('unsaved').style.display='inline-flex';
+      renderTable(); renderKPIs(); toast(`${s.nombre}: ${s.status}`);
+    });
+  });
+}
+
+// ── Editor ──
+function openEditor(id){
+  const s=screens.find(x=>x.id===id); if(!s) return;
+  currentEdit=id;
+  $('ed-title').textContent=s.nombre;
+  $('editor-body').innerHTML=`
+    <div class="preview">
+      <div class="preview-hero" id="prev-hero">${s.video?`<video src="${esc(s.video)}" autoplay muted loop playsinline></video>`:esc((s.nombre||'').substring(0,2).toUpperCase())}</div>
+      <div class="preview-body">
+        <h3>${esc(s.nombre)}</h3>
+        <p>${esc(s.zona)} · <span class="badge ${badgeClass[s.tipo]||''}">${esc(s.tipo)}</span></p>
+        <div class="metrics-mini">
+          <div class="metric-mini"><span>Impactos/día</span><b>${fmtImp(s.impactos)}</b></div>
+          <div class="metric-mini"><span>Precio/sem</span><b>${fmt(s.precio)}</b></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;gap:10px">
+      <div class="field"><label>Nombre comercial</label><input id="ed-name" value="${esc(s.nombre)}"></div>
+      <div class="field"><label>Zona</label><input id="ed-zone" value="${esc(s.zona)}"></div>
+      <div class="field"><label>Precio semanal (ARS)</label><input id="ed-price" type="number" min="1" value="${s.precio}"></div>
+      <div class="field"><label>Estado</label>
+        <select id="ed-status"><option ${s.status==='Activo'?'selected':''}>Activo</option><option ${s.status==='Pausado'?'selected':''}>Pausado</option></select>
+      </div>
+      <div class="field"><label>Video del hero (path o URL)</label><input id="ed-video" value="${esc(s.video||'')}"></div>
+      <div class="field"><label>Nota interna</label><textarea id="ed-note">${esc(s.nota||'')}</textarea></div>
+      <button class="btn ok" id="btn-apply">Aplicar cambios</button>
+    </div>
+    <div class="status-line"><span>Pantalla ID</span><strong>${esc(s.id)}</strong></div>`;
+
+  $('btn-apply')?.addEventListener('click',()=>applyEdit(id));
+  // Live video preview
+  $('ed-video')?.addEventListener('input',e=>{
+    const h=$('prev-hero'); if(!h) return;
+    h.innerHTML=e.target.value?`<video src="${esc(e.target.value)}" autoplay muted loop playsinline></video>`:esc((s.nombre||'').substring(0,2).toUpperCase());
+  });
+}
+
+function applyEdit(id){
+  const s=screens.find(x=>x.id===id); if(!s) return;
+  s.nombre=$('ed-name')?.value||s.nombre;
+  s.zona=$('ed-zone')?.value||s.zona;
+  s.precio=parseFloat($('ed-price')?.value)||s.precio;
+  s.status=$('ed-status')?.value||s.status;
+  s.video=$('ed-video')?.value||'';
+  s.nota=$('ed-note')?.value||'';
+  markDirty(); renderTable(); renderKPIs(); renderMetrics();
+  toast(`${s.nombre} actualizada`);
+  $('ed-title').textContent=s.nombre;
+}
+
+// ── Bulk ──
+function setupBulk(){
+  document.querySelectorAll('[data-bulk]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const st=btn.dataset.bulk;
+      selected.forEach(id=>{const s=screens.find(x=>x.id===id); if(s){s.status=st;dirtyScreens.add(id);}});
+      $('unsaved').style.display='inline-flex';
+      selected.clear(); updateBulk(); renderTable(); renderKPIs();
+      toast(`${st==='Activo'?'Publicadas':'Pausadas'} las pantallas seleccionadas`);
+    });
+  });
+  $('bulk-clear')?.addEventListener('click',()=>{selected.clear();updateBulk();renderTable();});
+}
+
+function updateBulk(){
+  const bar=$('bulk-bar'), cnt=$('bulk-count');
+  if(bar) bar.classList.toggle('show',selected.size>0);
+  if(cnt) cnt.textContent=selected.size;
+  const sa=$('sel-all'); if(sa) sa.checked=filtered.length>0&&filtered.every(s=>selected.has(s.id));
+}
+
+// ── KPIs ──
+function renderKPIs(){
+  const el=$('kpis-row'); if(!el) return;
+  const total=screens.length;
+  const active=screens.filter(s=>s.status==='Activo').length;
+  const reach=screens.filter(s=>s.status==='Activo').reduce((a,s)=>a+(s.impactos||0),0);
+  const rev=screens.filter(s=>s.status==='Activo').reduce((a,s)=>a+(s.precio||0),0);
+  const cpms=screens.filter(s=>s.status==='Activo'&&s.impactos>0).map(s=>((s.precio||0)/(s.impactos/1000)*1000/7));
+  const cpm=cpms.length?cpms.reduce((a,b)=>a+b,0)/cpms.length:0;
+  el.innerHTML=`
+    <div class="kpi highlight"><b>${active} / ${total}</b><span>Activas / inventario</span></div>
+    <div class="kpi"><b>${active}</b><span>Pantallas activas</span></div>
+    <div class="kpi"><b>${fmtImp(reach)}</b><span>Impactos diarios</span></div>
+    <div class="kpi"><b>${fmt(rev)}</b><span>Potencial semanal</span></div>
+    <div class="kpi"><b>${fmt(Math.round(cpm))}</b><span>CPM promedio</span></div>`;
+}
+
+// ── Export ──
+function setupExport(){
+  $('btn-export')?.addEventListener('click',()=>{
+    const rows=[['ID','Nombre','Zona','Tipo','Impactos/día','Precio/sem','Estado']];
+    filtered.forEach(s=>rows.push([s.id,s.nombre,s.zona,s.tipo,s.impactos,s.precio,s.status]));
+    const csv=rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+    const a=document.createElement('a');
+    a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+    a.download='smartkit-inventario.csv'; a.click();
+    toast('CSV exportado');
+  });
+}
+
+function setupSave(){
+  $('btn-save')?.addEventListener('click',saveChanges);
+}
+
+// ── Metrics ──
+function renderMetrics(){
+  // By zone
+  const byZone={};
+  screens.filter(s=>s.status==='Activo').forEach(s=>{
+    byZone[s.zona]=(byZone[s.zona]||0)+s.impactos;
+  });
+  const maxZ=Math.max(...Object.values(byZone),1);
+  $('chart-zones').innerHTML=Object.entries(byZone).sort((a,b)=>b[1]-a[1]).map(([z,v])=>`
+    <div class="chart-row">
+      <div class="chart-meta"><span>${esc(z)}</span><span>${fmtImp(v)} imp/día</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(v/maxZ*100).toFixed(1)}%"></div></div>
+    </div>`).join('');
+
+  // By type
+  const byType={};
+  screens.filter(s=>s.status==='Activo').forEach(s=>{
+    byType[s.tipo]=(byType[s.tipo]||0)+s.impactos;
+  });
+  const maxT=Math.max(...Object.values(byType),1);
+  $('chart-types').innerHTML=Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([t,v])=>`
+    <div class="chart-row">
+      <div class="chart-meta"><span>${esc(t)}</span><span>${fmtImp(v)} imp/día</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(v/maxT*100).toFixed(1)}%"></div></div>
+    </div>`).join('');
+}
+
+// ── Media Kit Builder ──
+function renderKitScreenList(){
+  const el=$('kit-screen-list'); if(!el) return;
+  const zone=$('kit-zone')?.value||'Todas';
+  const visible=screens.filter(s=>s.status==='Activo'&&(zone==='Todas'||s.zona===zone));
+  el.innerHTML=visible.map(s=>`
+    <div class="kit-row">
+      <input type="checkbox" class="kit-cb" data-id="${esc(s.id)}" ${kitSelected.has(s.id)?'checked':''}>
+      <div>
+        <strong style="font-size:13px">${esc(s.nombre)}</strong>
+        <div style="color:var(--mu);font-size:11px">${esc(s.zona)} · ${esc(s.tipo)} · ${fmtImp(s.impactos)} imp/día</div>
+      </div>
+      <span style="font-family:monospace;font-size:12px;font-weight:700;color:var(--pdk)">${fmt(s.precio)}/sem</span>
+    </div>`).join('');
+  el.querySelectorAll('.kit-cb').forEach(cb=>{
+    cb.addEventListener('change',e=>{
+      e.target.checked?kitSelected.add(e.target.dataset.id):kitSelected.delete(e.target.dataset.id);
+      updateKitPreview();
+    });
+  });
+  updateKitPreview();
+}
+
+$('kit-zone')?.addEventListener('change',()=>renderKitScreenList());
+['kit-client','kit-contact','kit-dur','kit-validity','kit-notes'].forEach(id=>{
+  document.addEventListener('DOMContentLoaded',()=>{
+    $(id)?.addEventListener('input',updateKitPreview);
+    $(id)?.addEventListener('change',updateKitPreview);
+  });
+});
+
+function updateKitPreview(){
+  const cnt=$('kit-sel-count'); if(cnt) cnt.textContent=`${kitSelected.size} seleccionada${kitSelected.size!==1?'s':''}`;
+  const badge=$('kit-draft-badge'); if(badge) badge.textContent=kitSelected.size?'Listo':'Borrador';
+  const el=$('kit-preview'); if(!el) return;
+  const client=$('kit-client')?.value||'Cliente';
+  const contact=$('kit-contact')?.value||'';
+  const weeks=parseInt($('kit-dur')?.value)||4;
+  const validity=parseInt($('kit-validity')?.value)||15;
+  const notes=$('kit-notes')?.value||'';
+  const items=screens.filter(s=>kitSelected.has(s.id));
+  const totalInv=items.reduce((a,s)=>a+s.precio*weeks,0);
+  const totalImp=items.reduce((a,s)=>a+s.impactos,0)*weeks*7;
+  const now=new Date();
+  const validUntil=new Date(now.getTime()+validity*86400000);
+  const weekLabel={1:'1 semana',2:'2 semanas',4:'4 semanas',8:'8 semanas',12:'12 semanas'}[weeks]||`${weeks} semanas`;
+
+  el.innerHTML=`
+    <div class="kit-doc-hero">
+      <h3>${esc(cfg.brand||'SmartKit')} · Propuesta Comercial</h3>
+      <div style="font-size:12px;opacity:.8">Para: ${esc(client)}${contact?` (${esc(contact)})`:''} · ${now.toLocaleDateString('es-AR')}</div>
+      <div style="font-size:11px;opacity:.7;margin-top:3px">Duración: ${weekLabel} · Válida hasta ${validUntil.toLocaleDateString('es-AR')}</div>
+    </div>
+    <div class="kit-doc-body">
+      <div class="kit-kpis">
+        <div class="kit-kpi"><b>${items.length}</b><span>Pantallas</span></div>
+        <div class="kit-kpi"><b>${fmtImp(totalImp)}</b><span>Impactos totales</span></div>
+        <div class="kit-kpi"><b>${fmt(totalInv)}</b><span>Inversión total</span></div>
+      </div>
+      ${items.length?`<div>${items.map(s=>`
+        <div class="kit-sc-row">
+          <div><strong>${esc(s.nombre)}</strong><br><span style="color:var(--mu);font-size:11px">${esc(s.zona)} · ${fmtImp(s.impactos)} imp/día</span></div>
+          <strong>${fmt(s.precio*weeks)}</strong>
+        </div>`).join('')}</div>`:'<p style="color:var(--mu);font-size:12px;text-align:center;padding:16px 0">Seleccioná pantallas para armar la propuesta.</p>'}
+      ${notes?`<div class="kit-terms">${esc(notes)}</div>`:''}
+      <div class="kit-terms">${esc(cfg.terms||DEFAULT_CFG.terms)}</div>
+    </div>`;
+}
+
+function renderKitHistory(){
+  const el=$('kit-history'); if(!el) return;
+  let all={};
+  try{ all=JSON.parse(localStorage.getItem(K_KITS)||'{}'); }catch{}
+  const kits=Object.values(all).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+  if(!kits.length){
+    el.innerHTML='<p style="color:var(--mu);font-size:12px;padding:4px">Sin propuestas guardadas todavía.</p>';
+    return;
+  }
+  el.innerHTML=kits.map(k=>`
+    <div class="kit-hist-row ${k.archived?'arch':''}">
+      <div>
+        <strong style="font-size:13px">${esc(k.client||k.brand||'Sin cliente')}</strong>
+        <div style="color:var(--mu);font-size:11px">${new Date(k.createdAt).toLocaleDateString('es-AR')} · ${k.weekLabel||''} · ${fmt(k.totals?.investment||0)}</div>
+      </div>
+      <div style="display:flex;gap:5px">
+        <button class="btn sm" data-action="load-kit" data-id="${esc(k.id)}">Ver</button>
+        <button class="btn sm" data-action="dl-kit" data-id="${esc(k.id)}">↓</button>
+        <button class="btn sm" data-action="arch-kit" data-id="${esc(k.id)}">${k.archived?'Restaurar':'Archivar'}</button>
+        <button class="btn sm danger" data-action="del-kit" data-id="${esc(k.id)}">✕</button>
+      </div>
+    </div>`).join('');
+  el.querySelectorAll('[data-action="load-kit"]').forEach(btn=>btn.addEventListener('click',()=>loadKitIntoBuilder(btn.dataset.id)));
+  el.querySelectorAll('[data-action="dl-kit"]').forEach(btn=>btn.addEventListener('click',()=>downloadKit(btn.dataset.id)));
+  el.querySelectorAll('[data-action="arch-kit"]').forEach(btn=>btn.addEventListener('click',()=>archiveKit(btn.dataset.id)));
+  el.querySelectorAll('[data-action="del-kit"]').forEach(btn=>btn.addEventListener('click',()=>deleteKit(btn.dataset.id)));
+}
+
+function saveKit(){
+  const items=screens.filter(s=>kitSelected.has(s.id));
+  if(!items.length){toast('Seleccioná al menos una pantalla','err');return;}
+  const client=$('kit-client')?.value||'';
+  const contact=$('kit-contact')?.value||'';
+  const weeks=parseInt($('kit-dur')?.value)||4;
+  const validity=parseInt($('kit-validity')?.value)||15;
+  const notes=$('kit-notes')?.value||'';
+  const weekLabel={1:'1 semana',2:'2 semanas',4:'4 semanas',8:'8 semanas',12:'12 semanas'}[weeks]||`${weeks} semanas`;
+  const id='kit-'+Date.now().toString(36);
+  const now=new Date();
+  const totalInv=items.reduce((a,s)=>a+s.precio*weeks,0);
+  const totalImp=items.reduce((a,s)=>a+s.impactos,0);
+  const kit={id,client,contact,createdAt:now.toISOString(),
+    validUntil:new Date(now.getTime()+validity*86400000).toISOString(),
+    brand:cfg.brand||'SmartKit',weeks,weekLabel,notes,
+    screens:items.map(s=>({...s,precioCampana:s.precio*weeks})),
+    totals:{screens:items.length,impactsPerDay:totalImp,impactsTotal:totalImp*weeks*7,investment:totalInv},
+    terms:cfg.terms||DEFAULT_CFG.terms};
+  let all={};
+  try{ all=JSON.parse(localStorage.getItem(K_KITS)||'{}'); }catch{}
+  all[id]=kit; localStorage.setItem(K_KITS,JSON.stringify(all));
+  renderKitHistory(); toast(`Propuesta archivada para ${client||'cliente'}`,  'ok');
+}
+
+function loadKitIntoBuilder(id){
+  let all={};
+  try{ all=JSON.parse(localStorage.getItem(K_KITS)||'{}'); }catch{}
+  const kit=all[id]; if(!kit) return;
+  kitSelected=new Set((kit.screens||[]).map(s=>s.id));
+  if($('kit-client')) $('kit-client').value=kit.client||'';
+  if($('kit-contact')) $('kit-contact').value=kit.contact||'';
+  if($('kit-dur')) $('kit-dur').value=kit.weeks||4;
+  if($('kit-notes')) $('kit-notes').value=kit.notes||'';
+  renderKitScreenList(); toast('Propuesta cargada en el constructor');
+}
+
+function downloadKit(id){
+  let all={};
+  try{ all=JSON.parse(localStorage.getItem(K_KITS)||'{}'); }catch{}
+  const kit=all[id]; if(!kit) return;
+  const a=document.createElement('a');
+  a.href='data:application/json,'+encodeURIComponent(JSON.stringify(kit,null,2));
+  a.download=id+'.json'; a.click();
+}
+
+function archiveKit(id){
+  let all={};
+  try{ all=JSON.parse(localStorage.getItem(K_KITS)||'{}'); }catch{}
+  if(!all[id]) return;
+  all[id].archived=!all[id].archived;
+  localStorage.setItem(K_KITS,JSON.stringify(all));
+  renderKitHistory();
+  toast(all[id].archived?'Propuesta archivada':'Propuesta restaurada');
+}
+
+function deleteKit(id){
+  if(!confirm('¿Eliminar esta propuesta? Esta acción no se puede deshacer.')) return;
+  let all={};
+  try{ all=JSON.parse(localStorage.getItem(K_KITS)||'{}'); }catch{}
+  delete all[id]; localStorage.setItem(K_KITS,JSON.stringify(all));
+  renderKitHistory(); toast('Propuesta eliminada');
+}
+
+// ── Wire up deferred events ──
+document.addEventListener('DOMContentLoaded',()=>{
+  ['kit-client','kit-contact','kit-dur','kit-validity','kit-notes'].forEach(id=>{
+    $(id)?.addEventListener('input',updateKitPreview);
+    $(id)?.addEventListener('change',updateKitPreview);
+  });
+  $('kit-zone')?.addEventListener('change',()=>renderKitScreenList());
+  $('btn-save-kit')?.addEventListener('click',saveKit);
+});
+
+// ── Init ──
+document.readyState==='loading'
+  ?document.addEventListener('DOMContentLoaded',boot)
+  :boot();
+
+})();
+</script>
+</body>
+</html>
