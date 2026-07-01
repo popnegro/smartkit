@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartKit - Media Kit</title>
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body class="mediakit-page">
+<div class="page">
+  <header class="top">
+    <div class="brand">
+      <div class="logo" id="brand-logo">SK</div>
+      <div>
+        <strong id="brand-name">SmartKit</strong>
+        <span>Media kit comercial</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a class="mobile-quote-toggle" href="./index.html" aria-label="Ir al cotizador">
+        <span>Cotizador</span>
+      </a>
+    </div>
+    <nav class="nav" aria-label="Vistas principales">
+      <a href="./index.html">Brochure</a>
+      <a href="./index.html?view=map">Mapa</a>
+      <a class="on" href="./mediakit.html" data-mediakit-link aria-current="page">Media Kit</a>
+    </nav>
+  </header>
+  <main class="mk-wrap" id="app" aria-live="polite"></main>
+</div>
+<nav class="mobile-action-nav" id="mobile-action-nav" aria-label="Navegación principal">
+  <a class="mobile-nav-destination" href="./index.html">
+    <span>Brochure</span>
+  </a>
+  <a class="mobile-nav-destination" href="./index.html?view=map">
+    <span>Mapa</span>
+  </a>
+  <a class="mobile-nav-destination on" href="./mediakit.html" data-mediakit-link aria-current="page">
+    <span>Media Kit</span>
+  </a>
+</nav>
+
+<script src="./config.js"></script>
+<script src="./screens-data.js"></script>
+<script src="./shared.js"></script>
+<script src="./mediakit.js"></script>
+</body>
+</html>

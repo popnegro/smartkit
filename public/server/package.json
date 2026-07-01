@@ -4,7 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "prisma generate",
+    "build:js": "terser public/utils.js -o public/dist/utils.min.js -c -m",
+    "build:css": "cssnano public/shared.css public/dist/shared.min.css && cssnano public/dashboard.css public/dist/dashboard.min.css",
+    "build": "npm run build:js && npm run build:css"
+
   },
   "keywords": [],
   "author": "",
@@ -14,7 +19,7 @@
     "@vercel/postgres": "^0.10.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
-    "express": "^5.2.1",
+    "express": "^4.19.2",
     "pg": "^8.22.0"
   }
 }
