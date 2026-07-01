@@ -1,0 +1,134 @@
+/* ══════════════════════════════════════════════
+   shared.css — Estilos comunes para SmartKit
+═══════════════════════════════════════════════ */
+
+/* ── VARIABLES GLOBALES ── */
+:root {
+  --pri: #0369a1; /* Principal */
+  --pdk: #075985; /* Principal oscuro */
+  --teal: #0f766e;
+  --bg: #f6f8fb;   /* Fondo de la app */
+  --panel: #fff;  /* Fondo de paneles/tarjetas */
+  --soft: #f8fafc; /* Fondo suave */
+  --tx: #0f172a;   /* Color de texto principal */
+  --mu: #4b5563;   /* Color de texto "muted" (Ajustado para contraste AA) */
+  --ln: #d9e2ec;   /* Color de líneas/bordes */
+  --ok: #166534;   /* Éxito */
+  --warn: #92400e; /* Advertencia */
+  --danger: #991b1b; /* Peligro */
+  --r: 12px;       /* Radio de borde */
+  --sh: 0 1px 2px rgba(15,23,42,.07), 0 6px 20px rgba(15,23,42,.05); /* Sombra */
+}
+
+/* ── RESET BÁSICO ── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--tx);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+button, input, select, textarea { font: inherit; outline: none; }
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; }
+
+/* ── BARRA DE NAVEGACIÓN SUPERIOR (Páginas públicas) ── */
+.top {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(255,255,255,.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--ln);
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 22px;
+  min-height: 56px;
+}
+
+.brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+.logo {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: var(--pdk);
+  color: #fff;
+  display: grid; place-items: center;
+  font-weight: 800; font-size: 13px;
+}
+
+.brand strong { font-size: 15px; font-weight: 700; }
+
+/* ── NAVEGACIÓN PÚBLICA ── */
+.nav { display: flex; gap: 4px; margin-left: auto; }
+.nav a, .nav button { min-height: 34px; border: 1px solid transparent; border-radius: 8px; background: transparent; color: var(--mu); font-weight: 600; font-size: 13px; padding: 0 13px; display: flex; align-items: center; transition: all .15s; }
+.nav a:hover, .nav button:hover { color: var(--pri); }
+.nav a.on, .nav button.on { background: #e0f2fe; color: var(--pdk); border-color: #bae6fd; }
+.nav-link-kit { background: var(--pdk); color: #fff !important; border-color: var(--pdk) !important; cursor: pointer; }
+.nav-link-kit:hover { background: var(--pri) !important; border-color: var(--pri) !important; }
+
+
+/* ── BOTONES ── */
+.btn {
+  min-height: 36px;
+  border: 1px solid var(--ln);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--tx);
+  font-weight: 600;
+  font-size: 13px;
+  padding: 0 13px;
+  transition: all .12s;
+  white-space: nowrap;
+}
+.btn:hover { border-color: #94a3b8; }
+.btn.pri { background: var(--pdk); border-color: var(--pdk); color: #fff; }
+.btn.pri:hover { background: var(--pri); }
+.btn.ok { background: var(--ok); border-color: var(--ok); color: #fff; }
+.btn.danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+.btn.wa { background: #16a34a; border-color: #16a34a; color: #fff; }
+.btn.wa:hover { background: #15803d; }
+.btn-add { width: 100%; min-height: 32px; border: 1px solid var(--pri); border-radius: 7px; background: transparent; color: var(--pri); font-weight: 600; font-size: 12px; transition: all .15s; }
+.btn-add.on { background: var(--pdk); border-color: var(--pdk); color: #fff; }
+.btn-add:hover:not(.on) { background: #e0f2fe; }
+
+
+/* ── INSIGNIAS (BADGES) ── */
+.badge { display: inline-flex; align-items: center; height: 20px; border-radius: 999px; font-size: 10px; font-weight: 700; padding: 0 8px; white-space: nowrap; border: 1px solid transparent; }
+.bd-p { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; } /* Peatonal */
+.bd-v { background: #ccfbf1; color: #065f46; border-color: #99f6e4; } /* Vehicular */
+.bd-m { background: #ede9fe; color: #5b21b6; border-color: #c4b5fd; } /* Mixto */
+.bd-ok { background: #dcfce7; border-color: #86efac; color: #166534; }
+.bd-mu { background: #f1f5f9; border-color: #cbd5e1; color: #475569; }
+
+/* ── FOOTER ── */
+.footer {
+  background: var(--panel);
+  border-top: 1px solid var(--ln);
+  padding: 24px 22px;
+  color: var(--mu);
+  font-size: 12px;
+}
+
+.footer-content {
+  max-width: 1260px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.footer-nav {
+  display: flex;
+  gap: 16px;
+  font-weight: 600;
+}
+.footer-nav a:hover {
+  color: var(--tx);
+}
+
+/* ── CLASES DE UTILIDAD ── */
+.mu { color: var(--mu); }
+.sm { font-size: 11px; }
