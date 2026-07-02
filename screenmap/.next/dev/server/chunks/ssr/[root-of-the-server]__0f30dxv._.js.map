@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 10, "column": 0}, "map": {"version":3,"sources":["file:///home/luisgrasso/Documentos/smartkit/screenmap/app/espacio/%5Bid%5D/page.tsx"],"sourcesContent":["\nexport default async function Page({params}:any){\nconst p=await params;\nreturn <main style={{padding:24}}>\n<h1>Ficha Comercial #{p.id}</h1>\n<p>Galería multimedia</p>\n<p>Audiencia</p>\n<p>Disponibilidad</p>\n<form>\n<input placeholder='Nombre'/><br/>\n<input placeholder='Empresa'/><br/>\n<button>Solicitar propuesta</button>\n</form>\n</main>\n}"],"names":["Page","params","p","style","padding","id","placeholder"],"mappings":";;;;;;AACe,eAAeA,KAAK,EAACC,MAAM,EAAK;IAC/C,MAAMC,IAAE,MAAMD;IACd,qBAAO,qRAAC;QAAKE,OAAO;YAACC,SAAQ;QAAE;;0BAC/B,qRAAC;;oBAAG;oBAAkBF,EAAEG,EAAE;;;;;;;0BAC1B,qRAAC;0BAAE;;;;;;0BACH,qRAAC;0BAAE;;;;;;0BACH,qRAAC;0BAAE;;;;;;0BACH,qRAAC;;kCACD,qRAAC;wBAAMC,aAAY;;;;;;kCAAU,qRAAC;;;;;kCAC9B,qRAAC;wBAAMA,aAAY;;;;;;kCAAW,qRAAC;;;;;kCAC/B,qRAAC;kCAAO;;;;;;;;;;;;;;;;;;AAGR"}}]
-}
