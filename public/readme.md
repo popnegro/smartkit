@@ -4,57 +4,56 @@ Aplicacion estatica para publicar un catalogo de pantallas DOOH, gestionarlas de
 
 ## Arquitectura
 
-```txt
+La estructura del proyecto es la siguiente:
+
+```
 smartkit/
 ├── index.html                 # Brochure publico y mapa
 ├── dashboard.html             # Acceso Usuarios: gestor de inventario y media kits
-├── mediakit.html              # Vista publica de media kit guardado
-├── shared.js                  # Helpers compartidos entre brochure y media kit
+├── mediakit.html              # Pagina de vista de Media Kit
+├── shared.js                  # Lógica y helpers compartidos
 ├── app.js                     # Logica del brochure, mapa y cotizador
-├── mediakit.js                # Logica de render de mediakit.html
-├── styles.css                 # Estilos compartidos del sitio y media kit
+├── mediakit.js                # Lógica de renderizado para mediakit.html
+├── styles.css                 # Estilos del brochure y media kit
+├── base.css                   # Estilos base compartidos
+├── dashboard.css              # Estilos del dashboard
+├── dashboard.js               # Lógica del dashboard
 ├── config.js                  # Marca, WhatsApp e inventario activo inicial
-├── screens-data.js            # Fuente base de pantallas y helpers compartidos
-├── assets/videos/             # Videos usados en heads de cards y mapa
+├── screens-data.js            # Fuente base de pantallas
+├── assets/                    # Videos y otros recursos estáticos
 ├── data/kits/                 # Media kits publicos en JSON
 ├── tests/                     # Smoke tests de Playwright
-├── .github/workflows/pages.yml# Deploy de dist a GitHub Pages
 ├── dist/                      # Copia estatica lista para publicar
+├── build.sh                   # Script para generar el directorio dist/
 ├── production-manifest.json   # Lista de archivos publicados
 └── readme.md                  # Esta guia
 ```
 
 ## Como correr localmente
 
-La aplicacion es estatica y no requiere build para verse en navegador. Servir la carpeta con cualquier servidor estatico:
+La aplicación es estática y no requiere un proceso de compilación para funcionar. Simplemente sirve la carpeta raíz con cualquier servidor estático.
 
 ```bash
 python3 -m http.server 3000
 ```
 
-Luego abrir:
-
-- `http://localhost:3000/index.html`
-- `http://localhost:3000/mediakit.html` para ver la invitacion a crear una propuesta
-- `http://localhost:3000/mediakit.html?id=demo-trapiche` para ver un kit demo publicado
-- `http://localhost:3000/dashboard.html` para Acceso Usuarios
-
-Para correr los tests automatizados hace falta instalar dependencias Node:
-
-```bash
-npm install
-npm test
-```
-
 ## Datos
 
-Las pantallas base viven en `screens-data.js`.
+Las pantallas base viven en `screens-data.js`. Cada objeto de pantalla tiene atributos como `id`, `n` (nombre), `precio`, `status` y el nuevo campo `aud` (audiencia).
 
-El Gestor guarda cambios del navegador en `localStorage` con la clave `smartkit-dashboard-state`. Esos cambios son leidos por `index.html` cuando se abren en el mismo navegador.
+### Sincronización con `localStorage`
 
-Los media kits generados localmente se guardan en `localStorage` con la clave `smartkit-public-kits`. `mediakit.html` usa primero `data/kits/{id}.json` y luego cae a ese almacenamiento local como fallback.
+El `dashboard.html` guarda todas las modificaciones del inventario (precios, estados, etc.) en `localStorage` bajo la clave `smartkit-dashboard-state`.
 
-Para persistencia multiusuario hace falta agregar un backend, CMS o archivo remoto.
+Cuando se carga el brochure (`index.html`), este prioriza los datos guardados en `localStorage`, asegurando que los cambios del dashboard se reflejen automáticamente. Si no hay datos guardados, utiliza la información de `screens-data.js` como base.
+
+### Reseteo de Datos
+
+Para volver al estado original, puedes ir a la pestaña **Configuración** en el dashboard y usar el botón **"Resetear Datos Locales"**. Esto eliminará todos los datos guardados en el navegador y recargará la aplicación desde `screens-data.js`.
+
+### Persistencia Remota
+
+Para una persistencia multiusuario o remota, es necesario integrar un backend o un CMS que gestione el inventario y los media kits.
 
 ## Media kits publicos
 
@@ -88,14 +87,12 @@ Para una presentación comercial sin backend, usar `mediakit.html?id=demo-trapic
 
 ## Produccion
 
-La carpeta `dist/` contiene una copia estatica publicable como raiz del sitio. El workflow `.github/workflows/pages.yml` publica `dist` como artefacto de GitHub Pages.
+La carpeta `dist/` contiene una copia estática y minificada del sitio, lista para ser desplegada en Vercel. El archivo `vercel.json` está configurado para usar `@vercel/static-build` que invoca a nuestro script `build.sh`.
 
-Cuando se modifican archivos fuente, sincronizar `dist/` antes de pushear:
+Para actualizar la carpeta `dist/` manualmente antes de hacer `push`, simplemente ejecuta el script de construcción:
 
 ```bash
-rm -rf dist && mkdir -p dist
-cp index.html dashboard.html mediakit.html styles.css app.js shared.js mediakit.js config.js screens-data.js production-manifest.json readme.md dist/
-cp -R assets data dist/
+./build.sh
 ```
 
 `production-manifest.json` lista los archivos esperados para produccion.

@@ -3,908 +3,415 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SmartKit · Dashboard</title>
-<link rel="stylesheet" href="shared.css">
-<link rel="stylesheet" href="dashboard.css">
+<link rel="stylesheet" href="./base.css">
+<title>SmartKit - Dashboard de Gestion</title>
+<style>
+:root{--primary:#0284c7;--primary-strong:#0369a1;--success:#10b981;--bg:#f8fafc;--panel:#fff;--panel-soft:#f1f5f9;--text:#1e293b;--muted:#64748b;--line:#e2e8f0;--warning:#f59e0b;--danger:#ef4444;--radius:8px;--shadow:0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Inter', sans-serif;line-height:1.5; -webkit-font-smoothing: antialiased}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid #fbbf24;outline-offset:3px}
+.app{min-height:100vh;display:grid;grid-template-columns:260px minmax(0,1fr)}
+.sidebar{position:sticky;top:0;height:100vh;background:#fff;border-right:1px solid var(--line);padding:18px;display:flex;flex-direction:column;gap:18px}
+.brand{display:flex;align-items:center;gap:12px;min-height:44px}
+.logo{width:40px;height:40px;border-radius:8px;background:var(--primary);color:#fff;display:grid;place-items:center;font-weight:600}
+.brand strong{display:block;font-size:16px}
+.brand span{display:block;color:var(--muted);font-size:12px}
+.nav{display:grid;gap:6px}
+.nav button{width:100%;min-height:40px;border:0;border-radius:6px;background:transparent;color:var(--muted);font-weight:500;text-align:left;padding:0 12px; transition: all 0.2s}
+.nav button.active{background:#e0f2fe;color:var(--primary-strong)}
+.sidebar-footer{margin-top:auto;border-top:1px solid var(--line);padding-top:14px;color:var(--muted);font-size:12px}
+.main{min-width:0;padding:22px}
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+.eyebrow{display:block;color:var(--primary);font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+h1,h2,h3,p{margin:0; font-weight: 600}
+h1{font-size:24px;letter-spacing:-0.03em;line-height:1.2;margin-bottom:4px; color: #0f172a}
+h2{font-size:18px;line-height:1.2;margin-bottom:0}
+.topbar p{color:var(--muted);margin-bottom:0}
+.actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.btn{min-height:36px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--text);font-weight:600;padding:0 14px;transition: all 0.2s ease; font-size: 14px}
+.btn:hover{background: var(--panel-soft); border-color: var(--muted)}
+.btn.primary{background:var(--primary-strong);border-color:var(--primary-strong);color:#fff}
+.btn.success{background:var(--success);border-color:var(--success);color:#fff; box-shadow: 0 2px 4px rgba(22, 101, 52, 0.2)}
+.btn.ghost{background:transparent}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px}
+.kpi b{display:block;font-size:25px;line-height:1.1}
+.kpi span{color:var(--muted);font-size:13px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px;border-bottom:1px solid var(--line)}
+.drawer .panel-head{padding:0 0 12px}
+.panel-head.compact{padding:0 0 12px}
+.panel-pad{padding:12px}
+.section-pad{padding:16px}
+.filters{display:grid;grid-template-columns:1.2fr repeat(3,minmax(130px,.55fr));gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--panel-soft)}
+.field{display:grid;gap:6px}
+.field label{color:var(--muted);font-size:11px;font-weight:900;text-transform:uppercase}
+.field input,.field select,.field textarea{width:100%;min-height:42px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--text);padding:8px 10px}
+.field textarea{min-height:84px;resize:vertical}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:820px}
+th,td{padding:12px 16px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;background:#fff;position:sticky;top:0;z-index:1; letter-spacing: 0.05em}
+td{font-size:14px}
+tr.selected{background:#eef8ff}
+tr.selected td:first-child{box-shadow: inset 4px 0 0 var(--primary)}
+.screen-cell{display:flex;align-items:center;gap:10px;min-width:230px}
+.screen-icon{width:38px;height:38px;border-radius:10px;background:#e0f2fe;display:grid;place-items:center;font-size:19px}
+.screen-cell strong{display:block}
+.screen-cell span{display:block;color:var(--muted);font-size:12px}
+.badge{display:inline-flex;align-items:center;min-height:26px;border-radius:999px;border:1px solid var(--line);background:#fff;color:#334155;font-size:12px;font-weight:900;padding:0 9px;white-space:nowrap}
+.badge.active{background:#dcfce7;border-color:#86efac;color:#166534}
+.badge.paused{background:#f8fafc;border-color:#cbd5e1;color:#64748b}
+.badge.warning{background:#fef3c7;border-color:#fcd34d;color:#92400e}
+.row-actions{display:flex;gap:6px;flex-wrap:wrap}
+.icon-btn{width:auto;min-width:36px;height:36px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--text);font-weight:600;padding:0 10px}
+.icon-btn.publish{border-color:#86efac;background:#dcfce7;color:#166534}
+.icon-btn.pause{border-color:#cbd5e1;background:#f8fafc;color:#475569}
+.drawer{display:grid;gap:14px;padding:16px;position:sticky;top:22px}
+.preview{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#0d1728;color:#fff}
+.preview-media{height:120px;display:grid;place-items:center;font-size:44px;background:linear-gradient(135deg,var(--primary-strong),#0f766e);position:relative}
+.preview-media video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.preview-body{padding:14px}
+.preview-body h3{margin-bottom:4px}
+.preview-body p{color:#cbd5e1;margin-bottom:10px}
+.editor{max-height: calc(100vh - 400px); overflow-y: auto; padding-right: 4px}
+.editor::-webkit-scrollbar{width:4px}
+.editor::-webkit-scrollbar-thumb{background:var(--line);border-radius:10px}
+.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.metric{border:1px solid #213047;border-radius:10px;background:#111c31;padding:10px}
+.metric span{display:block;color:#94a3b8;font-size:12px}
+.metric b{display:block;font-size:16px}
+.editor{display:grid;gap:10px}
+/* Stepper Styles */
+.stepper-nav{display:flex;justify-content:center;gap:32px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.step-item{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;font-weight:850;opacity:0.5;transition:0.3s}
+.step-item.active{opacity:1;color:var(--primary-strong)}
+.step-item.completed{opacity:0.8;color:var(--success)}
+.step-num{width:26px;height:26px;border-radius:50%;background:var(--line);display:grid;place-items:center;color:var(--text);font-size:12px}
+.step-item.active .step-num{background:var(--primary-strong);color:#fff}
+.step-item.completed .step-num{background:var(--success);color:#fff}
+.step-panel{display:none}
+.step-panel.active{display:grid;gap:16px}
+.step-footer{display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+
+.status-line{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);border-radius:12px;background:var(--panel-soft);padding:10px 12px;color:var(--muted);font-size:13px}
+.status-line strong{color:var(--text)}
+.section[hidden]{display:none!important}
+.kit-layout{display:grid;grid-template-columns:380px minmax(0,1fr);gap:16px;align-items:start}
+.kit-screen-list{display:grid;gap:8px;max-height:430px;overflow:auto;padding-right:4px}
+.kit-screen{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;background:#fff;padding:10px}
+.kit-screen input{width:18px;height:18px;accent-color:var(--primary-strong)}
+.kit-screen strong{display:block;font-size:14px}
+.kit-screen span{display:block;color:var(--muted);font-size:12px}
+.kit-preview{display:grid;gap:12px;padding:16px}
+.kit-doc{border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}
+.kit-doc-hero{padding:18px;background:linear-gradient(135deg,#075985,#0f766e);color:#fff}
+.kit-doc-body{display:grid;gap:14px;padding:16px}
+.kit-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kit-summary .kpi{box-shadow:none}
+.kit-list{display:grid;gap:8px}
+.kit-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel-soft);padding:10px}
+.kit-row.archived{background:#f8fafc;border-style:dashed;color:var(--muted)}
+.kit-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.kit-link{color:var(--primary-strong);font-size:12px;font-weight:600;text-decoration:none}
+.kit-link:hover{text-decoration:underline}
+.kit-actions .icon-btn{min-width:0;height:32px;border-radius:8px;font-size:12px}
+.chart-list{display:grid;gap:12px;padding:16px}
+.chart-row{display:grid;gap:5px}
+.chart-meta{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:13px}
+.bar{height:9px;border-radius:999px;background:#e2e8f0;overflow:hidden}
+.bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--primary-strong),#22d3ee)}
+.settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.toast{position:fixed;left:50%;bottom:22px;z-index:20;transform:translate(-50%,12px);opacity:0;pointer-events:none;background:#0f172a;color:#fff;border-radius:8px;box-shadow:var(--shadow);font-weight:500;padding:12px 20px;transition:transform .18s ease,opacity .18s ease}
+.toast.show{transform:translate(-50%,0);opacity:1}
+@media(max-width:980px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:12px}
+  .nav{grid-template-columns:repeat(3,1fr)}
+  .sidebar-footer{display:none}
+  .main{padding:16px}
+  .topbar{display:grid}
+  .actions{justify-content:flex-start}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .layout{grid-template-columns:1fr}
+  .drawer{position:static}
+  .filters,.kit-layout,.settings-grid{grid-template-columns:1fr}
+  .kit-summary{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:560px){
+  .kpis,.filters{grid-template-columns:1fr}
+  .kit-summary{grid-template-columns:1fr}
+  .nav{grid-template-columns:1fr}
+  .topbar h1{font-size:24px}
+}
+</style>
 </head>
 <body>
-
-<div class="app" id="app">
-
-  <!-- ── SIDEBAR ── -->
-  <aside class="sidebar">
-    <button class="sb-toggle" id="sb-toggle" title="Colapsar menú">‹</button>
+<div class="app">
+  <aside class="sidebar" aria-label="Navegacion de gestion">
     <div class="brand">
       <div class="logo" id="dash-logo">SK</div>
-      <div class="brand-text">
+      <div>
         <strong id="dash-brand">SmartKit</strong>
-        <span>Gestión DOOH</span>
+        <span>Gestion comercial DOOH</span>
       </div>
     </div>
-    <nav class="menu">
-      <button class="nav-btn on" data-sec="inventory"><i>📦</i><span>Inventario</span></button>
-      <button class="nav-btn" data-sec="mediakits"><i>📄</i><span>Media Kits</span></button>
-      <button class="nav-btn" data-sec="metrics"><i>📈</i><span>Métricas</span></button>
-      <button class="nav-btn" data-sec="settings"><i>⚙️</i><span>Configuración</span></button>
+    <nav class="nav" aria-label="Secciones del dashboard">
+      <button class="active" type="button" data-section="inventory">Inventario</button>
+      <button type="button" data-section="mediakits">Media Kits</button>
+      <button type="button" data-section="metrics">Metricas</button>
+      <button type="button" data-section="settings">Configuracion</button>
     </nav>
-    <div class="sb-footer">
-      <a href="index.html" target="_blank">← Ir al brochure público</a><br>
-      <span style="margin-top:4px;display:block">Cambios en localStorage</span>
+    <div class="sidebar-footer">
+      <strong>Estado:</strong> Datos locales desde <code>screens-data.js</code>
     </div>
   </aside>
 
-  <!-- ── MAIN ── -->
   <main class="main">
-
-    <!-- TOPBAR -->
     <header class="topbar">
       <div>
         <span class="eyebrow">Dashboard</span>
-        <h1 id="page-title">Gestión de pantallas</h1>
-        <p id="page-desc">Inventario, precios, disponibilidad y propuestas comerciales.</p>
+        <h1 id="page-title">Gestion de pantallas</h1>
+        <p id="page-copy">Administra inventario, disponibilidad, precios y vista comercial desde una sola superficie.</p>
       </div>
       <div class="actions">
-        <button class="btn" id="btn-new-screen">+ Crear Pantalla</button>
-        <button class="btn" id="btn-export">Exportar CSV</button>
-        <button class="btn pri" id="btn-save">Guardar cambios</button>
-        <span class="badge-warn" id="unsaved" style="display:none">Cambios sin guardar</span>
+        <button class="btn" type="button" id="export-btn">Exportar CSV</button>
       </div>
     </header>
 
-    <!-- KPIs -->
-    <section class="kpis" id="kpis-row"></section>
-
-    <!-- ══ INVENTORY ══ -->
-    <section class="section on" id="sec-inventory">
-      <div class="layout">
-        <div class="panel">
-          <div class="panel-head">
-            <div>
-              <span class="eyebrow">Inventario</span>
-              <h2>Pantallas</h2>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span class="badge bd-ok" id="result-count">0 resultados</span>
-            </div>
-          </div>
-
-          <!-- Bulk bar -->
-          <div class="bulk-bar" id="bulk-bar">
-            <span class="badge bd-warn"><span id="bulk-count">0</span> seleccionadas</span>
-            <button class="btn sm ok" data-bulk="Activo">Publicar</button>
-            <button class="btn sm" data-bulk="Pausado">Pausar</button>
-            <button class="btn sm ghost" id="bulk-clear">Limpiar selección</button>
-          </div>
-
-          <!-- Filters -->
-          <div class="filters">
-            <div class="field grow"><label for="f-search">Buscar</label><input type="search" id="f-search" placeholder="Nombre, zona…"></div>
-            <div class="field"><label for="f-zone">Zona</label><select id="f-zone"></select></div>
-            <div class="field"><label for="f-type">Tipo</label>
-              <select id="f-type">
-                <option>Todos</option><option>Peatonal</option><option>Vehicular</option><option>Mixto</option>
-              </select>
-            </div>
-            <div class="field"><label for="f-status">Estado</label>
-              <select id="f-status">
-                <option>Todos</option><option>Activo</option><option>Pausado</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Table -->
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th style="width:36px"><input type="checkbox" id="sel-all"></th>
-                  <th class="sort" data-k="nombre">Pantalla</th>
-                  <th class="sort" data-k="tipo">Tipo</th>
-                  <th class="sort" data-k="impactos">Impactos/día</th>
-                  <th class="sort" data-k="precio">Precio/sem</th>
-                  <th>Estado</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="screen-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Editor drawer -->
-        <aside class="panel drawer" id="editor-panel">
-          <div class="panel-head" style="border-bottom:1px solid var(--ln)">
-            <div><span class="eyebrow">Detalle</span><h2 id="ed-title">Seleccioná una pantalla</h2></div>
-          </div>
-          <div id="editor-body"><p class="empty-sel">Hacé clic en ✏️ de cualquier pantalla para editar.</p></div>
-        </aside>
-      </div>
+    <section class="kpis" aria-label="Indicadores principales">
+      <div class="kpi"><b id="kpi-published">0 / 0</b><span>Publicadas / inventario</span></div>
+      <div class="kpi"><b id="kpi-active">0</b><span>Pantallas activas</span></div>
+      <div class="kpi"><b id="kpi-reach">0</b><span>Impactos diarios</span></div>
+      <div class="kpi"><b id="kpi-revenue">$0</b><span>Potencial semanal</span></div>
+      <div class="kpi"><b id="kpi-cpm">$0</b><span>CPM promedio</span></div>
     </section>
 
-    <!-- ══ MEDIA KITS ══ -->
-    <section class="section" id="sec-mediakits">
+    <section class="section" id="section-inventory">
+    <div class="layout">
+      <section class="panel" aria-label="Inventario de pantallas">
+        <div class="panel-head">
+          <div>
+            <span class="eyebrow">Inventario</span>
+            <h2>Pantallas publicadas</h2>
+          </div>
+          <span class="badge active" id="result-count">0 resultados</span>
+        </div>
+        <div class="filters">
+          <div class="field">
+            <label for="search">Buscar</label>
+            <input id="search" type="search" placeholder="Nombre, direccion o zona">
+          </div>
+          <div class="field">
+            <label for="zone-filter">Zona</label>
+            <select id="zone-filter"></select>
+          </div>
+          <div class="field">
+            <label for="type-filter">Tipo</label>
+            <select id="type-filter"></select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Pantalla</th>
+                <th>Tipo</th>
+                <th>Impactos/dia</th>
+                <th>Precio semana</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="screen-table"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside class="panel drawer" aria-label="Detalle editable">
+        <div class="panel-head">
+          <div>
+            <span class="eyebrow">Detalle</span>
+            <h2 id="editor-title">Selecciona una pantalla</h2>
+          </div>
+        </div>
+        <div class="preview" id="preview"></div>
+        <form class="editor" id="editor-form">
+          <div class="field">
+            <label for="edit-name">Nombre comercial</label>
+            <input id="edit-name" name="name" type="text" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="edit-zone">Zona</label>
+            <input id="edit-zone" name="zone" type="text" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="edit-price">Precio semanal</label>
+            <input id="edit-price" name="price" type="number" min="0" step="1000">
+          </div>
+          <div class="field">
+            <label for="edit-audience">Audiencia</label>
+            <input id="edit-audience" name="audience" type="text" autocomplete="off" placeholder="Ej: General, ABC1">
+          </div>
+          <div class="field">
+            <label for="edit-video">Video del head</label>
+            <input id="edit-video" name="video" type="text" placeholder="./assets/videos/pantalla.mp4" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="edit-note">Nota interna</label>
+            <textarea id="edit-note" name="note" placeholder="Ej: validar disponibilidad antes de cotizar"></textarea>
+          </div>
+          <button class="btn success" type="submit">Aplicar al dashboard</button>
+        </form>
+        <div class="status-line">
+          <span>Ultima accion</span>
+          <strong id="last-action">Sin cambios</strong>
+        </div>
+      </aside>
+    </div>
+    </section>
+
+    <section class="section" id="section-mediakits" hidden>
       <div class="kit-layout">
-        <div class="panel">
-          <div class="panel-head">
-            <div><span class="eyebrow">Media Kit</span><h2>Constructor de propuesta</h2></div>
-            <span class="badge bd-warn" id="kit-draft-badge">Borrador</span>
-          </div>
-          <div class="filters">
-            <div class="field grow"><label for="kit-client">Cliente</label><input id="kit-client" placeholder="Ej: Bodega Trapiche"></div>
-            <div class="field"><label for="kit-contact">Contacto</label><input id="kit-contact" placeholder="Nombre"></div>
-            <div class="field"><label for="kit-dur">Duración</label>
-              <select id="kit-dur">
-                <option value="1">1 semana</option><option value="2">2 semanas</option>
-                <option value="4" selected>4 semanas</option><option value="8">8 semanas</option>
-                <option value="12">12 semanas</option>
-              </select>
-            </div>
-            <div class="field"><label for="kit-zone">Zona</label><select id="kit-zone"></select></div>
-            <div class="field"><label for="kit-validity">Validez</label>
-              <select id="kit-validity"><option value="7">7 días</option><option value="15" selected>15 días</option><option value="30">30 días</option></select>
-            </div>
-          </div>
-          <div class="panel-pad">
-            <div class="field"><label for="kit-notes">Notas para el cliente</label><textarea id="kit-notes" placeholder="Ej: Precio especial por lanzamiento…"></textarea></div>
-          </div>
-          <div class="panel-head">
-            <div><span class="eyebrow">Selección</span><h2>Pantallas del kit</h2></div>
-            <span class="badge bd-ok" id="kit-sel-count">0 seleccionadas</span>
-          </div>
-          <div class="kit-list" id="kit-screen-list"></div>
-        </div>
+        <section class="panel section-pad" aria-label="Constructor de media kit">
+          <nav class="stepper-nav">
+            <div class="step-item active" data-step-nav="1"><span class="step-num">1</span> Datos</div>
+            <div class="step-item" data-step-nav="2"><span class="step-num">2</span> Inventario</div>
+            <div class="step-item" data-step-nav="3"><span class="step-num">3</span> Revisión</div>
+          </nav>
 
-        <aside>
-          <div class="panel" style="margin-bottom:14px">
-            <div class="panel-head">
-              <div><span class="eyebrow">Preview</span><h2>Documento</h2></div>
-              <button class="btn ok" id="btn-save-kit">Archivar propuesta</button>
+          <div class="step-panel active" data-step-panel="1">
+            <div class="panel-head compact"><div><span class="eyebrow">Paso 1</span><h2>Información del cliente</h2></div></div>
+            <div class="field">
+              <label for="kit-client">Cliente / Campaña</label>
+              <input id="kit-client" type="text" placeholder="Ej: Bodega Trapiche - Lanzamiento Verano">
             </div>
-            <div class="kit-doc" id="kit-preview"></div>
+            <div class="field">
+              <label for="kit-contact">Persona de contacto</label>
+              <input id="kit-contact" type="text" placeholder="Nombre y apellido o Departamento">
+            </div>
+            <div class="field">
+              <label for="kit-duration">Duración de la campaña</label>
+              <select id="kit-duration"></select>
+            </div>
+            <div class="step-footer">
+              <span></span>
+              <button class="btn primary" type="button" onclick="setKitStep(2)">Siguiente: Seleccionar pantallas</button>
+            </div>
           </div>
 
+          <div class="step-panel" data-step-panel="2">
+            <div class="panel-head compact">
+              <div><span class="eyebrow">Paso 2</span><h2>Selección de pantallas</h2></div>
+              <span class="badge active" id="kit-selected-count">0 seleccionadas</span>
+            </div>
+            <div class="filters" style="grid-template-columns: 1fr 1fr; padding:0; background:transparent; border:0">
+              <div class="field">
+                <label for="kit-search">Buscar pantalla</label>
+                <input id="kit-search" type="search" placeholder="Nombre o dirección...">
+              </div>
+              <div class="field">
+                <label for="kit-zone">Zona</label>
+                <select id="kit-zone"></select>
+              </div>
+            </div>
+            <div class="kit-screen-list" id="kit-screen-list"></div>
+            <div class="step-footer">
+              <button class="btn ghost" type="button" onclick="setKitStep(1)">Atrás</button>
+              <button class="btn primary" type="button" id="btn-to-step-3" onclick="setKitStep(3)">Siguiente: Revisar propuesta</button>
+            </div>
+          </div>
+
+          <div class="step-panel" data-step-panel="3">
+            <div class="panel-head compact">
+              <div><span class="eyebrow">Paso 3</span><h2>Resumen y confirmación</h2></div>
+              <span class="badge warning" id="kit-state">Borrador listo</span>
+            </div>
+            <p class="muted">Revisa los totales y la validez antes de archivar el Media Kit. Podrás editar los datos de marca en la pestaña Configuración.</p>
+            <div class="kit-summary" id="kit-final-metrics">
+              <!-- Se llena dinamicamente -->
+            </div>
+            <div class="step-footer">
+              <button class="btn ghost" type="button" onclick="setKitStep(2)">Atrás</button>
+              <div class="actions">
+                <button class="btn success" type="button" id="kit-save-btn">Finalizar y Archivar</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="panel kit-preview" aria-label="Preview de media kit">
+          <div class="panel-head compact">
+            <div>
+              <span class="eyebrow">Preview</span>
+              <h2>Vista del cliente</h2>
+            </div>
+          </div>
+          <div class="kit-doc" id="kit-preview"></div>
           <div class="panel">
-            <div class="panel-head"><div><span class="eyebrow">Historial</span><h2>Propuestas generadas</h2></div></div>
-            <div class="kit-history" id="kit-history"></div>
+            <div class="panel-head">
+              <div>
+                <span class="eyebrow">Repositorio</span>
+                <h2>Kits generados</h2>
+              </div>
+            </div>
+            <div class="kit-list panel-pad" id="kit-history"></div>
+            <details class="kit-archive panel-pad" id="kit-archive-wrap">
+              <summary>Archivados <span id="kit-archive-count">0</span></summary>
+              <div class="kit-list" id="kit-archive"></div>
+            </details>
           </div>
         </aside>
       </div>
     </section>
 
-    <!-- ══ METRICS ══ -->
-    <section class="section" id="sec-metrics">
-      <div class="charts-grid">
-        <div class="panel">
-          <div class="panel-head"><div><span class="eyebrow">Métricas</span><h2>Reach diario por zona</h2></div></div>
-          <div class="chart-rows" id="chart-zones"></div>
-        </div>
-        <div class="panel">
-          <div class="panel-head"><div><span class="eyebrow">Distribución</span><h2>Tipos de tránsito</h2></div></div>
-          <div class="chart-rows" id="chart-types"></div>
-        </div>
+    <section class="section" id="section-metrics" hidden>
+      <div class="layout">
+        <section class="panel" aria-label="Reach diario por zona">
+          <div class="panel-head"><div><span class="eyebrow">Metricas</span><h2>Reach diario por zona</h2></div></div>
+          <div class="chart-list" id="zone-chart"></div>
+        </section>
+        <aside class="panel" aria-label="Distribucion por tipo de transito">
+          <div class="panel-head"><div><span class="eyebrow">Distribucion</span><h2>Tipos de transito</h2></div></div>
+          <div class="chart-list" id="type-chart"></div>
+        </aside>
       </div>
     </section>
 
-    <!-- ══ SETTINGS ══ -->
-    <section class="section" id="sec-settings">
+    <section class="section" id="section-settings" hidden>
       <div class="settings-grid">
-        <div class="panel">
+        <section class="panel">
           <div class="panel-head"><div><span class="eyebrow">Marca</span><h2>Datos visibles</h2></div></div>
-          <div class="panel-pad" style="display:grid;gap:11px">
-            <div class="field"><label for="cfg-brand">Nombre de marca</label><input id="cfg-brand" type="text"></div>
-            <div class="field"><label for="cfg-logo">Logo corto (2 letras)</label><input id="cfg-logo" type="text" maxlength="2"></div>
-            <div class="field"><label for="cfg-wa">WhatsApp comercial</label><input id="cfg-wa" type="text" placeholder="5492616000000"></div>
+          <div class="editor section-pad">
+            <div class="field"><label for="settings-brand">Nombre</label><input id="settings-brand" type="text"></div>
+            <div class="field"><label for="settings-logo">Logo corto</label><input id="settings-logo" type="text"></div>
+            <div class="field"><label for="settings-whatsapp">WhatsApp comercial</label><input id="settings-whatsapp" type="text"></div>
           </div>
-        </div>
-        <div class="panel">
-          <div class="panel-head"><div><span class="eyebrow">Plantilla</span><h2>Condiciones del media kit</h2></div></div>
-          <div class="panel-pad" style="display:grid;gap:11px">
-            <div class="field"><label for="cfg-validity">Validez por defecto</label>
-              <select id="cfg-validity"><option value="7">7 días</option><option value="15">15 días</option><option value="30">30 días</option></select>
-            </div>
-            <div class="field"><label for="cfg-terms">Condiciones generales</label>
-              <textarea id="cfg-terms" style="min-height:100px"></textarea>
-            </div>
-            <div class="field"><label for="cfg-hero">Hero title (brochure)</label><input id="cfg-hero" type="text"></div>
+        </section>
+        <section class="panel">
+          <div class="panel-head"><div><span class="eyebrow">Plantilla</span><h2>Condiciones del mediakit</h2></div></div>
+          <div class="editor section-pad">
+            <div class="field"><label for="settings-validity">Validez comercial</label><select id="settings-validity"><option>7 dias</option><option>15 dias</option><option>30 dias</option></select></div>
+            <div class="field"><label for="settings-terms">Condiciones</label><textarea id="settings-terms">Inicio de campana sujeto a disponibilidad y aprobacion de piezas. Valores expresados en ARS.</textarea></div>
+            <button class="btn success" type="button" id="settings-save">Aplicar configuracion</button>
           </div>
-        </div>
+        </section>
+        <section class="panel">
+          <div class="panel-head"><div><span class="eyebrow">Sistema</span><h2>Gestión de datos locales</h2></div></div>
+          <div class="editor section-pad"><p class="muted" style="margin-bottom: 12px;">Borra todos los datos guardados en este navegador (inventario y kits) y recarga la aplicación desde los archivos base.</p><button class="btn" id="reset-data-btn" type="button" style="border-color: var(--danger); color: var(--danger);">Resetear Datos Locales</button></div>
+        </section>
       </div>
     </section>
-
   </main>
 </div>
-
-<div class="toast" id="toast"></div>
-
-<script src="utils.js"></script>
-<script>
-/* ═══════════════════════════════════════════
-   CONFIG
-══════════════════════════════════════════════ */
-const DEFAULT_CFG = {
-  brand:'SmartKit',logo:'SK',whatsapp:'5492616000000',
-  terms:'Inicio de campaña sujeto a disponibilidad y aprobación de piezas. Valores en ARS.',
-  heroTitle:'Pantallas DOOH · Mendoza',validityDays:15,
-};
-
-/* ═══════════════════════════════════════════
-   DASHBOARD APP
-══════════════════════════════════════════════ */
-(function(){
-'use strict';
-
-// ── Keys ──
-const K_STATE='sk_v1_dashboard-state';
-const K_KITS='sk_v1_public-kits';
-const K_CFG='sk_v1_config';
-
-// ── State ──
-let screens=[];       // merged screens (base + overrides)
-let filtered=[];      // current filter result
-let selected=new Set(); // selected screen IDs
-let currentEdit=null; // screen being edited
-let dirtyScreens=new Set(); // screens with unsaved changes
-let cfg={};
-let sortKey='nombre', sortDir=1;
-let kitSelected=new Set(); // IDs selected for current kit
-let currentSection='inventory';
-
-// ── Helpers ──
-const badgeClass={Peatonal:'bd-p',Vehicular:'bd-v',Mixto:'bd-m'};
-
-let toastTimer;
-function toast(msg,type=''){
-  const t=$('toast'); t.textContent=msg; t.className='toast show'+(type?' '+type:'');
-  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2400);
-}
-
-function markDirty(){
-  dirtyScreens.add(currentEdit);
-  $('unsaved').style.display='inline-flex';
-}
-
-// ── Boot ──
-function boot(){
-  loadCfg();
-  loadScreens();
-  setupSidebar();
-  setupNav();
-  setupFilters();
-  setupTable();
-  setupBulk();
-  setupExport();
-  $('btn-new-screen')?.addEventListener('click', () => renderEditor(null));
-  setupSave();
-  setupSettings();
-  switchSection('inventory');
-}
-
-// ── Config ──
-function loadCfg(){
-  try{ cfg={...DEFAULT_CFG,...JSON.parse(localStorage.getItem(K_CFG)||'{}')}; }
-  catch{ cfg={...DEFAULT_CFG}; }
-  applyBrand();
-  loadSettingsForm();
-}
-
-function applyBrand(){
-  const el=id=>document.getElementById(id);
-  ['dash-logo'].forEach(id=>{const e=el(id);if(e)e.textContent=cfg.logo;});
-  ['dash-brand'].forEach(id=>{const e=el(id);if(e)e.textContent=cfg.brand;});
-}
-
-function loadSettingsForm(){
-  const v=(id,val)=>{const e=$(id);if(e)e.value=val??'';};
-  v('cfg-brand',cfg.brand); v('cfg-logo',cfg.logo); v('cfg-wa',cfg.whatsapp);
-  v('cfg-terms',cfg.terms); v('cfg-hero',cfg.heroTitle);
-  const sel=$('cfg-validity'); if(sel) sel.value=cfg.validityDays||15;
-}
-
-let cfgSaveToastShown = false;
-function saveCfg() {
-  cfg.brand = $('cfg-brand')?.value || 'SmartKit';
-  cfg.logo = $('cfg-logo')?.value || 'SK';
-  cfg.whatsapp = $('cfg-wa')?.value || '';
-  cfg.terms = $('cfg-terms')?.value || '';
-  cfg.heroTitle = $('cfg-hero')?.value || '';
-  cfg.validityDays = parseInt($('cfg-validity')?.value) || 15;
-  localStorage.setItem(K_CFG, JSON.stringify(cfg));
-  applyBrand();
-  if (!cfgSaveToastShown) {
-    toast('Configuración guardada automáticamente', 'ok');
-    cfgSaveToastShown = true;
-  }
-}
-
-function setupSettings() {
-  const debouncedSave = debounce(saveCfg, 400);
-  ['cfg-brand', 'cfg-logo', 'cfg-wa', 'cfg-terms', 'cfg-hero'].forEach(id => {
-    $(id)?.addEventListener('input', debouncedSave);
-  });
-  $('cfg-validity')?.addEventListener('change', saveCfg);
-}
-
-// ── Screens ──
-async function loadScreens(){
-  try {
-    // Reemplazamos la carga estática por una llamada a nuestra API
-    const response = await fetch('/api/screens'); // <-- CAMBIO CLAVE
-    if (!response.ok) {
-      throw new Error(`Error de red: ${response.statusText}`);
-    }
-    screens = await response.json();
-    filtered=[...screens];
-    
-    // Las funciones de renderizado se llaman después de obtener los datos
-    buildZoneFilter();
-    buildKitZoneFilter();
-    renderTable();
-    renderKPIs();
-    renderMetrics();
-    renderKitScreenList();
-    renderKitHistory();
-  } catch (error) {
-    console.error('No se pudieron cargar las pantallas desde la API:', error);
-    toast('Error al cargar el inventario. ¿El servidor está corriendo?', 'err');
-  }
-}
-
-async function saveChanges(){
-  if (dirtyScreens.size === 0) {
-    toast('No hay cambios para guardar.');
-    return;
-  }
-
-  const updatePromises = [];
-  for (const screenId of dirtyScreens) {
-    const screenData = screens.find(s => s.id === screenId);
-    if (screenData) {
-      const promise = fetch(`/api/screens/${screenId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(screenData),
-      });
-      updatePromises.push(promise);
-    }
-  }
-
-  await Promise.all(updatePromises);
-  
-  dirtyScreens.clear();
-  $('unsaved').style.display = 'none';
-  toast(`${updatePromises.length} pantalla(s) guardada(s) en la base de datos.`, 'ok');
-}
-
-// ── Sidebar ──
-function setupSidebar(){
-  $('sb-toggle')?.addEventListener('click',()=>$('app').classList.toggle('nav-collapsed'));
-}
-
-function setupNav(){
-  document.querySelectorAll('[data-sec]').forEach(btn=>{
-    btn.addEventListener('click',()=>switchSection(btn.dataset.sec));
-  });
-}
-
-function switchSection(sec){
-  currentSection=sec;
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('on'));
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('on',b.dataset.sec===sec));
-  const el=$('sec-'+sec); if(el) el.classList.add('on');
-  const titles={inventory:'Gestión de pantallas',mediakits:'Media Kits',metrics:'Métricas',settings:'Configuración'};
-  const descs={inventory:'Inventario, disponibilidad y precios desde una sola superficie.',
-    mediakits:'Creá y gestioná propuestas comerciales para clientes.',
-    metrics:'Reach diario, distribución por zona y tipo de tránsito.',
-    settings:'Marca, condiciones y configuración global.'};
-  $('page-title').textContent=titles[sec]||'';
-  $('page-desc').textContent=descs[sec]||'';
-  const showBtns=sec==='inventory';
-  $('btn-export').style.display=showBtns?'':'none';
-  $('btn-save').style.display=showBtns?'':'none';
-}
-
-// ── Filters ──
-function buildZoneFilter(){
-  const sel=$('f-zone'); if(!sel) return;
-  const zones=['Todos',...new Set(screens.map(s=>s.zona))];
-  sel.innerHTML=zones.map(z=>`<option>${z}</option>`).join('');
-}
-
-function buildKitZoneFilter(){
-  ['kit-zone'].forEach(id=>{
-    const sel=$(id); if(!sel) return;
-    const zones=['Todas',...new Set(screens.map(s=>s.zona))];
-    sel.innerHTML=zones.map(z=>`<option>${z}</option>`).join('');
-  });
-}
-
-function setupFilters(){
-  ['f-search','f-zone','f-type','f-status'].forEach(id=>{
-    $(id)?.addEventListener('input',applyFilters);
-    $(id)?.addEventListener('change',applyFilters);
-  });
-}
-
-function applyFilters(){
-  const q=($('f-search')?.value||'').toLowerCase();
-  const zone=$('f-zone')?.value||'Todos';
-  const tipo=$('f-type')?.value||'Todos';
-  const st=$('f-status')?.value||'Todos';
-  filtered=screens.filter(s=>{
-    if(q&&!((s.nombre||'').toLowerCase().includes(q)||(s.zona||'').toLowerCase().includes(q))) return false;
-    if(zone!=='Todos'&&s.zona!==zone) return false;
-    if(tipo!=='Todos'&&s.tipo!==tipo) return false;
-    if(st!=='Todos'&&s.status!==st) return false;
-    return true;
-  });
-  renderTable();
-}
-
-// ── Table ──
-function setupTable(){
-  document.querySelectorAll('th.sort').forEach(th=>{
-    th.addEventListener('click',()=>{
-      if(sortKey===th.dataset.k) sortDir*=-1; else {sortKey=th.dataset.k;sortDir=1;}
-      document.querySelectorAll('th.sort').forEach(t=>t.classList.remove('sort-on'));
-      th.classList.add('sort-on');
-      renderTable();
-    });
-  });
-  $('sel-all')?.addEventListener('change',e=>{
-    if(e.target.checked) filtered.forEach(s=>selected.add(s.id));
-    else selected.clear();
-    renderTable();
-    updateBulk();
-  });
-}
-
-function createScreenRow(s) {
-  const tr = document.createElement('tr');
-  tr.className = selected.has(s.id) ? 'sel' : '';
-  tr.dataset.id = s.id;
-
-  const ini = esc((s.nombre || '').substring(0, 2).toUpperCase());
-  const iconCls = { Vehicular: 'v', Mixto: 'm' }[s.tipo] || '';
-
-  tr.innerHTML = `
-    <td><input type="checkbox" class="row-cb" ${selected.has(s.id) ? 'checked' : ''}></td>
-    <td>
-      <div class="sc-cell">
-        <div class="sc-icon ${iconCls}">${ini}</div>
-        <div><div class="sc-name">${esc(s.nombre)}</div><div class="sc-zone">${esc(s.zona)}</div></div>
-      </div>
-    </td>
-    <td><span class="badge ${badgeClass[s.tipo] || ''}">${esc(s.tipo)}</span></td>
-    <td>${fmtImp(s.impactos)}</td>
-    <td><span style="font-family:monospace;font-weight:700;color:var(--pdk)">${fmt(s.precio)}</span></td>
-    <td><span class="badge ${s.status === 'Activo' ? 'bd-ok' : 'bd-mu'}">${esc(s.status)}</span></td>
-    <td>
-      <div class="row-acts">
-        <button class="icon-btn" data-action="edit" title="Editar">✏️</button>
-        <button class="icon-btn ${s.status === 'Activo' ? 'paus' : 'pub'}" data-action="toggle-status" title="${s.status === 'Activo' ? 'Pausar' : 'Publicar'}">
-          ${s.status === 'Activo' ? '⏸' : '▶️'}
-        </button>
-        <button class="icon-btn" data-action="delete" title="Eliminar">🗑️</button>
-      </div>
-    </td>`;
-
-  // Adjuntar eventos directamente a los elementos de la fila
-  tr.querySelector('.row-cb').addEventListener('change', (e) => {
-    e.target.checked ? selected.add(s.id) : selected.delete(s.id);
-    tr.classList.toggle('sel', e.target.checked);
-    updateBulk();
-  });
-
-  tr.querySelector('[data-action="edit"]').addEventListener('click', () => renderEditor(s.id));
-
-  tr.querySelector('[data-action="toggle-status"]').addEventListener('click', () => {
-    s.status = s.status === 'Activo' ? 'Pausado' : 'Activo';
-    dirtyScreens.add(s.id);
-    $('unsaved').style.display = 'inline-flex';
-    renderTable();
-    renderKPIs();
-    toast(`${s.nombre}: ${s.status}`);
-  });
-
-  tr.querySelector('[data-action="delete"]').addEventListener('click', async () => {
-    if (!confirm(`¿Estás seguro de que querés eliminar "${s.nombre}"? Esta acción no se puede deshacer.`)) return;
-    try {
-      await fetch(`/api/screens/${s.id}`, { method: 'DELETE' });
-      toast(`"${s.nombre}" ha sido eliminada.`, 'ok');
-      loadScreens(); // Recargar todo para reflejar la eliminación
-    } catch (error) {
-      toast(`Error al eliminar la pantalla.`, 'err');
-    }
-  });
-
-  return tr;
-}
-
-function renderTable() {
-  const tbody=$('screen-tbody'); if(!tbody) return;
-  const sorted=[...filtered].sort((a,b)=>{
-    const av=a[sortKey]??'', bv=b[sortKey]??'';
-    return typeof av==='number'?(av-bv)*sortDir:String(av).localeCompare(String(bv))*sortDir;
-  });
-  const rc=$('result-count'); if(rc) rc.textContent=`${sorted.length} resultado${sorted.length!==1?'s':''}`;
-  tbody.innerHTML = ''; // Limpiar tabla
-  sorted.forEach(s => tbody.appendChild(createScreenRow(s))); // Añadir filas
-}
-
-// ── Editor ──
-function renderEditor(screenId){
-  const isNew = !screenId;
-  const s = isNew 
-    ? { id: '(Nueva)', nombre: '', zona: '', tipo: 'Mixto', impactos: 0, precio: 0, status: 'Activo' }
-    : screens.find(x => x.id === screenId);
-  
-  if (!s) return;
-
-  currentEdit = s.id;
-  $('ed-title').textContent = isNew ? 'Nueva Pantalla' : s.nombre;
-
-  $('editor-body').innerHTML=`
-    <div class="preview">
-      <div class="preview-hero" id="prev-hero">${s.video?`<video src="${esc(s.video)}" autoplay muted loop playsinline></video>`:esc((s.nombre||'').substring(0,2).toUpperCase())}</div>
-      <div class="preview-body">
-        <h3>${esc(s.nombre)}</h3>
-        <p>${esc(s.zona)} · <span class="badge ${badgeClass[s.tipo]||''}">${esc(s.tipo)}</span></p>
-        <div class="metrics-mini">
-          <div class="metric-mini"><span>Impactos/día</span><b>${fmtImp(s.impactos)}</b></div>
-          <div class="metric-mini"><span>Precio/sem</span><b>${fmt(s.precio)}</b></div>
-        </div>
-      </div>
-    </div>
-    <div style="display:grid;gap:10px">
-      <div class="field"><label for="ed-name">Nombre comercial</label><input id="ed-name" value="${esc(s.nombre)}"></div>
-      <div class="field"><label for="ed-zone">Zona</label><input id="ed-zone" value="${esc(s.zona)}"></div>
-      <div class="field"><label for="ed-price">Precio semanal (ARS)</label><input id="ed-price" type="number" min="1" value="${s.precio}"></div>
-      <div class="field"><label for="ed-status">Estado</label>
-        <select id="ed-status"><option ${s.status==='Activo'?'selected':''}>Activo</option><option ${s.status==='Pausado'?'selected':''}>Pausado</option></select>
-      </div>
-      <div class="field"><label for="ed-video">Video del hero (path o URL)</label><input id="ed-video" value="${esc(s.video||'')}"></div>
-      <div class="field"><label for="ed-note">Nota interna</label><textarea id="ed-note">${esc(s.nota||'')}</textarea></div>
-      <button class="btn ok" id="btn-apply">${isNew ? 'Crear Pantalla' : 'Aplicar Cambios'}</button>
-    </div>
-    <div class="status-line"><span>Pantalla ID</span><strong>${esc(s.id)}</strong></div>`;
-
-  $('btn-apply')?.addEventListener('click', () => isNew ? createNewScreen() : applyEdit(screenId));
-
-  // Live video preview
-  $('ed-video')?.addEventListener('input',e=>{
-    const h=$('prev-hero'); if(!h) return;
-    h.innerHTML=e.target.value?`<video src="${esc(e.target.value)}" autoplay muted loop playsinline></video>`:esc((s.nombre||'').substring(0,2).toUpperCase());
-  });
-}
-
-async function createNewScreen() {
-  const newScreenData = {
-    nombre: $('ed-name')?.value || 'Sin Nombre',
-    zona: $('ed-zone')?.value || '',
-    precio: parseFloat($('ed-price')?.value) || 0,
-    status: $('ed-status')?.value || 'Activo',
-    tipo: 'Mixto', // Asumimos un valor por defecto
-    impactos: 0,   // Asumimos un valor por defecto
-    video: $('ed-video')?.value || '',
-    nota: $('ed-note')?.value || '',
-  };
-
-  const response = await fetch('/api/screens', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(newScreenData),
-  });
-
-  if (response.ok) {
-    toast('Nueva pantalla creada con éxito.', 'ok');
-    loadScreens(); // Recargar todo para mostrar la nueva pantalla
-  } else {
-    toast('Error al crear la pantalla.', 'err');
-  }
-}
-
-function applyEdit(id){
-  const s=screens.find(x=>x.id===id); if(!s) return;
-  s.nombre=$('ed-name')?.value||s.nombre;
-  s.zona=$('ed-zone')?.value||s.zona;
-  s.precio=parseFloat($('ed-price')?.value)||s.precio;
-  s.status=$('ed-status')?.value||s.status;
-  s.video=$('ed-video')?.value||'';
-  s.nota=$('ed-note')?.value||'';
-  markDirty(); renderTable(); renderKPIs(); renderMetrics();
-  toast(`${s.nombre} actualizada`);
-  $('ed-title').textContent=s.nombre;
-}
-
-// ── Bulk ──
-function setupBulk(){
-  document.querySelectorAll('[data-bulk]').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      const st=btn.dataset.bulk;
-      selected.forEach(id=>{const s=screens.find(x=>x.id===id); if(s){s.status=st;dirtyScreens.add(id);}});
-      $('unsaved').style.display='inline-flex';
-      selected.clear(); updateBulk(); renderTable(); renderKPIs();
-      toast(`${st==='Activo'?'Publicadas':'Pausadas'} las pantallas seleccionadas`);
-    });
-  });
-  $('bulk-clear')?.addEventListener('click',()=>{selected.clear();updateBulk();renderTable();});
-}
-
-function updateBulk(){
-  const bar=$('bulk-bar'), cnt=$('bulk-count');
-  if(bar) bar.classList.toggle('show',selected.size>0);
-  if(cnt) cnt.textContent=selected.size;
-  const sa=$('sel-all'); if(sa) sa.checked=filtered.length>0&&filtered.every(s=>selected.has(s.id));
-}
-
-// ── KPIs ──
-function renderKPIs(){
-  const el=$('kpis-row'); if(!el) return;
-  const total=screens.length;
-  const active=screens.filter(s=>s.status==='Activo').length;
-  const reach=screens.filter(s=>s.status==='Activo').reduce((a,s)=>a+(s.impactos||0),0);
-  const rev=screens.filter(s=>s.status==='Activo').reduce((a,s)=>a+(s.precio||0),0);
-  const cpms=screens.filter(s=>s.status==='Activo'&&s.impactos>0).map(s=>((s.precio||0)/(s.impactos/1000)*1000/7));
-  const cpm=cpms.length?cpms.reduce((a,b)=>a+b,0)/cpms.length:0;
-  el.innerHTML=`
-    <div class="kpi highlight"><b>${active} / ${total}</b><span>Activas / inventario</span></div>
-    <div class="kpi"><b>${active}</b><span>Pantallas activas</span></div>
-    <div class="kpi"><b>${fmtImp(reach)}</b><span>Impactos diarios</span></div>
-    <div class="kpi"><b>${fmt(rev)}</b><span>Potencial semanal</span></div>
-    <div class="kpi"><b>${fmt(Math.round(cpm))}</b><span>CPM promedio</span></div>`;
-}
-
-// ── Export ──
-function setupExport(){
-  $('btn-export')?.addEventListener('click',()=>{
-    const rows=[['ID','Nombre','Zona','Tipo','Impactos/día','Precio/sem','Estado']];
-    filtered.forEach(s=>rows.push([s.id,s.nombre,s.zona,s.tipo,s.impactos,s.precio,s.status]));
-    const csv=rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
-    const a=document.createElement('a');
-    a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
-    a.download='smartkit-inventario.csv'; a.click();
-    toast('CSV exportado');
-  });
-}
-
-function setupSave(){
-  $('btn-save')?.addEventListener('click',saveChanges);
-}
-
-// ── Metrics ──
-function renderMetrics(){
-  // By zone
-  const byZone={};
-  screens.filter(s=>s.status==='Activo').forEach(s=>{
-    byZone[s.zona]=(byZone[s.zona]||0)+s.impactos;
-  });
-  const maxZ=Math.max(...Object.values(byZone),1);
-  $('chart-zones').innerHTML=Object.entries(byZone).sort((a,b)=>b[1]-a[1]).map(([z,v])=>`
-    <div class="chart-row">
-      <div class="chart-meta"><span>${esc(z)}</span><span>${fmtImp(v)} imp/día</span></div>
-      <div class="bar-track"><div class="bar-fill" style="width:${(v/maxZ*100).toFixed(1)}%"></div></div>
-    </div>`).join('');
-
-  // By type
-  const byType={};
-  screens.filter(s=>s.status==='Activo').forEach(s=>{
-    byType[s.tipo]=(byType[s.tipo]||0)+s.impactos;
-  });
-  const maxT=Math.max(...Object.values(byType),1);
-  $('chart-types').innerHTML=Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([t,v])=>`
-    <div class="chart-row">
-      <div class="chart-meta"><span>${esc(t)}</span><span>${fmtImp(v)} imp/día</span></div>
-      <div class="bar-track"><div class="bar-fill" style="width:${(v/maxT*100).toFixed(1)}%"></div></div>
-    </div>`).join('');
-}
-
-// ── Media Kit Builder ──
-function createKitScreenRow(s) {
-  const div = document.createElement('div');
-  div.className = 'kit-row';
-  div.innerHTML = `
-    <input type="checkbox" class="kit-cb" ${kitSelected.has(s.id) ? 'checked' : ''}>
-      <div>
-        <strong style="font-size:13px">${esc(s.nombre)}</strong>
-        <div style="color:var(--mu);font-size:11px">${esc(s.zona)} · ${esc(s.tipo)} · ${fmtImp(s.impactos)} imp/día</div>
-      </div>
-      <span style="font-family:monospace;font-size:12px;font-weight:700;color:var(--pdk)">${fmt(s.precio)}/sem</span>
-  `;
-  div.querySelector('.kit-cb').addEventListener('change', e => {
-    e.target.checked ? kitSelected.add(s.id) : kitSelected.delete(s.id);
-    updateKitPreview();
-  });
-  return div;
-}
-
-function renderKitScreenList() {
-  const el = $('kit-screen-list'); if (!el) return;
-  const zone = $('kit-zone')?.value || 'Todas';
-  const visible = screens.filter(s => s.status === 'Activo' && (zone === 'Todas' || s.zona === zone));
-  el.innerHTML = '';
-  visible.forEach(s => el.appendChild(createKitScreenRow(s)));
-  updateKitPreview();
-}
-
-$('kit-zone')?.addEventListener('change',()=>renderKitScreenList());
-['kit-client','kit-contact','kit-dur','kit-validity','kit-notes'].forEach(id=>{
-  document.addEventListener('DOMContentLoaded',()=>{
-    $(id)?.addEventListener('input',updateKitPreview);
-    $(id)?.addEventListener('change',updateKitPreview);
-  });
-});
-
-function updateKitPreview(){
-  const cnt=$('kit-sel-count'); if(cnt) cnt.textContent=`${kitSelected.size} seleccionada${kitSelected.size!==1?'s':''}`;
-  const badge=$('kit-draft-badge'); if(badge) badge.textContent=kitSelected.size?'Listo':'Borrador';
-  const el=$('kit-preview'); if(!el) return;
-  const client=$('kit-client')?.value||'Cliente';
-  const contact=$('kit-contact')?.value||'';
-  const weeks=parseInt($('kit-dur')?.value)||4;
-  const validity=parseInt($('kit-validity')?.value)||15;
-  const notes=$('kit-notes')?.value||'';
-  const items=screens.filter(s=>kitSelected.has(s.id));
-  const totalInv=items.reduce((a,s)=>a+s.precio*weeks,0);
-  const totalImp=items.reduce((a,s)=>a+s.impactos,0)*weeks*7;
-  const now=new Date();
-  const validUntil=new Date(now.getTime()+validity*86400000);
-  const weekLabel={1:'1 semana',2:'2 semanas',4:'4 semanas',8:'8 semanas',12:'12 semanas'}[weeks]||`${weeks} semanas`;
-
-  el.innerHTML=`
-    <div class="kit-doc-hero">
-      <h3>${esc(cfg.brand||'SmartKit')} · Propuesta Comercial</h3>
-      <div style="font-size:12px;opacity:.8">Para: ${esc(client)}${contact?` (${esc(contact)})`:''} · ${now.toLocaleDateString('es-AR')}</div>
-      <div style="font-size:11px;opacity:.7;margin-top:3px">Duración: ${weekLabel} · Válida hasta ${validUntil.toLocaleDateString('es-AR')}</div>
-    </div>
-    <div class="kit-doc-body">
-      <div class="kit-kpis">
-        <div class="kit-kpi"><b>${items.length}</b><span>Pantallas</span></div>
-        <div class="kit-kpi"><b>${fmtImp(totalImp)}</b><span>Impactos totales</span></div>
-        <div class="kit-kpi"><b>${fmt(totalInv)}</b><span>Inversión total</span></div>
-      </div>
-      ${items.length?`<div>${items.map(s=>`
-        <div class="kit-sc-row">
-          <div><strong>${esc(s.nombre)}</strong><br><span style="color:var(--mu);font-size:11px">${esc(s.zona)} · ${fmtImp(s.impactos)} imp/día</span></div>
-          <strong>${fmt(s.precio*weeks)}</strong>
-        </div>`).join('')}</div>`:'<p style="color:var(--mu);font-size:12px;text-align:center;padding:16px 0">Seleccioná pantallas para armar la propuesta.</p>'}
-      ${notes?`<div class="kit-terms">${esc(notes)}</div>`:''}
-      <div class="kit-terms">${esc(cfg.terms||DEFAULT_CFG.terms)}</div>
-    </div>`;
-}
-
-function createKitHistoryRow(k) {
-  const div = document.createElement('div');
-  div.className = `kit-hist-row ${k.archived ? 'arch' : ''}`;
-  div.innerHTML = `
-      <div>
-        <strong style="font-size:13px">${esc(k.client||k.brand||'Sin cliente')}</strong>
-        <div style="color:var(--mu);font-size:11px">${new Date(k.createdAt).toLocaleDateString('es-AR')} · ${k.weekLabel||''} · ${fmt(k.totals?.investment||0)}</div>
-      </div>
-      <div style="display:flex;gap:5px">
-        <button class="btn sm" data-action="load-kit">Ver</button>
-        <button class="btn sm" data-action="dl-kit">↓</button>
-        <button class="btn sm" data-action="arch-kit">${k.archived ? 'Restaurar' : 'Archivar'}</button>
-        <button class="btn sm danger" data-action="del-kit">✕</button>
-      </div>
-  `;
-  div.querySelector('[data-action="load-kit"]').addEventListener('click', () => loadKitIntoBuilder(k.id));
-  div.querySelector('[data-action="dl-kit"]').addEventListener('click', () => downloadKit(k.id));
-  div.querySelector('[data-action="arch-kit"]').addEventListener('click', () => archiveKit(k.id));
-  div.querySelector('[data-action="del-kit"]').addEventListener('click', () => deleteKit(k.id));
-  return div;
-}
-
-function renderKitHistory() {
-  const el = $('kit-history'); if (!el) return;
-  let all = {};
-  try { all = JSON.parse(localStorage.getItem(K_KITS) || '{}'); } catch {}
-  const kits = Object.values(all).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
-  
-  el.innerHTML = ''; // Limpiar historial
-
-  if (!kits.length) {
-    el.innerHTML = '<p style="color:var(--mu);font-size:12px;padding:4px">Sin propuestas guardadas todavía.</p>';
-    return;
-  }
-
-  kits.forEach(k => {
-    el.appendChild(createKitHistoryRow(k));
-  });
-}
-
-async function saveKit(){
-  const items=screens.filter(s=>kitSelected.has(s.id));
-  if(!items.length){toast('Seleccioná al menos una pantalla','err');return;}
-  const client=$('kit-client')?.value||'';
-  const contact=$('kit-contact')?.value||'';
-  const weeks=parseInt($('kit-dur')?.value)||4;
-  const validity=parseInt($('kit-validity')?.value)||15;
-  const notes=$('kit-notes')?.value||'';
-  const weekLabel={1:'1 semana',2:'2 semanas',4:'4 semanas',8:'8 semanas',12:'12 semanas'}[weeks]||`${weeks} semanas`;
-  const id='kit-'+Date.now().toString(36);
-  const now=new Date();
-  const totalInv=items.reduce((a,s)=>a+s.precio*weeks,0);
-  const totalImp=items.reduce((a,s)=>a+s.impactos,0);
-  const kit={id,client,contact,createdAt:now.toISOString(),
-    validUntil:new Date(now.getTime()+validity*86400000).toISOString(),
-    brand:cfg.brand||'SmartKit',weeks,weekLabel,notes,
-    screens:items.map(s=>({...s,precioCampana:s.precio*weeks})),
-    totals:{screens:items.length,impactsPerDay:totalImp,impactsTotal:totalImp*weeks*7,investment:totalInv},
-    terms:cfg.terms||DEFAULT_CFG.terms};
-
-  try {
-    const response = await fetch('/api/mediakits', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(kit),
-    });
-
-    if (!response.ok) throw new Error('La respuesta del servidor no fue exitosa.');
-
-    toast(`Propuesta guardada para ${client||'cliente'}`, 'ok');
-    window.open(`mediakit.html?id=${id}`, '_blank'); // Abrir el kit generado
-    renderKitHistory(); // Actualizar el historial
-  } catch (error) {
-    console.error('Error al guardar la propuesta:', error);
-    toast('Error al guardar la propuesta.', 'err');
-  }
-}
-
-function loadKitIntoBuilder(id){
-  let all={};
-  try{ all=JSON.parse(localStorage.getItem(K_KITS)||'{}'); }catch{}
-  const kit=all[id]; if(!kit) return;
-  kitSelected=new Set((kit.screens||[]).map(s=>s.id));
-  if($('kit-client')) $('kit-client').value=kit.client||'';
-  if($('kit-contact')) $('kit-contact').value=kit.contact||'';
-  if($('kit-dur')) $('kit-dur').value=kit.weeks||4;
-  if($('kit-notes')) $('kit-notes').value=kit.notes||'';
-  renderKitScreenList(); toast('Propuesta cargada en el constructor');
-}
-
-function downloadKit(id){
-  let all={};
-  try{ all=JSON.parse(localStorage.getItem(K_KITS)||'{}'); }catch{}
-  const kit=all[id]; if(!kit) return;
-  const a=document.createElement('a');
-  a.href='data:application/json,'+encodeURIComponent(JSON.stringify(kit,null,2));
-  a.download=id+'.json'; a.click();
-}
-
-function archiveKit(id){
-  let all={};
-  try{ all=JSON.parse(localStorage.getItem(K_KITS)||'{}'); }catch{}
-  if(!all[id]) return;
-  all[id].archived=!all[id].archived;
-  localStorage.setItem(K_KITS,JSON.stringify(all));
-  renderKitHistory();
-  toast(all[id].archived?'Propuesta archivada':'Propuesta restaurada');
-}
-
-function deleteKit(id){
-  if(!confirm('¿Eliminar esta propuesta? Esta acción no se puede deshacer.')) return;
-  let all={};
-  try{ all=JSON.parse(localStorage.getItem(K_KITS)||'{}'); }catch{}
-  delete all[id]; localStorage.setItem(K_KITS,JSON.stringify(all));
-  renderKitHistory(); toast('Propuesta eliminada');
-}
-
-// ── Wire up deferred events ──
-document.addEventListener('DOMContentLoaded',()=>{
-  ['kit-client','kit-contact','kit-dur','kit-validity','kit-notes'].forEach(id=>{
-    $(id)?.addEventListener('input',updateKitPreview);
-    $(id)?.addEventListener('change',updateKitPreview);
-  });
-  $('kit-zone')?.addEventListener('change',()=>renderKitScreenList());
-  $('btn-save-kit')?.addEventListener('click',saveKit);
-});
-
-// ── Init ──
-document.readyState==='loading'
-  ?document.addEventListener('DOMContentLoaded',boot)
-  :boot();
-
-})();
-</script>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="./config.js"></script>
+<script src="./screens-data.js"></script>
+<script src="./shared.js"></script>
+<script src="./dashboard.js"></script>
 </body>
 </html>

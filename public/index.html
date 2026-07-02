@@ -3,541 +3,153 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SmartKit – Brochure DOOH</title>
+<title>SmartKit - Brochure y Mapa</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<link rel="stylesheet" href="shared.css">
+<script type="module" src="https://esm.run/@material/web/all.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<style>
-/* Estilos específicos para index.html */
-/* ── HERO ── */
-.hero{background:linear-gradient(135deg,var(--pri-dk) 0%,var(--teal) 100%);color:#fff;padding:52px 22px;text-align:center}
-.hero h1{font-size:40px;font-weight:900;line-height:1.1;margin-bottom:12px}
-.hero p{font-size:17px;opacity:.85;max-width:540px;margin:0 auto 26px}
-.stats{display:flex;justify-content:center;gap:28px;flex-wrap:wrap}
-.stat b{display:block;font-size:30px;font-weight:800}
-.stat span{font-size:12px;opacity:.75;text-transform:uppercase;letter-spacing:.05em}
-
-/* ── WRAP ── */
-.wrap{max-width:1260px;margin:0 auto;padding:22px}
-
-/* ── ZONE FILTERS ── */
-.zone-filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px}
-.chip{min-height:32px;border:1px solid var(--ln);border-radius:999px;background:var(--panel);color:var(--mu);font-size:12px;font-weight:600;padding:0 13px;transition:all .15s}
-.chip.on{background:var(--pri-dk);border-color:var(--pri-dk);color:#fff}
-.chip:hover:not(.on){border-color:var(--pri);color:var(--pri)}
-
-/* ── LAYOUT ── */
-.brochure-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;align-items:start}
-.catalog-head{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px}
-.catalog-head h2{font-size:19px;font-weight:700}
-.eyebrow{display:block;color:var(--mu);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
-.catalog-controls{display:flex;gap:8px;flex-wrap:wrap}
-.catalog-controls input, .catalog-controls select{
-  min-height:34px;border:1px solid var(--ln);border-radius:8px;
-  padding:0 10px;font-size:12px;background:var(--panel);
-}
-.catalog-controls input{width:180px;}
-.catalog-controls select{font-weight:600;color:var(--mu);}
-
-.catalog-count{color:var(--mu);font-size:12px}
-
-/* ── CARDS ── */
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(224px,1fr));gap:13px}
-.card{background:var(--panel);border:1.5px solid var(--ln);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;display:flex;flex-direction:column;transition:all .2s}
-.card:hover{transform:translateY(-2px);box-shadow:0 4px 18px rgba(15,23,42,.12)}
-.card.in-quote{border-color:var(--pri);background:#f0f9ff}
-.card-hero{height:108px;background:linear-gradient(135deg,var(--pri-dk),var(--teal));display:grid;place-items:center;color:#fff;font-size:28px;font-weight:800;position:relative;overflow:hidden}
-.card-hero video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.card-body{padding:11px;flex:1}
-.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:3px}
-.card-name{font-size:13px;font-weight:700;line-height:1.3}
-.card-zone{font-size:11px;color:var(--mu);margin-bottom:9px}
-.card-stats{display:flex;justify-content:space-between;align-items:center}
-.card-price{font-size:14px;font-weight:700;color:var(--pri-dk)}
-.card-note{font-size:11px;color:var(--mu);margin-top:7px;font-style:italic}
-.card-footer{padding:9px 11px;border-top:1px solid var(--ln)}
-.empty{text-align:center;color:var(--mu);padding:40px;font-size:14px}
-
-/* ── QUOTE PANEL ── */
-.quote-panel{background:var(--panel);border:1px solid var(--ln);border-radius:var(--r);box-shadow:var(--sh);padding:15px;position:sticky;top:70px}
-.qp-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.qp-head h2{font-size:15px;font-weight:700}
-.q-status{font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;background:var(--soft);color:var(--mu);border:1px solid var(--ln)}
-.q-status.ready{background:#dcfce7;color:#166534;border-color:#86efac}
-.q-summary{background:var(--soft);border-radius:9px;padding:9px 11px;margin-bottom:11px}
-.q-summary strong{display:block;font-size:12px;font-weight:700}
-.q-summary span{font-size:11px;color:var(--mu)}
-.q-field{margin-bottom:11px}
-.q-field label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--mu);margin-bottom:4px;letter-spacing:.05em}
-.q-field input,.q-field select{width:100%;min-height:36px;border:1px solid var(--ln);border-radius:8px;padding:0 10px;font-size:12px;background:#fff}
-.q-list{max-height:220px;overflow:auto;display:grid;gap:5px;margin-bottom:11px}
-.q-item{display:flex;align-items:center;justify-content:space-between;gap:7px;border:1px solid var(--ln);border-radius:7px;padding:7px 9px;background:var(--soft)}
-.q-item-info strong{display:block;font-size:11px;font-weight:700}
-.q-item-info span{font-size:10px;color:var(--mu)}
-.q-item-right{display:flex;align-items:center;gap:5px;flex-shrink:0}
-.q-price{font-size:11px;font-weight:700;color:var(--pri-dk);font-family:monospace}.q-rm{width:22px;height:22px;border:1px solid var(--ln);border-radius:5px;background:#fff;font-size:10px;color:var(--mu);line-height:1}
-.q-rm:hover{border-color:#fca5a5;background:#fef2f2;color:#991b1b}
-.q-total{border-top:1px solid var(--ln);padding-top:11px;margin-bottom:13px;display:grid;gap:5px}
-.q-meta{display:flex;justify-content:space-between;font-size:12px}
-.q-investment{font-size:24px;font-weight:800;color:var(--pri-dk)}
-.q-actions{display:grid;gap:7px}
-.q-btn{width:100%;min-height:40px;border-radius:9px;border:none;font-weight:700;font-size:13px;transition:all .15s}
-.q-btn.mk{background:var(--pri-dk);color:#fff}
-.q-btn.mk:hover:not(:disabled){background:#0c4a6e}
-.q-btn.wa{background:#16a34a;color:#fff}
-.q-btn.wa:hover:not(:disabled){background:#15803d}
-.q-btn:disabled{opacity:.4;cursor:not-allowed}
-.q-hint{font-size:11px;color:var(--mu);text-align:center;margin-top:4px}
-.duration-sel{width:100%;min-height:36px;border:1px solid var(--ln);border-radius:8px;padding:0 10px;font-size:12px;background:#fff}
-
-/* ── MAP ── */
-#view-map{height:calc(100vh - 56px);position:relative}
-#map{width:100%;height:100%}
-.legend{position:absolute;bottom:22px;left:14px;z-index:999;background:rgba(255,255,255,.93);border-radius:9px;padding:7px 13px;display:flex;gap:12px;font-size:11px;border:1px solid var(--ln);box-shadow:var(--sh)}
-.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:middle}
-.dot-p{background:#0369a1}.dot-v{background:#0f766e}.dot-m{background:#7c3aed}
-#sc-panel{position:absolute;top:14px;right:14px;z-index:999;width:268px;background:#fff;border-radius:var(--r);box-shadow:var(--sh);border:1px solid var(--ln);display:none}
-#sc-panel.open{display:block}
-.scp-inner{padding:14px;position:relative}
-.scp-close{position:absolute;top:10px;right:10px;width:26px;height:26px;border:1px solid var(--ln);border-radius:6px;background:#fff;font-size:12px;color:var(--mu)}
-.scp-hero{height:90px;border-radius:9px;background:linear-gradient(135deg,var(--pri-dk),var(--teal));display:grid;place-items:center;color:#fff;font-size:26px;font-weight:800;margin-bottom:11px;overflow:hidden;position:relative}
-.scp-hero video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.scp-stats{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:9px 0}
-.scp-stat{background:var(--soft);border-radius:7px;padding:7px}
-.scp-stat span{display:block;font-size:10px;color:var(--mu)}
-.scp-stat strong{display:block;font-size:13px;font-weight:700}
-
-/* ── VISTAS (obsoleto, se mantiene por si se reutiliza) ── */
-.view{display:none} .view.on{display:block}
-.brochure-wrap{display:block}
-
-/* ── TOAST ── */
-.toast{position:fixed;left:50%;bottom:20px;z-index:9999;transform:translate(-50%,12px);opacity:0;pointer-events:none;background:#0f172a;color:#fff;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:600;transition:all .18s}
-.toast.show{transform:translate(-50%,0);opacity:1}
-
-/* ── MEDIA KIT MODAL (simplified) ── */
-.mk-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
-.mk-overlay.open{display:flex}
-.mk-modal{background:#fff;border-radius:16px;max-width:560px;width:100%;max-height:90vh;overflow:auto;padding:28px}
-.mk-hero{background:linear-gradient(135deg,var(--pri-dk),var(--teal));border-radius:12px;padding:22px;color:#fff;margin-bottom:20px}
-.mk-hero h2{font-size:22px;font-weight:800;margin-bottom:4px}
-.mk-meta{font-size:12px;opacity:.8}
-.mk-section{margin-bottom:16px}
-.mk-section h3{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--mu);margin-bottom:10px}
-.mk-screen-row{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border:1px solid var(--ln);border-radius:9px;margin-bottom:7px;font-size:13px}
-.mk-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
-.mk-kpi{background:var(--soft);border-radius:10px;padding:12px;border:1px solid var(--ln)}
-.mk-kpi b{display:block;font-size:20px;font-weight:800;color:var(--pri-dk)}
-.mk-kpi span{font-size:11px;color:var(--mu)}
-.mk-terms{font-size:11px;color:var(--mu);border:1px solid var(--ln);border-radius:9px;padding:10px;background:var(--soft)}
-.mk-footer{display:flex;gap:9px;margin-top:18px}
-
-/* ── RESPONSIVE ── */
-@media(max-width:920px){.brochure-grid{grid-template-columns:1fr}.quote-panel{position:static}}
-@media(max-width:580px){.hero h1{font-size:26px}.cards{grid-template-columns:1fr}.stats{gap:18px}.top{padding:9px 14px}.wrap{padding:14px}}
-</style>
+<link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-
-<header class="top">
-  <div class="brand">
-    <div class="logo" id="brand-logo">SK</div>
-    <strong id="brand-name">SmartKit</strong>
-  </div>
-  <nav class="nav">
-    <a href="index.html" class="on">Brochure</a>
-    <a href="map.html">Mapa</a>
-    <a href="dashboard.html" class="nav-link-kit">Dashboard</a>
-  </nav>
-</header>
-
-  <div class="hero">
-    <h1 id="hero-title">SmartKit</h1>
-    <p id="hero-copy">Planificá campañas DOOH, seleccioná ubicaciones digitales y generá una propuesta comercial en minutos.</p>
-    <div class="stats" id="hero-stats"></div>
-  </div>
-  <div class="wrap">
-    <div class="zone-filters" id="zone-filters"></div>
-    <div class="brochure-grid">
-      <section>
-        <div class="catalog-head">
-          <div>
-            <span class="eyebrow">Inventario disponible</span>
-            <h2>Pantallas</h2>
-          </div>
-          <div class="catalog-controls">
-            <input type="search" id="search-box" placeholder="Buscar por nombre...">
-            <select id="sort-by">
-              <option value="nombre-asc">Ordenar por Nombre (A-Z)</option>
-              <option value="precio-desc">Mayor Precio</option><option value="precio-asc">Menor Precio</option>
-              <option value="impactos-desc">Más Impactos</option><option value="impactos-asc">Menos Impactos</option>
-            </select>
-          </div>
-        </div>
-        <div class="cards" id="cards"></div>
-      </section>
-      <aside class="quote-panel">
-        <div class="qp-head">
-          <div><span class="eyebrow">Plan de campaña</span><h2>Cotizador</h2></div>
-          <span class="q-status" id="q-status">Vacío</span>
-        </div>
-        <div class="q-summary">
-          <strong id="q-sum-count">0 pantallas · Sin plan armado</strong>
-          <span id="q-sum-detail">Agregá pantallas para estimar inversión</span>
-        </div>
-        <div class="q-field">
-          <label>Duración</label>
-          <select class="duration-sel" id="dur-select">
-            <option value="1">1 semana</option>
-            <option value="2">2 semanas</option>
-            <option value="4" selected>4 semanas (1 mes)</option>
-            <option value="8">8 semanas (2 meses)</option>
-            <option value="12">12 semanas (1 trimestre)</option>
-          </select>
-        </div>
-        <div class="q-list" id="q-list"></div>
-        <div class="q-total">
-          <div class="q-meta"><span>Pantallas</span><strong id="q-count">0</strong></div>
-          <div class="q-meta"><span>Impactos estimados</span><strong id="q-impacts">0</strong></div>
-          <div style="margin-top:4px">
-            <span class="mu sm">Inversión estimada</span>
-            <div class="q-investment" id="q-total">$0</div>
-          </div>
-        </div>
-        <div class="q-actions">
-          <button class="q-btn mk" id="btn-mk" disabled>Generar media kit</button>
-          <button class="q-btn wa" id="btn-wa" disabled>Contactar por WhatsApp</button>
-          <p class="q-hint" id="q-hint">Agregá pantallas al cotizador para continuar.</p>
-        </div>
-      </aside>
+<a class="skip-link" href="#view-brochure">Saltar al contenido</a>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <div class="logo" id="brand-logo">SK</div>
+      <div><strong id="brand-name">SmartKit</strong></div>
     </div>
-  </div>
+    <button class="menu-toggle" id="menu-toggle" type="button" aria-controls="primary-nav" aria-expanded="false" data-action="toggle-nav">
+      <span class="menu-toggle-icon" aria-hidden="true"></span>
+      <span>Menu</span>
+    </button>
+    <nav class="nav" id="primary-nav" aria-label="Vistas principales">
+      <button id="btn-brochure" class="on" type="button" aria-current="page" data-view="brochure">Brochure</button>
+      <button id="btn-map" type="button" data-view="map">Mapa</button>
+      <a href="./mediakit.html" class="nav-link" data-mediakit-link>Media Kit</a>
+      <a href="./dashboard.html" class="nav-link">Dashboard</a>
+    </nav>
+    <div class="header-actions">
+      <button class="mobile-quote-toggle" id="mobile-quote-toggle" type="button" aria-controls="quote-panel" aria-expanded="false" data-action="toggle-mobile-quote">
+        <span>Cotizador</span>
+      </button>
+    </div>
+  </header>
 
-<div class="toast" id="toast"></div>
+  <main class="main" aria-label="Experiencia comercial de pantallas">
+    <section id="view-map" class="view" aria-label="Mapa de pantallas" aria-hidden="true">
+      <div id="map" role="application" aria-label="Mapa interactivo de pantallas"></div>
+      <div class="legend">
+        <span><i class="dot dot-peatonal"></i>Peatonal</span>
+        <span><i class="dot dot-vehicular"></i>Vehicular</span>
+        <span><i class="dot dot-mixto"></i>Mixto</span>
+      </div>
+      <aside id="screen-panel" class="side" role="dialog" aria-modal="false" aria-label="Detalle de pantalla seleccionada" aria-live="polite" tabindex="-1"></aside>
+    </section>
 
-<!-- Media Kit Modal -->
-<div class="mk-overlay" id="mk-overlay">
-  <div class="mk-modal" id="mk-modal">
-    <button class="btn" style="margin-bottom:16px" id="mk-close">← Volver</button>
-    <div id="mk-content"></div>
+    <section id="view-brochure" class="view brochure on" aria-label="Brochure de pantallas">
+      <div class="hero">
+        <div class="hero-inner">
+          <h1 id="hero-title">SmartKit</h1>
+          <p id="hero-copy">Planifica campañas DOOH, selecciona ubicaciones digitales y genera una reserva comercial en minutos.</p>
+          <div class="stats" id="hero-stats" role="group" aria-label="Resumen de inventario"></div>
+        </div>
+      </div>
+
+      <div class="wrap">
+        <div class="brochure-grid">
+          <section class="catalog" aria-label="Pantallas disponibles">
+            <div class="catalog-head">
+              <div>
+                <span class="quote-eyebrow">Inventario disponible</span>
+                <h2>Pantallas</h2>
+              </div>
+              <div class="catalog-tools">
+                <span class="catalog-count" id="catalog-count">0 pantallas</span>
+                <button class="catalog-filter-toggle" id="mobile-filter-toggle" type="button" aria-controls="zone-filters" aria-expanded="false" data-action="toggle-filters">
+                  Filtros
+                </button>
+              </div>
+            </div>
+            <div class="active-filter-chip" id="active-filter-chip" hidden></div>
+            <div class="cards" id="cards"></div>
+          </section>
+
+          <aside class="quote-panel" id="quote-panel" aria-label="Cotizador de campana" tabindex="-1">
+            <div class="quote-panel-head">
+              <div>
+                <span class="quote-eyebrow">Plan de campana</span>
+                <h2>Cotizador</h2>
+              </div>
+              <span class="quote-status" id="quote-status">Vacio</span>
+            </div>
+            <div class="quote-summary" aria-live="polite">
+              <strong id="quote-summary-count">0 pantallas · Sin plan armado</strong>
+              <span id="quote-summary-detail">Agrega pantallas para estimar inversion</span>
+            </div>
+            <div class="quote-field control-panel">
+              <label for="duration-select">Duracion</label>
+              <select id="duration-select" data-duration-select></select>
+            </div>
+            <div id="quote-list" class="quote-list"></div>
+            <div class="quote-total">
+              <div class="quote-meta"><span>Pantallas</span><strong id="quote-count">0</strong></div>
+              <div class="quote-meta"><span>Impactos estimados</span><strong id="quote-impacts">0</strong></div>
+              <div>
+                <span class="muted small">Inversion estimada</span>
+                <div id="quote-total" class="price">$0</div>
+              </div>
+            </div>
+            <div class="quote-actions">
+              <md-filled-button id="quote-mediakit" class="quote-btn quote-mediakit is-empty" data-action="generate-mediakit" disabled>
+                <svg slot="icon" class="whatsapp-icon plus-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 4h14v16H5V4Zm2 2v12h10V6H7Zm2 2h6v2H9V8Zm0 4h6v2H9v-2Z"/></svg>
+                <span>Generar media kit</span>
+              </md-filled-button>
+              <md-filled-button id="quote-whatsapp" class="quote-btn quote-whatsapp is-empty" data-action="whatsapp-quote" disabled>
+                <svg slot="icon" class="whatsapp-icon plus-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg>
+                <span>Contactar</span>
+              </md-filled-button>
+              <p class="quote-action-hint" id="quote-action-hint">Agrega una pantalla al cotizador para generar una propuesta compartible.</p>
+            </div>
+          </aside>
+
+          <div class="filters quote-filters" id="zone-filters" role="group" aria-label="Filtros de pantallas"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="mobile-feedback" id="mobile-feedback" role="status" aria-live="polite" aria-atomic="true"></div>
+  <nav class="mobile-action-nav" id="mobile-action-nav" aria-label="Navegacion principal">
+    <button class="mobile-nav-destination" type="button" data-view="brochure">
+      <span>Brochure</span>
+    </button>
+    <button class="mobile-nav-destination" type="button" data-view="map">
+      <span>Mapa</span>
+    </button>
+    <a class="mobile-nav-destination" href="./mediakit.html" data-mediakit-link>
+      <span>Media Kit</span>
+    </a>
+  </nav>
+</div>
+
+<div id="mediakit-offcanvas" class="offcanvas-container" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="offcanvas-title">
+  <div class="offcanvas-backdrop" data-action="close-offcanvas"></div>
+  <div class="offcanvas-panel">
+    <div class="offcanvas-header">
+      <h2 id="offcanvas-title" class="sr-only">Media Kit Generado</h2>
+      <div class="offcanvas-actions">
+        <button type="button" class="btn" data-action="print-mediakit">Imprimir a PDF</button>
+        <button type="button" class="close" aria-label="Cerrar media kit" data-action="close-offcanvas">×</button>
+      </div>
+    </div>
+    <div class="offcanvas-content">
+      <iframe src="about:blank" title="Vista previa del Media Kit" name="mediakit-frame"></iframe>
+    </div>
   </div>
 </div>
 
-<footer class="footer">
-  <div class="footer-content">
-    <span>&copy; 2024 <strong id="footer-brand-name">SmartKit</strong>. Todos los derechos reservados.</span>
-    <nav class="footer-nav">
-      <a href="index.html">Brochure</a>
-      <a href="map.html">Mapa</a>
-      <a href="dashboard.html">Dashboard</a>
-    </nav>
-  </div>
-</footer>
-
-<script src="utils.js"></script>
-<script>
-/* ══════════════════════════════════════════════
-   config.js
-═══════════════════════════════════════════════ */
-const CONFIG = {
-  brand: 'SmartKit',
-  logo: 'SK',
-  whatsapp: '5492616000000',
-  heroTitle: 'Pantallas DOOH · Mendoza',
-  heroCopy: 'Planificá campañas digitales outdoor. Seleccioná ubicaciones, estimá alcance e inversión, y generá tu propuesta en minutos.',
-  terms: 'Inicio de campaña sujeto a disponibilidad y aprobación de piezas creativas. Valores expresados en ARS. Propuesta válida por 15 días.',
-};
-
-/* ══════════════════════════════════════════════
-   app.js
-═══════════════════════════════════════════════ */
-(function(){
-  'use strict';
-
-  // ── State ──
-  const state = {
-    screens: [],
-    filtered: [],
-    quote: new Set(),
-    weeks: 4,
-    activeZone: 'Todos',
-  };
-
-  // ── Helpers ──
-  const badgeClass = {Peatonal:'bd-p',Vehicular:'bd-v',Mixto:'bd-m'};
-  const dotClass = {Peatonal:'#0369a1',Vehicular:'#0f766e',Mixto:'#7c3aed'};
-
-  function toast(msg, duration=1800){
-    const t=$('toast'); t.textContent=msg; t.classList.add('show');
-    setTimeout(()=>t.classList.remove('show'), duration);
-  }
-
-  // ── Boot ──
-  async function boot(){
-    try {
-      const response = await fetch('/api/screens');
-      if (!response.ok) throw new Error('Network response was not ok');
-      const allScreens = await response.json();
-      state.screens = allScreens.filter(s => s.status === 'Activo');
-    } catch (error) {
-      console.error("Could not fetch screens:", error);
-      state.screens = []; // Fallback to an empty array on error
-    }
-
-    // Load quote from localStorage to sync state
-    state.quote = new Set(JSON.parse(localStorage.getItem('sk_v1_quote') || '[]'));
-
-    applyConfig();
-    renderHeroStats();
-    buildZoneFilters();
-    renderCards();
-    renderQuote();
-    setupActions();
-  }
-
-  function applyConfig(){
-    const c=window.CONFIG||{};
-    ['brand-logo','brand-name'].forEach(id=>{const el=$(id); if(el) el.textContent=id.includes('logo')?c.logo:c.brand;});
-    if(c.heroTitle){ const el=$('hero-title'); if(el) el.textContent=c.heroTitle; }
-    if(c.brand){ const el=$('footer-brand-name'); if(el) el.textContent=c.brand; }
-    if(c.heroCopy){  const el=$('hero-copy');  if(el) el.textContent=c.heroCopy;  }
-  }
-
-  function renderHeroStats(){
-    const el=$('hero-stats'); if(!el) return;
-    const total=state.screens.length;
-    const imp=state.screens.reduce((a,s)=>a+(s.impactos||0),0);
-    const zones=[...new Set(state.screens.map(s=>s.zona))].length;
-    el.innerHTML=`
-      <div class="stat"><b>${total}</b><span>Pantallas</span></div>
-      <div class="stat"><b>${fmtImp(imp)}</b><span>Impactos/día</span></div>
-      <div class="stat"><b>${zones}</b><span>Zonas</span></div>`;
-  }
-
-  function buildZoneFilters(){
-    const el=$('zone-filters'); if(!el) return;
-    const zones=['Todos',...new Set(state.screens.map(s=>s.zona))];
-    el.innerHTML=zones.map(z=>`<button class="chip${z===state.activeZone?' on':''}" data-zone="${esc(z)}">${esc(z)}</button>`).join('');
-    el.addEventListener('click',e=>{
-      const btn=e.target.closest('[data-zone]'); if(!btn) return;
-      state.activeZone=btn.dataset.zone;
-      el.querySelectorAll('.chip').forEach(b=>b.classList.toggle('on',b.dataset.zone===state.activeZone));
-      renderCards();
-    });
-  }
-
-  function renderCards(){
-    const el=$('cards'); if(!el) return;
-    const processed = state.screens.filter(s => state.activeZone === 'Todos' || s.zona === state.activeZone);
-    if(!processed.length){ el.innerHTML='<p class="empty">No hay pantallas disponibles en esta zona.</p>'; return; }
-    el.innerHTML=processed.map(s=>{
-      const inQ=state.quote.has(s.id);
-      const initials=esc((s.nombre||'').substring(0,2).toUpperCase());
-      return `<article class="card${inQ?' in-quote':''}" data-id="${esc(s.id)}">
-        <div class="card-hero">${s.video?`<video src="${esc(s.video)}" autoplay muted loop playsinline></video>`:initials}</div>
-        <div class="card-body">
-          <div class="card-top"><strong class="card-name">${esc(s.nombre)}</strong><span class="badge ${badgeClass[s.tipo]||''}">${esc(s.tipo)}</span></div>
-          <p class="card-zone">${esc(s.zona)}</p>
-          <div class="card-stats">
-            <span class="mu sm">${fmtImp(s.impactos)} imp/día</span>
-            <strong class="card-price">${fmt(s.precio)}<span class="mu" style="font-size:10px;font-weight:400">/sem</span></strong>
-          </div>
-          ${s.nota?`<p class="card-note">${esc(s.nota)}</p>`:''}
-        </div>
-        <div class="card-footer"><button class="btn-add${inQ?' on':''}" data-action="toggle-quote" data-id="${esc(s.id)}">${inQ?'✓ En cotizador':'+ Agregar'}</button></div>
-      </article>`;
-    }).join('');
-    el.querySelectorAll('[data-action="toggle-quote"]').forEach(btn=>{
-      btn.addEventListener('click',()=>toggleQuote(btn.dataset.id));
-    });
-  }
-
-  function toggleQuote(id){
-    const s=state.screens.find(x=>x.id===id); if(!s) return;
-    state.quote.has(id) ? state.quote.delete(id) : state.quote.add(id);
-    localStorage.setItem('sk_v1_quote', JSON.stringify([...state.quote]));
-    renderCards(); renderQuote();
-    toast(state.quote.has(id)?`${s.nombre} agregada al cotizador`:`${s.nombre} quitada`);
-  }
-
-  function renderQuote(){
-    const items = state.screens.filter(s => state.quote.has(s.id));
-    const w=state.weeks;
-    const totalInv=items.reduce((a,s)=>a+s.precio*w,0);
-    const totalImp=items.reduce((a,s)=>a+s.impactos,0)*w*7;
-    const hasItems=items.length>0;
-
-    const st=$('q-status'); if(st){ st.textContent=hasItems?'Listo':'Vacío'; st.className='q-status'+(hasItems?' ready':''); }
-    const sc=$('q-sum-count'); if(sc) sc.textContent=hasItems?`${items.length} pantalla${items.length!==1?'s':''}`:' 0 pantallas · Sin plan armado';
-    const sd=$('q-sum-detail'); if(sd) sd.textContent=hasItems?`${fmtImp(totalImp)} impactos totales estimados`:'Agregá pantallas para estimar inversión';
-
-    const ql=$('q-list'); if(ql){
-      ql.innerHTML=items.map(s=>`
-        <div class="q-item">
-          <div class="q-item-info"><strong>${esc(s.nombre)}</strong><span>${esc(s.zona)} · ${esc(s.tipo)}</span></div>
-          <div class="q-item-right"><span class="q-price">${fmt(s.precio*w)}</span><button class="q-rm" data-id="${esc(s.id)}" aria-label="Quitar" title="Quitar">✕</button></div>
-        </div>`).join('')||`<p class="mu sm" style="padding:8px 0">Sin pantallas agregadas.</p>`;
-      ql.querySelectorAll('.q-rm').forEach(b=>b.addEventListener('click',()=>{state.quote.delete(b.dataset.id);renderCards();renderQuote();}));
-    }
-
-    const el=(id,val)=>{const e=$(id);if(e)e.textContent=val;};
-    el('q-count',items.length);
-    el('q-impacts',fmtImp(totalImp));
-    el('q-total',fmt(totalInv));
-
-    const mkBtn=$('btn-mk'), waBtn=$('btn-wa'), hint=$('q-hint');
-    if(mkBtn){mkBtn.disabled=!hasItems;}
-    if(waBtn){waBtn.disabled=!hasItems;}
-    if(hint){hint.style.display=hasItems?'none':'block';}
-  }
-
-  function setupDuration(){
-    const sel=$('dur-select'); if(!sel) return;
-    state.weeks=parseInt(sel.value)||4;
-    sel.addEventListener('change',()=>{state.weeks=parseInt(sel.value)||1;renderQuote();});
-  }
-
-  // ── Actions ──
-  function setupActions(){
-    $('btn-mk')?.addEventListener('click', generateKit);
-    $('btn-wa')?.addEventListener('click', sendWhatsApp);
-    $('mk-close')?.addEventListener('click',()=>$('mk-overlay').classList.remove('open')); // El botón para abrir el historial ya no está en esta página
-    $('mk-overlay')?.addEventListener('click',e=>{ if(e.target===$('mk-overlay')) $('mk-overlay').classList.remove('open'); });
-  }
-
-  async function generateKit(){
-    const items=state.screens.filter(s => state.quote.has(s.id)); if(!items.length) return;
-    const c=window.CONFIG||{};
-    const w=state.weeks;
-    const totalInv=items.reduce((a,s)=>a+s.precio*w,0);
-    const totalImp=items.reduce((a,s)=>a+s.impactos,0);
-    const id='kit-'+Date.now().toString(36);
-    const now=new Date();
-    const exp=new Date(now.getTime()+15*86400000);
-    const weekLabel={1:'1 semana',2:'2 semanas',4:'4 semanas (1 mes)',8:'8 semanas',12:'12 semanas'}[w]||`${w} semanas`;
-    const kit={id,createdAt:now.toISOString(),validUntil:exp.toISOString(),brand:c.brand||'SmartKit',weeks:w,weekLabel,
-      screens:items.map(s=>({...s,precioCampana:s.precio*w})),
-      totals:{screens:items.length,impactsPerDay:totalImp,impactsTotal:totalImp*w*7,investment:totalInv},
-      terms:c.terms||'',};
-
-    try {
-      const response = await fetch('/api/mediakits', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(kit)
-      });
-      if (!response.ok) throw new Error('La respuesta del servidor no fue exitosa.');
-      toast('✓ Media kit generado. Abriendo...', 2000);
-      window.open(`mediakit.html?id=${id}`, '_blank');
-    } catch (error) {
-      console.error('Error al generar el media kit:', error);
-      toast('Error al generar la propuesta.', 3000);
-    }
-  }
-
-  function renderKitModal(kit){
-    const overlay=$('mk-overlay'), content=$('mk-content'); if(!overlay||!content) return;
-    const now=new Date();
-    const validStr=new Date(kit.validUntil).toLocaleDateString('es-AR');
-    content.innerHTML=`
-      <div class="mk-hero">
-        <h2>${esc(kit.brand)} · Propuesta Comercial</h2>
-        <p class="mk-meta">Generado: ${now.toLocaleDateString('es-AR')} · Duración: ${esc(kit.weekLabel)} · Válida hasta: ${validStr}</p>
-      </div>
-      <div class="mk-kpis">
-        <div class="mk-kpi"><b>${kit.totals.screens}</b><span>Pantallas</span></div>
-        <div class="mk-kpi"><b>${fmtImp(kit.totals.impactsTotal)}</b><span>Impactos totales</span></div>
-        <div class="mk-kpi"><b>${fmt(kit.totals.investment)}</b><span>Inversión total</span></div>
-      </div>
-      <div class="mk-section">
-        <h3>Detalle de pantallas</h3>
-        ${kit.screens.map(s=>`<div class="mk-screen-row"><div><strong>${esc(s.nombre)}</strong><br><span class="mu sm">${esc(s.zona)} · ${esc(s.tipo)} · ${fmtImp(s.impactos)} imp/día</span></div><strong>${fmt(s.precioCampana)}</strong></div>`).join('')}
-      </div>
-      <div class="mk-section">
-        <h3>Condiciones</h3>
-        <div class="mk-terms">${esc(kit.terms)}</div>
-      </div>
-      <div class="mk-footer">
-        <button class="btn" onclick="printKit()">Imprimir / PDF</button>
-        <button class="btn wa" id="mk-modal-wa">Enviar por WhatsApp</button>
-        <button class="btn" id="mk-modal-dl">Descargar JSON</button>
-      </div>`;
-    overlay.classList.add('open');
-
-    // Attach events directly, removing global dependencies
-    $('mk-modal-wa')?.addEventListener('click', () => {
-      const c = window.CONFIG || {};
-      const wa = c.whatsapp || '';
-      if (!wa) {
-        alert('Configurá el WhatsApp en config.js');
-        return;
-      }
-      const lines = [
-        `Hola! Te comparto la propuesta comercial SmartKit:`, ``,
-        `Duración: ${kit.weekLabel}`,
-        ...kit.screens.map(s => `• ${s.nombre} (${s.zona}) — ${fmt(s.precioCampana)}`), ``,
-        `Inversión total: ${fmt(kit.totals.investment)}`,
-        `Válida hasta: ${new Date(kit.validUntil).toLocaleDateString('es-AR')}`,
-      ];
-      window.open(`https://wa.me/${wa.replace(/\D/g,'')}?text=${encodeURIComponent(lines.join('\n'))}`, '_blank');
-    });
-
-    $('mk-modal-dl')?.addEventListener('click', () => downloadKit(kit.id));
-  }
-
-  // This function can remain as it's a standard browser API
-  window.printKit = () => { window.print(); };
-
-  function downloadKit(id) {
-    const all = (() => {
-      try { return JSON.parse(localStorage.getItem('sk_v1_public-kits') || '{}'); } catch { return {}; }
-    })();
-    const kit = all[id];
-    if (!kit) return;
-    const a=document.createElement('a');
-    a.href='data:application/json,'+encodeURIComponent(JSON.stringify(kit,null,2));
-    a.download=id+'.json'; a.click();
-  };
-
-  function showKitHistory(){
-    const all=(() =>{try{return JSON.parse(localStorage.getItem('sk_v1_public-kits')||'{}');}catch{return{};}})();
-    const kits=Object.values(all).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
-    const content=$('mk-content'); if(!content) return;
-    if(!kits.length){
-      content.innerHTML='<p class="mu" style="text-align:center;padding:32px">No hay kits generados todavía.<br>Armá una cotización para crear tu primer media kit.</p>';
-    } else {
-      content.innerHTML=`<h3 style="margin-bottom:14px;font-size:16px;font-weight:700">Kits generados (${kits.length})</h3>`+
-        kits.map(k=>`<div style="border:1px solid var(--ln);border-radius:10px;padding:12px;margin-bottom:10px;cursor:pointer" data-action="load-kit" data-id="${esc(k.id)}">
-          <strong>${esc(k.brand)}</strong> · ${k.totals.screens} pantallas<br>
-          <span class="mu sm">${new Date(k.createdAt).toLocaleDateString('es-AR')} · ${k.weekLabel} · ${fmt(k.totals.investment)}</span>
-        </div>`).join('');
-      content.querySelectorAll('[data-action="load-kit"]').forEach(el => {
-        el.addEventListener('click', () => loadKit(el.dataset.id));
-      });
-    }
-    $('mk-overlay').classList.add('open');
-  }
-
-  function loadKit(id) {
-    const all=(() =>{try{return JSON.parse(localStorage.getItem('sk_v1_public-kits')||'{}');}catch{return{};}})();
-    const kit=all[id]; if(kit) renderKitModal(kit);
-  };
-
-  function sendWhatsApp(){
-    const c=window.CONFIG||{};
-    const wa=c.whatsapp||''; if(!wa){alert('Configurá el WhatsApp en config.js');return;}
-    const items=state.screens.filter(s => state.quote.has(s.id));
-    const w=state.weeks;
-    const total=items.reduce((a,s)=>a+s.precio*w,0);
-    const lines=[`Hola! Me interesa cotizar las siguientes pantallas SmartKit:`,``,
-      ...items.map(s=>`• ${s.nombre} (${s.zona}) — ${fmt(s.precio*w)}`),``,
-      `Duración: ${w} semana${w!==1?'s':''}`,`Inversión estimada: ${fmt(total)}`,];
-    window.open(`https://wa.me/${wa.replace(/\D/g,'')}?text=${encodeURIComponent(lines.join('\n'))}`, '_blank');
-  }
-
-  // ── Init ──
-  document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot):boot();
-})();
-</script>
+<script src="./config.js"></script>
+<script src="./screens.js"></script>
+<script src="./shared.js"></script>
+<script src="./app.js"></script>
 </body>
 </html>
