@@ -1,7 +1,6 @@
 const Shared = window.SmartKitShared;
 const brand = {name:'SmartKit',logo:'SK', terms:'', validity:'15 dias'};
 const theme = {};
-const { DASHBOARD_STORAGE_KEY, PUBLIC_KITS_STORAGE_KEY } = Shared;
 const fmt = Shared.formatMoney;
 const imp = Shared.impNum;
 const h = Shared.escapeHtml;
@@ -13,34 +12,24 @@ let kitSelected = new Set();
 let savedKits = [];
 
 const debouncedPersist = Shared.debounce((message) => {
-  persistState(message || 'Cambios guardados automáticamente');
+  const state = { rows, kits: savedKits, brand };
+  Shared.persistDashboardState(state, message || 'Cambios guardados automáticamente');
 }, 1500);
 
 
 function loadInitialData(){
-  try {
-    const savedState = JSON.parse(localStorage.getItem(DASHBOARD_STORAGE_KEY));
-    if (savedState && savedState.rows) {
-      rows = savedState.rows;
-      savedKits = savedState.kits || [];
-      Object.assign(brand, savedState.brand || {});
-      Shared.showToast('Estado local cargado');
-    } else {
-      rows = JSON.parse(JSON.stringify(SCREENS));
-      Shared.showToast('Datos iniciales cargados');
-    }
-    // Forzar la sincronización del estado con la fuente de verdad (screens-data.js)
-    const sourceScreens = new Map(SCREENS.map(s => [s.id, s]));
-    rows.forEach(row => {
-      const sourceScreen = sourceScreens.get(row.id);
-      row.status = sourceScreen && sourceScreen.active ? 'Activo' : 'Pausado';
-    });
-    selectedId = rows[0]?.id;
-  } catch (err) {
-    Shared.showToast('Error cargando datos locales');
-    console.error('Fallo al cargar datos:', err);
-    rows = [];
+  const savedState = Shared.loadDashboardState();
+  if (savedState) {
+    rows = savedState.rows;
+    savedKits = savedState.kits || [];
+    Object.assign(brand, savedState.brand || {});
+  } else {
+    rows = JSON.parse(JSON.stringify(SCREENS));
+    // El estado 'active' se setea por defecto al no haber estado guardado.
+    rows.forEach(row => { row.status = row.active ? 'Activo' : 'Pausado'; });
+    Shared.showToast('Datos iniciales cargados');
   }
+  selectedId = rows[0]?.id;
 }
 
 async function buildKitPayload(status='Borrador'){
@@ -75,7 +64,6 @@ async function buildKitPayload(status='Borrador'){
   };
   kit.digitalSignature = await Shared.signMediaKit(kit, {
     signer: window.CONFIG?.signature?.signer || brand.name,
-    secret: window.CONFIG?.signature?.secret || ''
   });
   return kit;
 }
@@ -87,22 +75,6 @@ function downloadKitJson(kit){
   link.download = `${kit.id}.json`;
   link.click();
   URL.revokeObjectURL(link.href);
-}
-
-function persistState(toastMessage) {
-  try {
-    const state = {
-      rows: rows,
-      kits: savedKits,
-      brand: brand,
-      updatedAt: new Date().toISOString()
-    };
-    localStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(state));
-    if (toastMessage) Shared.showToast(toastMessage);
-  } catch (err) {
-    console.error('Error al guardar en localStorage:', err);
-    Shared.showToast('Error al guardar cambios');
-  }
 }
 
 function applyBrand(){
@@ -329,26 +301,19 @@ function renderKitPreview(){
   `;
 }
 
-function saveKit(){
+async function saveKit(){
   const screens = kitScreens();
   if(!screens.length){
     Shared.showToast('Selecciona al menos una pantalla');
     return;
   }
-  const kit = await buildKitPayload('Borrador');
+  const kit = await buildKitPayload('Borrador'); // buildKitPayload es async
   kit.archived = false; // Los kits nuevos siempre están activos
   savedKits = [kit, ...savedKits.filter(k => k.id !== kit.id)];
   renderKitHistory();
-  setKitStep(1); // Reiniciar stepper al guardar
-  persistState('Media kit guardado');
-}
-
-function updatePublicKitArchive(kitId, archived) {
-  try {
-    const publicKits = JSON.parse(localStorage.getItem(PUBLIC_KITS_STORAGE_KEY) || '[]');
-    const updatedKits = publicKits.map(k => k.id === kitId ? { ...k, archived } : k);
-    localStorage.setItem(PUBLIC_KITS_STORAGE_KEY, JSON.stringify(updatedKits));
-  } catch (e) { console.error('Error actualizando kits publicos', e); }
+  setKitStep(1);
+  const state = { rows, kits: savedKits, brand };
+  Shared.persistDashboardState(state, 'Media kit guardado');
 }
 
 function renderKitHistory(){
@@ -452,13 +417,11 @@ function bindEvents(){
     }
     if(target.dataset.action === 'archive-kit'){
       savedKits = savedKits.map(item => item.id === target.dataset.id ? {...item, archived:true, archivedAt:new Date().toISOString()} : item);
-      updatePublicKitArchive(target.dataset.id, true);
       renderKitHistory();
       persistState('Media kit archivado');
     }
     if(target.dataset.action === 'restore-kit'){
       savedKits = savedKits.map(item => item.id === target.dataset.id ? {...item, archived:false, restoredAt:new Date().toISOString()} : item);
-      updatePublicKitArchive(target.dataset.id, false);
       renderKitHistory();
       persistState('Media kit restaurado');
     }
@@ -484,10 +447,10 @@ function bindEvents(){
     updateKpis();
     fillFilters();
     selectRow(row.id);
-    renderKitBuilder();
-    persistState('Cambios aplicados al dashboard');
+    renderKitBuilder();    
+    const state = { rows, kits: savedKits, brand };
+    Shared.persistDashboardState(state, 'Cambios aplicados al dashboard');
   });
-  document.getElementById('save-btn').addEventListener('click', () => persistState('Cambios disponibles para brochure y backend'));
   document.getElementById('export-btn').addEventListener('click', exportCsv);
   document.getElementById('kit-save-btn').addEventListener('click', saveKit);
   document.getElementById('settings-save').addEventListener('click', () => {
@@ -503,7 +466,7 @@ function bindEvents(){
   document.getElementById('reset-data-btn').addEventListener('click', () => {
     if (window.confirm('¿Estás seguro de que quieres borrar todos los datos locales? Esta acción no se puede deshacer.')) {
       Shared.showToast('Borrando datos locales...');
-      Shared.clearAllData();
+      Shared.clearAllData().then(() => location.reload());
     }
   });
 }

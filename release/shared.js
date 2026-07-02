@@ -4,6 +4,8 @@ const SmartKitShared = (() => {
     {v:'15d', l:'15 días', mult:2, days:15},
     {v:'1m', l:'1 mes', mult:4, days:30}
   ];
+  const DASHBOARD_STORAGE_KEY = 'smartkit-dashboard-state';
+  const PUBLIC_KITS_STORAGE_KEY = 'smartkit-public-kits';
 
   const DEFAULT_BRAND = {
     name: 'SmartKit',
@@ -37,6 +39,18 @@ const SmartKitShared = (() => {
     toast.classList.add('show');
     clearTimeout(toast.timer);
     toast.timer = setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
   }
 
   function impNum(screen) {
@@ -175,6 +189,44 @@ const SmartKitShared = (() => {
     location.reload(); // Recargar para limpiar estados en memoria
   }
 
+  function loadDashboardState() {
+    try {
+      const savedState = JSON.parse(localStorage.getItem(DASHBOARD_STORAGE_KEY));
+      if (savedState && savedState.rows && Array.isArray(savedState.rows)) {
+        // Sincronizar estado 'active' con la fuente de verdad (screens-data.js)
+        const sourceScreens = new Map(window.SCREENS.map(s => [s.id, s]));
+        savedState.rows.forEach(row => {
+          const sourceScreen = sourceScreens.get(row.id);
+          row.status = sourceScreen && sourceScreen.active ? 'Activo' : 'Pausado';
+        });
+        showToast('Estado local cargado');
+        return savedState;
+      }
+    } catch (err) {
+      console.error('Fallo al cargar datos locales:', err);
+      showToast('Error al leer datos locales, se usará la configuración por defecto.');
+    }
+    // Si no hay estado guardado o está corrupto, se devuelve null.
+    return null;
+  }
+
+  function persistDashboardState(state, toastMessage) {
+    try {
+      if (!state || !state.rows) {
+        throw new Error("El estado a persistir es inválido.");
+      }
+      const stateToSave = {
+        ...state,
+        updatedAt: new Date().toISOString()
+      };
+      localStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(stateToSave));
+      if (toastMessage) showToast(toastMessage);
+    } catch (err) {
+      console.error('Error al guardar en localStorage:', err);
+      showToast('Error al guardar cambios. El almacenamiento puede estar lleno o deshabilitado.');
+    }
+  }
+
   return {
     DEFAULT_BRAND,
     DURATIONS,
@@ -190,7 +242,9 @@ const SmartKitShared = (() => {
     showToast,
     signMediaKit,
     verifyMediaKitSignature,
-    clearAllData
+    clearAllData,
+    loadDashboardState,
+    persistDashboardState
   };
 })();
 

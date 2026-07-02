@@ -12,13 +12,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (response.ok) {
         kit = await response.json();
       } else {
-        // Fallback: Check the main dashboard state from localStorage
-        const dashboardState = JSON.parse(localStorage.getItem(SmartKitShared.DASHBOARD_STORAGE_KEY) || '{}');
+        const dashboardState = window.SmartKitShared.loadDashboardState() || { kits: [] };
         kit = dashboardState.kits?.find(k => k.id === kitId);
       }
     } catch (error) {
       console.error('Error al cargar el media kit:', error);
-      const dashboardState = JSON.parse(localStorage.getItem(SmartKitShared.DASHBOARD_STORAGE_KEY) || '{}');
+      const dashboardState = window.SmartKitShared.loadDashboardState() || { kits: [] };
       kit = dashboardState.kits?.find(k => k.id === kitId);
     }
   }
