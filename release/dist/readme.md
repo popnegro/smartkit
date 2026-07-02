@@ -13,17 +13,17 @@ La estructura del proyecto es la siguiente:
 smartkit/
 ├── index.html                 # Brochure publico y mapa
 ├── dashboard.html             # Acceso Usuarios: gestor de inventario y media kits
-├── mediakit.html              # Vista publica de media kit guardado
+├── mediakit.html              # Pagina de vista de Media Kit
 ├── shared.js                  # Lógica y helpers compartidos
 ├── app.js                     # Logica del brochure, mapa y cotizador
-├── mediakit.js                # Logica de render de mediakit.html
+├── mediakit.js                # Lógica de renderizado para mediakit.html
 ├── styles.css                 # Estilos del brochure y media kit
 ├── base.css                   # Estilos base compartidos
 ├── dashboard.css              # Estilos del dashboard
 ├── dashboard.js               # Lógica del dashboard
 ├── config.js                  # Marca, WhatsApp e inventario activo inicial
 ├── screens-data.js            # Fuente base de pantallas
-├── assets/videos/             # Videos usados en heads de cards y mapa
+├── assets/                    # Videos y otros recursos estáticos
 ├── data/kits/                 # Media kits publicos en JSON
 ├── tests/                     # Smoke tests de Playwright
 ├── .github/workflows/pages.yml# Deploy de dist a GitHub Pages

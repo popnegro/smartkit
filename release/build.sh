@@ -13,7 +13,7 @@ mkdir -p dist
 
 echo "Copiando archivos y directorios necesarios..."
 
-cp index.html dashboard.html mediakit.html styles.css base.css dashboard.css app.js shared.js mediakit.js dashboard.js config.js screens-data.js production-manifest.json readme.md dist/
+cp index.html dashboard.html mediakit.html styles.css base.css dashboard.css app.js shared.js dashboard.js config.js screens-data.js production-manifest.json readme.md dist/
 
 cp -R assets data dist/
 
