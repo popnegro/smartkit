@@ -1,6 +1,6 @@
 # SmartKit
 
-Aplicacion estatica para publicar un catalogo de pantallas DOOH, gestionarlas desde un dashboard local y generar media kits.
+Aplicacion estatica para publicar un catalogo de pantallas DOOH y generar media kits.
 
 ## Arquitectura
 

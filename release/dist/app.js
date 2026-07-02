@@ -519,11 +519,8 @@ function setOffcanvas(open) {
 
 async function generateMediaKit(id=null){
   ensureQuoteScreen(id);
-  const kit=await Shared.buildMediaKit(quoteTotals(), BRAND, window.CONFIG || {});
+  const kit=await Shared.buildMediaKit(quoteTotals(), BRAND, window.CONFIG || {}, 'Borrador');
   if(!kit)return;
-  const kits=[kit,...storedPublicKits().filter(item=>item.id!==kit.id)].slice(0,12);
-  localStorage.setItem(PUBLIC_KITS_STORAGE_KEY,JSON.stringify(kits));
-  updateMediaKitLinks(kit.id);
   showGeneratedFeedback(kit);
 
   const offcanvas = document.getElementById('mediakit-offcanvas');
@@ -695,8 +692,8 @@ function bindEvents(){
 
 async function initApp() {
   try {
-    SOURCE_SCREENS = typeof SCREENS !== 'undefined' ? SCREENS : [];
-    ACTIVE_SCREENS = SOURCE_SCREENS.filter(s => s.active);
+    ACTIVE_SCREENS = typeof SCREENS !== 'undefined' ? SCREENS : [];
+    SOURCE_SCREENS = ACTIVE_SCREENS;
     console.log(`SmartKit: Cargando ${ACTIVE_SCREENS.length} pantallas activas desde screens-data.js.`);
     zones = ['Todos', ...new Set(ACTIVE_SCREENS.map(s => s.b))];
     activeMetrics.totalReach = ACTIVE_SCREENS.reduce((acc, s) => acc + impNum(s), 0);
@@ -707,7 +704,6 @@ async function initApp() {
   }
 
   applyBrand();
-  Shared.updateMediaKitLinks();
   bindEvents();
   initMap();
   renderBrochure();

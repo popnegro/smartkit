@@ -519,11 +519,8 @@ function setOffcanvas(open) {
 
 async function generateMediaKit(id=null){
   ensureQuoteScreen(id);
-  const kit=await Shared.buildMediaKit(quoteTotals(), BRAND, window.CONFIG || {});
+  const kit=await Shared.buildMediaKit(quoteTotals(), BRAND, window.CONFIG || {}, 'Borrador');
   if(!kit)return;
-  const kits=[kit,...storedPublicKits().filter(item=>item.id!==kit.id)].slice(0,12);
-  localStorage.setItem(PUBLIC_KITS_STORAGE_KEY,JSON.stringify(kits));
-  updateMediaKitLinks(kit.id);
   showGeneratedFeedback(kit);
 
   const offcanvas = document.getElementById('mediakit-offcanvas');

@@ -4,7 +4,6 @@ const SmartKitShared = (() => {
     {v:'15d', l:'15 días', mult:2, days:15},
     {v:'1m', l:'1 mes', mult:4, days:30}
   ];
-  const DASHBOARD_STORAGE_KEY = 'smartkit-dashboard-state';
 
   const DEFAULT_BRAND = {
     name: 'SmartKit',
@@ -14,7 +13,6 @@ const SmartKitShared = (() => {
     terms: 'Inicio de campaña sujeto a disponibilidad y aprobación de piezas. Valores expresados en ARS.',
     validity: '15 días'
   };
-  const PUBLIC_KITS_STORAGE_KEY = 'smartkit-public-kits';
 
   function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>"']/g, char => ({
@@ -39,18 +37,6 @@ const SmartKitShared = (() => {
     toast.classList.add('show');
     clearTimeout(toast.timer);
     toast.timer = setTimeout(() => toast.classList.remove('show'), 1800);
-  }
-
-  function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-      const later = () => {
-        clearTimeout(timeout);
-        func(...args);
-      };
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-    };
   }
 
   function impNum(screen) {
@@ -192,11 +178,8 @@ const SmartKitShared = (() => {
   return {
     DEFAULT_BRAND,
     DURATIONS,
-    DASHBOARD_STORAGE_KEY,
-    PUBLIC_KITS_STORAGE_KEY,
     applyBrandHeader,
     escapeHtml,
-    debounce,
     getMediaKitUrl,
     formatMoney,
     impNum,
