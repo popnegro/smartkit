@@ -52,7 +52,7 @@
 .quote-summary strong{font-size:16px}
 .quote-summary span{font-size:13px}
 .quote-list.is-empty{display:none}
-.quote-panel .quote-list:not(.is-empty){max-height:188px;padding-right:2px}
+.quote-panel .quote-list:not(.is-empty){max-height:188px;overflow-y:auto;padding-right:4px}
 .quote-panel .quote-item{grid-template-columns:minmax(0,1fr) auto;background:#fff}
 .quote-panel .quote-item strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .quote-total{gap:8px}

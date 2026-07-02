@@ -709,13 +709,17 @@ function bindEvents(){
 }
 
 async function initApp() {
-  try {
-    SOURCE_SCREENS = await API.screens.getAll();
-    ACTIVE_SCREENS = SOURCE_SCREENS.filter(s => s.status === 'Activo');
+  // --- CORRECCIÓN PARA PRODUCCIÓN ESTÁTICA ---
+  // Se elimina la llamada a la API y se cargan los datos directamente
+  // desde la variable global `SCREENS` definida en `screens-data.js`.
+  if (typeof SCREENS !== 'undefined' && Array.isArray(SCREENS)) {
+    SOURCE_SCREENS = SCREENS;
+    ACTIVE_SCREENS = SOURCE_SCREENS.filter(s => s.status === 'Activo' || typeof s.status === 'undefined'); // Se incluyen pantallas sin estado definido para compatibilidad.
     zones = ['Todos', ...new Set(ACTIVE_SCREENS.map(s => s.b))];
     activeMetrics.totalReach = ACTIVE_SCREENS.reduce((acc, s) => acc + impNum(s), 0);
-  } catch (err) {
-    console.error('Failed to load screens', err);
+  } else {
+    console.error('Error: La variable global SCREENS no fue encontrada. Asegúrate de que screens-data.js se está cargando correctamente.');
+    ACTIVE_SCREENS = [];
   }
 
   applyBrand();

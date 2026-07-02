@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///home/luisgrasso/Documentos/smartkit/screenmap/app/layout.tsx"],"sourcesContent":["export default function RootLayout({children}:{children:React.ReactNode}){\nreturn <html lang='es'><body>{children}</body></html>\n}"],"names":["RootLayout","children","lang"],"mappings":";;;;;;AAAe,SAASA,WAAW,EAACC,QAAQ,EAA4B;IACxE,qBAAO,qRAAC;QAAKC,MAAK;kBAAK,cAAA,qRAAC;sBAAMD;;;;;;;;;;;AAC9B"}},
+    {"offset": {"line": 34, "column": 0}, "map": {"version":3,"sources":["file:///home/luisgrasso/Documentos/smartkit/screenmap/node_modules/next/src/server/route-modules/app-page/vendored/rsc/react-jsx-dev-runtime.ts"],"sourcesContent":["module.exports = (\n  require('../../module.compiled') as typeof import('../../module.compiled')\n).vendored['react-rsc']!.ReactJsxDevRuntime\n"],"names":["module","exports","require","vendored","ReactJsxDevRuntime"],"mappings":"AAAAA,OAAOC,OAAO,GACZC,QAAQ,0JACRC,QAAQ,CAAC,YAAY,CAAEC,kBAAkB","ignoreList":[0]}}]
+}

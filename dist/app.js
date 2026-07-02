@@ -1,5 +1,4 @@
 const Shared=window.SmartKitShared;
-const API=window.SmartKitAPI;
 const DEFAULT_BRAND=Shared.DEFAULT_BRAND;
 
 let SOURCE_SCREENS = [];
@@ -709,13 +708,14 @@ function bindEvents(){
 }
 
 async function initApp() {
+  // Para la versión estática, usamos fetchScreens que tiene fallback a un archivo local.
   try {
-    SOURCE_SCREENS = await API.screens.getAll();
+    SOURCE_SCREENS = await Shared.fetchScreens();
     ACTIVE_SCREENS = SOURCE_SCREENS.filter(s => s.status === 'Activo');
-    zones = ['Todos', ...new Set(ACTIVE_SCREENS.map(s => s.b))];
-    activeMetrics.totalReach = ACTIVE_SCREENS.reduce((acc, s) => acc + impNum(s), 0);
+    zones = ['Todos', ...new Set(ACTIVE_SCREENS.map(s => s.zona || s.b))]; // 'zona' o 'b' para compatibilidad
+    activeMetrics.totalReach = ACTIVE_SCREENS.reduce((acc, s) => acc + (Number(s.impactos) || 0), 0);
   } catch (err) {
-    console.error('Failed to load screens', err);
+    console.error('Fallo al cargar las pantallas', err);
   }
 
   applyBrand();
