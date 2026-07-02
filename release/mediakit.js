@@ -12,13 +12,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (response.ok) {
         kit = await response.json();
       } else {
-        const localKits = SmartKitShared.storedPublicKits();
-        kit = localKits.find(k => k.id === kitId);
+        // Fallback 1: Check the main dashboard state
+        const dashboardState = JSON.parse(localStorage.getItem(SmartKitShared.DASHBOARD_STORAGE_KEY) || '{}');
+        kit = dashboardState.kits?.find(k => k.id === kitId);
+        // Fallback 2: Check the public kits from the brochure session
+        if (!kit) {
+          const localKits = SmartKitShared.storedPublicKits();
+          kit = localKits.find(k => k.id === kitId);
+        }
       }
     } catch (error) {
       console.error('Error al cargar el media kit:', error);
-      const localKits = SmartKitShared.storedPublicKits();
-      kit = localKits.find(k => k.id === kitId);
+      // Fallback on error: check both local sources
+      const dashboardState = JSON.parse(localStorage.getItem(SmartKitShared.DASHBOARD_STORAGE_KEY) || '{}');
+      kit = dashboardState.kits?.find(k => k.id === kitId) || SmartKitShared.storedPublicKits().find(k => k.id === kitId);
     }
   }
 

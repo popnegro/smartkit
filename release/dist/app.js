@@ -20,7 +20,7 @@ const h=escapeHtml;
 const whatsappIcon='<svg slot="icon" class="whatsapp-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3.5a8.5 8.5 0 0 0-7.23 12.97L4 20l3.62-.74A8.5 8.5 0 1 0 12 3.5Zm0 1.8a6.7 6.7 0 0 1 5.72 10.18 6.7 6.7 0 0 1-9.45 2.12l-.3-.2-1.62.33.35-1.56-.22-.32A6.7 6.7 0 0 1 12 5.3Zm-2.44 3.5c-.2 0-.5.08-.77.37-.27.3-.9.88-.9 2.1 0 1.23.92 2.42 1.05 2.59.13.17 1.78 2.84 4.42 3.76 2.2.77 2.65.42 3.12-.03.38-.36.6-1.02.66-1.28.07-.27.04-.48-.15-.58l-1.78-.85c-.2-.1-.44-.05-.57.14l-.5.64c-.13.17-.32.2-.52.1-.42-.18-1.17-.51-1.92-1.18-.7-.62-1.18-1.4-1.32-1.63-.13-.23-.02-.39.1-.52l.37-.43c.12-.14.18-.3.27-.48.09-.18.04-.34-.03-.48l-.82-1.83c-.12-.27-.3-.4-.5-.4Z"/></svg>';
 const plusIcon='<svg slot="icon" class="whatsapp-icon plus-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg>';
 const documentIcon='<svg slot="icon" class="whatsapp-icon plus-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 4h14v16H5V4Zm2 2v12h10V6H7Zm2 2h6v2H9V8Zm0 4h6v2H9v-2Z"/></svg>';
-const TIPO_COL={ Peatonal:'#0891b2', Vehicular:'#b45309', Mixto:'#4f46e5' };
+const TIPO_COL={ Peatonal:'#0891b2', Vehicular:'#b45309', Mixto:'#4f46e5', Indoor: '#16a34a' };
 
 function whatsappButtonContent(label, icon=whatsappIcon){
   return `${icon}<span>${h(label)}</span>`;
@@ -642,16 +642,9 @@ function bindEvents(){
 
 async function initApp() {
   try {
-    const savedState = JSON.parse(localStorage.getItem('smartkit-dashboard-state'));
-    if (savedState && savedState.rows) {
-      SOURCE_SCREENS = savedState.rows;
-      Object.assign(BRAND, savedState.brand || {});
-      console.log('SmartKit: Cargando desde estado local (dashboard).');
-    } else {
-      SOURCE_SCREENS = typeof SCREENS !== 'undefined' ? SCREENS : [];
-      console.log('SmartKit: Cargando desde screens-data.js.');
-    }
-    ACTIVE_SCREENS = SOURCE_SCREENS.filter(s => s.status === 'Activo');
+    SOURCE_SCREENS = typeof SCREENS !== 'undefined' ? SCREENS : [];
+    ACTIVE_SCREENS = SOURCE_SCREENS.filter(s => s.active);
+    console.log(`SmartKit: Cargando ${ACTIVE_SCREENS.length} pantallas activas desde screens-data.js.`);
     zones = ['Todos', ...new Set(ACTIVE_SCREENS.map(s => s.b))];
     activeMetrics.totalReach = ACTIVE_SCREENS.reduce((acc, s) => acc + impNum(s), 0);
   } catch (err) {

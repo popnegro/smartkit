@@ -1,8 +1,5 @@
 # SmartKit
 
-<!-- Aquí puedes añadir badges de estado, como el de tu workflow de GitHub Actions -->
-[![Deploy to GitHub Pages](https://github.com/user/repo/actions/workflows/pages.yml/badge.svg)](https://github.com/user/repo/actions/workflows/pages.yml)
-
 Aplicacion estatica para publicar un catalogo de pantallas DOOH, gestionarlas desde un dashboard local y generar media kits.
 
 ## Arquitectura
@@ -26,7 +23,6 @@ smartkit/
 ├── assets/                    # Videos y otros recursos estáticos
 ├── data/kits/                 # Media kits publicos en JSON
 ├── tests/                     # Smoke tests de Playwright
-├── .github/workflows/pages.yml# Deploy de dist a GitHub Pages
 ├── dist/                      # Copia estatica lista para publicar
 ├── build.sh                   # Script para generar el directorio dist/
 ├── production-manifest.json   # Lista de archivos publicados

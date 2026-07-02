@@ -1,4 +1,11 @@
 const SmartKitShared = (() => {
+  const DURATIONS = [
+    {v:'1s', l:'1 semana', mult:1, days:7},
+    {v:'15d', l:'15 días', mult:2, days:15},
+    {v:'1m', l:'1 mes', mult:4, days:30}
+  ];
+  const DASHBOARD_STORAGE_KEY = 'smartkit-dashboard-state';
+
   const DEFAULT_BRAND = {
     name: 'SmartKit',
     logo: 'SK',
@@ -17,6 +24,25 @@ const SmartKitShared = (() => {
       '"': '&quot;',
       "'": '&#39;'
     }[char]));
+  }
+
+  function getMediaKitUrl(kitId) {
+    const basePath = window.CONFIG?.basePath || '';
+    const relativePath = basePath ? `${basePath}/mediakit.html` : './mediakit.html';
+    return `${relativePath}?id=${encodeURIComponent(kitId)}`;
+  }
+
+  function showToast(message) {
+    const toast = document.getElementById('toast') || document.createElement('div');
+    if (!toast.id) { toast.id = 'toast'; document.body.appendChild(toast); }
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+
+  function impNum(screen) {
+    return parseInt(String(screen.imp || '0').replace(/\./g, ''), 10) || 0;
   }
 
   function formatMoney(value) {
@@ -170,15 +196,20 @@ const SmartKitShared = (() => {
 
   return {
     DEFAULT_BRAND,
+    DURATIONS,
+    DASHBOARD_STORAGE_KEY,
     PUBLIC_KITS_STORAGE_KEY,
     applyBrandHeader,
     escapeHtml,
+    getMediaKitUrl,
     formatMoney,
+    impNum,
     latestMediaKitId,
     mediaHtml,
     safeAssetUrl,
     safeBackground,
     screenSnapshot,
+    showToast,
     signMediaKit,
     storedPublicKits,
     updateMediaKitLinks,

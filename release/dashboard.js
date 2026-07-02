@@ -1,8 +1,7 @@
 const Shared = window.SmartKitShared;
 const brand = {name:'SmartKit',logo:'SK', terms:'', validity:'15 dias'};
 const theme = {};
-const DASHBOARD_STORAGE_KEY = 'smartkit-dashboard-state';
-const PUBLIC_KITS_STORAGE_KEY = 'smartkit-public-kits';
+const { DASHBOARD_STORAGE_KEY, PUBLIC_KITS_STORAGE_KEY } = Shared;
 const fmt = Shared.formatMoney;
 const imp = Shared.impNum;
 const h = Shared.escapeHtml;
@@ -22,9 +21,15 @@ function loadInitialData(){
       Object.assign(brand, savedState.brand || {});
       Shared.showToast('Estado local cargado');
     } else {
-      rows = JSON.parse(JSON.stringify(SCREENS)); // Deep copy
+      rows = JSON.parse(JSON.stringify(SCREENS));
       Shared.showToast('Datos iniciales cargados');
     }
+    // Forzar la sincronización del estado con la fuente de verdad (screens-data.js)
+    const sourceScreens = new Map(SCREENS.map(s => [s.id, s]));
+    rows.forEach(row => {
+      const sourceScreen = sourceScreens.get(row.id);
+      row.status = sourceScreen && sourceScreen.active ? 'Activo' : 'Pausado';
+    });
     selectedId = rows[0]?.id;
   } catch (err) {
     Shared.showToast('Error cargando datos locales');
@@ -120,8 +125,14 @@ function updateKpis(){
 
 function fillFilters(){
   const zones = ['Todos', ...new Set(rows.map(row => row.b))];
-  document.getElementById('zone-filter').innerHTML = zones.map(zone => `<option value="${zone}">${zone}</option>`).join('');
-  document.getElementById('kit-zone').innerHTML = zones.map(zone => `<option value="${zone}">${zone}</option>`).join('');
+  const types = ['Todos', ...new Set(rows.map(row => row.tipo))];
+
+  const zoneOptions = zones.map(zone => `<option value="${h(zone)}">${h(zone)}</option>`).join('');
+  const typeOptions = types.map(type => `<option value="${h(type)}">${h(type)}</option>`).join('');
+
+  document.getElementById('zone-filter').innerHTML = zoneOptions;
+  document.getElementById('type-filter').innerHTML = typeOptions;
+  document.getElementById('kit-zone').innerHTML = zoneOptions;
   document.getElementById('kit-duration').innerHTML = Shared.DURATIONS.map(duration => `<option value="${duration.v}">${duration.l}</option>`).join('');
 }
 
@@ -129,13 +140,11 @@ function filteredRows(){
   const query = document.getElementById('search').value.trim().toLowerCase();
   const zone = document.getElementById('zone-filter').value;
   const type = document.getElementById('type-filter').value;
-  const status = document.getElementById('status-filter').value;
   return rows.filter(row => {
     const matchesQuery = !query || [row.n,row.dir,row.b,row.tipo].some(value => String(value).toLowerCase().includes(query));
     const matchesZone = zone === 'Todos' || row.b === zone;
     const matchesType = type === 'Todos' || row.tipo === type;
-    const matchesStatus = status === 'Todos' || row.status === status;
-    return matchesQuery && matchesZone && matchesType && matchesStatus;
+    return matchesQuery && matchesZone && matchesType;
   });
 }
 
@@ -160,10 +169,7 @@ function renderTable(){
       <td><strong>${fmt(row.precio)}</strong></td>
       <td><span class="badge ${row.status === 'Activo' ? 'active' : 'paused'}">${row.status}</span></td>
       <td>
-        <div class="row-actions">
-          <button class="icon-btn" type="button" data-action="select" data-id="${row.id}" aria-label="Editar ${h(row.n)}">Editar</button>
-          <button class="icon-btn ${row.status === 'Activo' ? 'pause' : 'publish'}" type="button" data-action="toggle-status" data-id="${row.id}" aria-label="${row.status === 'Activo' ? 'Pausar' : 'Publicar en brochure'} ${h(row.n)}">${row.status === 'Activo' ? 'Pausar' : 'Publicar'}</button>
-        </div>
+        <button class="icon-btn" type="button" data-action="select" data-id="${row.id}" aria-label="Editar ${h(row.n)}">Editar</button>
       </td>
     </tr>
   `).join('');
@@ -198,7 +204,6 @@ function updateEditor(row){
   document.getElementById('edit-zone').value = row.b;
   document.getElementById('edit-price').value = row.precio;
   document.getElementById('edit-audience').value = row.aud || '';
-  document.getElementById('edit-status').value = row.status;
   document.getElementById('edit-video').value = row.video || '';
   document.getElementById('edit-note').value = row.note;
   renderPreview(row);
@@ -209,18 +214,6 @@ function selectRow(id){
   const row = rows.find(item => item.id === selectedId) || rows[0];
   updateEditor(row);
   renderTable();
-}
-
-function togglePublication(id){
-  const row = rows.find(item => item.id === Number(id));
-  if(!row)return;
-  row.status = row.status === 'Activo' ? 'Pausado' : 'Activo';
-  document.getElementById('last-action').textContent = `${row.status === 'Activo' ? 'Publicada' : 'Pausada'} #${row.id}`;
-  updateKpis();
-  renderTable();
-  updateEditor(row);
-  renderKitBuilder();
-  persistState(row.status === 'Activo' ? 'Pantalla publicada en brochure' : 'Pantalla pausada del brochure');
 }
 
 function exportCsv(){
@@ -278,7 +271,7 @@ function setKitStep(n){
 }
 
 function selectedDuration(){
-  return Shared.DURATIONS.find(duration => duration.v === document.getElementById('kit-duration').value) || Shared.DURATIONS[0];
+  return Shared.DURATIONS.find(d => d.v === document.getElementById('kit-duration').value) || Shared.DURATIONS[0];
 }
 
 function kitScreens(){
@@ -356,12 +349,6 @@ function updatePublicKitArchive(kitId, archived) {
   } catch (e) { console.error('Error actualizando kits publicos', e); }
 }
 
-function kitPublicUrl(kit){
-  const basePath = window.CONFIG?.basePath || '';
-  // Asume que el dashboard está en la raíz del sitio o del subpath.
-  return `${location.origin}${basePath}/mediakit.html?id=${encodeURIComponent(kit.id)}`;
-}
-
 function renderKitHistory(){
   const activeKits = savedKits.filter(kit => !kit.archived);
   const archivedKits = savedKits.filter(kit => kit.archived);
@@ -370,7 +357,7 @@ function renderKitHistory(){
       <span><strong>${h(kit.client)}</strong><br><small>${Number(kit.screens)||0} pantallas · ${h(kit.status || 'Borrador')}</small></span>
       <span class="kit-actions">
         <strong>${fmt(kit.total)}</strong>
-        <a class="kit-link" href="${kitPublicUrl(kit)}" target="_blank" rel="noopener">Ver público</a>
+        <a class="kit-link" href="${Shared.getMediaKitUrl(kit.id)}" target="_blank" rel="noopener">Ver público</a>
         <button class="icon-btn" type="button" data-action="copy-kit" data-id="${h(kit.id)}">Copiar</button>
         <button class="icon-btn" type="button" data-action="download-kit" data-id="${h(kit.id)}">JSON</button>
         <button class="icon-btn" type="button" data-action="duplicate-kit" data-id="${h(kit.id)}">Duplicar</button>
@@ -389,7 +376,7 @@ function renderKitHistory(){
       <span><strong>${h(kit.client)}</strong><br><small>${Number(kit.screens)||0} pantallas · Archivado</small></span>
       <span class="kit-actions">
         <strong>${fmt(kit.total)}</strong>
-        <a class="kit-link" href="${kitPublicUrl(kit)}" target="_blank" rel="noopener">Ver público</a>
+        <a class="kit-link" href="${Shared.getMediaKitUrl(kit.id)}" target="_blank" rel="noopener">Ver público</a>
         <button class="icon-btn" type="button" data-action="restore-kit" data-id="${h(kit.id)}">Restaurar</button>
       </span>
     </div>
@@ -428,7 +415,7 @@ function bindEvents(){
   document.querySelectorAll('[data-section]').forEach(button=>{
     button.addEventListener('click',()=>setSection(button.dataset.section));
   });
-  ['search','zone-filter','type-filter','status-filter'].forEach(id => {
+  ['search','zone-filter','type-filter'].forEach(id => {
     document.getElementById(id).addEventListener('input', renderTable);
     document.getElementById(id).addEventListener('change', renderTable);
   });
@@ -444,10 +431,9 @@ function bindEvents(){
     const target = event.target.closest('[data-action]');
     if(!target)return;
     if(target.dataset.action === 'select')selectRow(target.dataset.id);
-    if(target.dataset.action === 'toggle-status')togglePublication(target.dataset.id);
     if(target.dataset.action === 'copy-kit'){
       const kit = savedKits.find(item => item.id === target.dataset.id);
-      if(kit)navigator.clipboard?.writeText(kitPublicUrl(kit)).then(()=>Shared.showToast('Link copiado')).catch(()=>Shared.showToast('No se pudo copiar'));
+      if(kit)navigator.clipboard?.writeText(new URL(Shared.getMediaKitUrl(kit.id), location.href).href).then(()=>Shared.showToast('Link copiado')).catch(()=>Shared.showToast('No se pudo copiar'));
     }
     if(target.dataset.action === 'download-kit'){
       const kit = savedKits.find(item => item.id === target.dataset.id);
@@ -491,8 +477,6 @@ function bindEvents(){
     row.b = document.getElementById('edit-zone').value.trim() || row.b;
     row.aud = document.getElementById('edit-audience').value.trim();
     row.precio = Number(document.getElementById('edit-price').value) || row.precio;
-    row.status = document.getElementById('edit-status').value;
-    row.video = document.getElementById('edit-video').value.trim();
     row.note = document.getElementById('edit-note').value.trim();
     document.getElementById('last-action').textContent = `Actualizada #${row.id}`;
     updateKpis();

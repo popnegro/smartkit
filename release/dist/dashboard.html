@@ -211,20 +211,7 @@ tr.selected td:first-child{box-shadow: inset 4px 0 0 var(--primary)}
           </div>
           <div class="field">
             <label for="type-filter">Tipo</label>
-            <select id="type-filter">
-              <option value="Todos">Todos</option>
-              <option value="Peatonal">Peatonal</option>
-              <option value="Vehicular">Vehicular</option>
-              <option value="Mixto">Mixto</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="status-filter">Estado</label>
-            <select id="status-filter">
-              <option value="Todos">Todos</option>
-              <option value="Activo">Activo</option>
-              <option value="Pausado">Pausado</option>
-            </select>
+            <select id="type-filter"></select>
           </div>
         </div>
         <div class="table-wrap">
@@ -266,11 +253,8 @@ tr.selected td:first-child{box-shadow: inset 4px 0 0 var(--primary)}
             <input id="edit-price" name="price" type="number" min="0" step="1000">
           </div>
           <div class="field">
-            <label for="edit-status">Estado comercial</label>
-            <select id="edit-status" name="status">
-              <option value="Activo">Activo</option>
-              <option value="Pausado">Pausado</option>
-            </select>
+            <label for="edit-audience">Audiencia</label>
+            <input id="edit-audience" name="audience" type="text" autocomplete="off" placeholder="Ej: General, ABC1">
           </div>
           <div class="field">
             <label for="edit-video">Video del head</label>
@@ -414,6 +398,10 @@ tr.selected td:first-child{box-shadow: inset 4px 0 0 var(--primary)}
             <div class="field"><label for="settings-terms">Condiciones</label><textarea id="settings-terms">Inicio de campana sujeto a disponibilidad y aprobacion de piezas. Valores expresados en ARS.</textarea></div>
             <button class="btn success" type="button" id="settings-save">Aplicar configuracion</button>
           </div>
+        </section>
+        <section class="panel">
+          <div class="panel-head"><div><span class="eyebrow">Sistema</span><h2>Gestión de datos locales</h2></div></div>
+          <div class="editor section-pad"><p class="muted" style="margin-bottom: 12px;">Borra todos los datos guardados en este navegador (inventario y kits) y recarga la aplicación desde los archivos base.</p><button class="btn" id="reset-data-btn" type="button" style="border-color: var(--danger); color: var(--danger);">Resetear Datos Locales</button></div>
         </section>
       </div>
     </section>
