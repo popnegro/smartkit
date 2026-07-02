@@ -1,47 +1,64 @@
 const Shared = window.SmartKitShared;
-const brand = {name:'SmartKit',logo:'SK', terms:'', validity:'15 dias'};
 const theme = {};
 const fmt = Shared.formatMoney;
 const imp = Shared.impNum;
 const h = Shared.escapeHtml;
 
-let rows = [];
-let selectedId = null;
-let currentSection = 'inventory';
-let kitSelected = new Set();
-let savedKits = [];
+// --- MEJORA: Centralizar el estado de la aplicación en un solo objeto.
+const state = {
+  rows: [],
+  selectedId: null,
+  currentSection: 'inventory',
+  kitSelected: new Set(),
+  savedKits: [],
+  brand: {name:'SmartKit',logo:'SK', terms:'', validity:'15 dias', whatsapp: ''}
+};
+
+// --- MEJORA: Usar constantes para strings recurrentes (evita "magic strings").
+const SECTIONS = { INVENTORY: 'inventory', MEDIAKITS: 'mediakits', METRICS: 'metrics', SETTINGS: 'settings' };
+const KIT_STATUS = { DRAFT: 'Borrador', ARCHIVED: 'Archivado' };
+const SCREEN_STATUS = { ACTIVE: 'Activo', PAUSED: 'Pausado' };
+
 
 const debouncedPersist = Shared.debounce((message) => {
-  const state = { rows, kits: savedKits, brand };
-  Shared.persistDashboardState(state, message || 'Cambios guardados automáticamente');
+  // Ahora el estado ya está centralizado.
+  const persistableState = { rows: state.rows, kits: state.savedKits, brand: state.brand };
+  Shared.persistDashboardState(persistableState, message || 'Cambios guardados automáticamente');
 }, 1500);
 
 
 function loadInitialData(){
   const savedState = Shared.loadDashboardState();
   if (savedState) {
-    rows = savedState.rows;
-    savedKits = savedState.kits || [];
-    Object.assign(brand, savedState.brand || {});
+    state.rows = savedState.rows;
+    state.savedKits = savedState.kits || [];
+    Object.assign(state.brand, savedState.brand || {});
   } else {
-    rows = JSON.parse(JSON.stringify(SCREENS));
+    state.rows = JSON.parse(JSON.stringify(SCREENS));
     // El estado 'active' se setea por defecto al no haber estado guardado.
-    rows.forEach(row => { row.status = row.active ? 'Activo' : 'Pausado'; });
+    state.rows.forEach(row => { row.status = row.active ? SCREEN_STATUS.ACTIVE : SCREEN_STATUS.PAUSED; });
     Shared.showToast('Datos iniciales cargados');
   }
-  selectedId = rows[0]?.id;
+  state.selectedId = state.rows[0]?.id;
 }
 
-async function buildKitPayload(status='Borrador'){
+// --- MEJORA: Extraer la lógica de cálculo de métricas para reutilizarla.
+function calculateKitMetrics(screens, duration) {
+  const total = screens.reduce((sum, row) => sum + row.precio * duration.mult, 0);
+  const impacts = screens.reduce((sum, row) => sum + imp(row) * duration.days, 0);
+  const cpm = impacts ? Math.round(total / impacts * 1000) : 0;
+  return { total, impacts, cpm };
+}
+
+async function buildKitPayload(status = KIT_STATUS.DRAFT){
   const duration = selectedDuration();
   const screens = kitScreens();
   const client = document.getElementById('kit-client').value.trim() || 'Cliente sin nombre';
   const contact = document.getElementById('kit-contact').value.trim() || 'Contacto a confirmar';
-  const total = screens.reduce((sum,row)=>sum + row.precio * duration.mult,0);
-  const impacts = screens.reduce((sum,row)=>sum + imp(row) * duration.days,0);
+  const { total, impacts, cpm } = calculateKitMetrics(screens, duration);
   const createdAt = new Date();
   const validUntil = new Date(createdAt);
-  validUntil.setDate(validUntil.getDate() + (parseInt(brand.validity) || 15));
+  validUntil.setDate(validUntil.getDate() + (parseInt(state.brand.validity) || 15));
   const kit = {
     id: `kit-${Shared.kitSlug(client)}-${createdAt.getTime()}`,
     client,
@@ -54,16 +71,16 @@ async function buildKitPayload(status='Borrador'){
     screens: screens.length,
     total,
     impacts,
-    cpm: impacts ? Math.round(total / impacts * 1000) : 0,
+    cpm,
     status,
     createdAt: createdAt.toISOString(),
     validUntil: validUntil.toISOString().slice(0,10),
     terms: document.getElementById('settings-terms').value.trim(),
     validity: document.getElementById('settings-validity').value,
-    brand: { name: brand.name, logo: brand.logo, whatsapp: brand.whatsapp }
+    brand: { name: state.brand.name, logo: state.brand.logo, whatsapp: state.brand.whatsapp }
   };
   kit.digitalSignature = await Shared.signMediaKit(kit, {
-    signer: window.CONFIG?.signature?.signer || brand.name,
+    signer: window.CONFIG?.signature?.signer || state.brand.name,
   });
   return kit;
 }
@@ -78,16 +95,16 @@ function downloadKitJson(kit){
 }
 
 function applyBrand(){
-  document.title = `${brand.name} - Dashboard de Gestion`;
-  document.getElementById('dash-logo').textContent = brand.logo;
-  document.getElementById('dash-brand').textContent = brand.name;
+  document.title = `${state.brand.name} - Dashboard de Gestion`;
+  document.getElementById('dash-logo').textContent = state.brand.logo;
+  document.getElementById('dash-brand').textContent = state.brand.name;
   if(theme.primary)document.documentElement.style.setProperty('--primary', theme.primary);
   if(theme.primaryStrong)document.documentElement.style.setProperty('--primary-strong', theme.primaryStrong);
   if(theme.success)document.documentElement.style.setProperty('--success', theme.success);
 }
 
 function updateKpis(){
-  const active = rows.filter(row => row.status === 'Activo');
+  const active = state.rows.filter(row => row.status === SCREEN_STATUS.ACTIVE);
   const totalImpacts = active.reduce((acc,row) => acc + imp(row), 0);
   const revenue = active.reduce((acc,row) => acc + row.precio, 0);
   const avgCpm = active.length
@@ -101,8 +118,8 @@ function updateKpis(){
 }
 
 function fillFilters(){
-  const zones = ['Todos', ...new Set(rows.map(row => row.b))];
-  const types = ['Todos', ...new Set(rows.map(row => row.tipo))];
+  const zones = ['Todos', ...new Set(state.rows.map(row => row.b))];
+  const types = ['Todos', ...new Set(state.rows.map(row => row.tipo))];
 
   const zoneOptions = zones.map(zone => `<option value="${h(zone)}">${h(zone)}</option>`).join('');
   const typeOptions = types.map(type => `<option value="${h(type)}">${h(type)}</option>`).join('');
@@ -117,7 +134,7 @@ function filteredRows(){
   const query = document.getElementById('search').value.trim().toLowerCase();
   const zone = document.getElementById('zone-filter').value;
   const type = document.getElementById('type-filter').value;
-  return rows.filter(row => {
+  return state.rows.filter(row => {
     const matchesQuery = !query || [row.n,row.dir,row.b,row.tipo].some(value => String(value).toLowerCase().includes(query));
     const matchesZone = zone === 'Todos' || row.b === zone;
     const matchesType = type === 'Todos' || row.tipo === type;
@@ -128,13 +145,13 @@ function filteredRows(){
 function renderTable(){
   const list = filteredRows();
   let selectedChanged = false;
-  if(list.length && !list.some(row => row.id === selectedId)){
-    selectedId = list[0].id;
+  if(list.length && !list.some(row => row.id === state.selectedId)){
+    state.selectedId = list[0].id;
     selectedChanged = true;
   }
   document.getElementById('result-count').textContent = `${list.length} ${list.length === 1 ? 'resultado' : 'resultados'}`;
   document.getElementById('screen-table').innerHTML = list.map(row => `
-    <tr class="${row.id === selectedId ? 'selected' : ''}">
+    <tr class="${row.id === state.selectedId ? 'selected' : ''}">
       <td>
         <div class="screen-cell">
           <span class="screen-icon">${h(row.e)}</span>
@@ -144,14 +161,14 @@ function renderTable(){
       <td><span class="badge">${h(row.tipo)}</span></td>
       <td>${h(row.imp)}</td>
       <td><strong>${fmt(row.precio)}</strong></td>
-      <td><span class="badge ${row.status === 'Activo' ? 'active' : 'paused'}">${row.status}</span></td>
+      <td><span class="badge ${row.status === SCREEN_STATUS.ACTIVE ? 'active' : 'paused'}">${row.status}</span></td>
       <td>
         <button class="icon-btn" type="button" data-action="select" data-id="${row.id}" aria-label="Editar ${h(row.n)}">Editar</button>
       </td>
     </tr>
   `).join('');
   if(selectedChanged){
-    const row = rows.find(item => item.id === selectedId);
+    const row = state.rows.find(item => item.id === state.selectedId);
     if(row)updateEditor(row);
   }
 }
@@ -187,15 +204,15 @@ function updateEditor(row){
 }
 
 function selectRow(id){
-  selectedId = Number(id);
-  const row = rows.find(item => item.id === selectedId) || rows[0];
+  state.selectedId = Number(id);
+  const row = state.rows.find(item => item.id === state.selectedId) || state.rows[0];
   updateEditor(row);
   renderTable();
 }
 
 function exportCsv(){
   const header = ['id','nombre','zona','direccion','tipo','impactos_dia','precio_semana','estado'];
-  const lines = rows.map(row => [row.id,row.n,row.b,row.dir,row.tipo,row.imp,row.precio,row.status].map(value => `"${String(value).replace(/"/g,'""')}"`).join(','));
+  const lines = state.rows.map(row => [row.id,row.n,row.b,row.dir,row.tipo,row.imp,row.precio,row.status].map(value => `"${String(value).replace(/"/g,'""')}"`).join(','));
   const blob = new Blob([[header.join(','), ...lines].join('\n')], {type:'text/csv;charset=utf-8'});
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
@@ -206,7 +223,7 @@ function exportCsv(){
 }
 
 function setSection(section){
-  currentSection = section;
+  state.currentSection = section;
   document.querySelectorAll('[data-section]').forEach(button=>{
     button.classList.toggle('active',button.dataset.section===section);
   });
@@ -214,15 +231,15 @@ function setSection(section){
     panel.hidden = panel.id !== `section-${section}`;
   });
   const titles = {
-    inventory:['Gestion de pantallas','Administra inventario, disponibilidad, precios y vista comercial desde una sola superficie.'],
-    mediakits:['Constructor de Media Kits','Crea, previsualiza y mantiene propuestas comerciales listas para enviar a clientes.'],
-    metrics:['Metricas comerciales','Analiza cobertura, mix de transito y potencial de venta por zona.'],
-    settings:['Configuracion comercial','Define marca, contacto y condiciones base para tus mediakits.']
+    [SECTIONS.INVENTORY]:['Gestion de pantallas','Administra inventario, disponibilidad, precios y vista comercial desde una sola superficie.'],
+    [SECTIONS.MEDIAKITS]:['Constructor de Media Kits','Crea, previsualiza y mantiene propuestas comerciales listas para enviar a clientes.'],
+    [SECTIONS.METRICS]:['Metricas comerciales','Analiza cobertura, mix de transito y potencial de venta por zona.'],
+    [SECTIONS.SETTINGS]:['Configuracion comercial','Define marca, contacto y condiciones base para tus mediakits.']
   };
   document.getElementById('page-title').textContent = titles[section][0];
   document.getElementById('page-copy').textContent = titles[section][1];
-  if(section==='mediakits')renderKitBuilder();
-  if(section==='metrics')renderMetrics();
+  if(section === SECTIONS.MEDIAKITS) renderKitBuilder();
+  if(section === SECTIONS.METRICS) renderMetrics();
 }
 
 function setKitStep(n){
@@ -234,7 +251,7 @@ function setKitStep(n){
     document.getElementById('kit-client').focus();
     return;
   }
-  if(n === 3 && kitSelected.size === 0){
+  if(n === 3 && state.kitSelected.size === 0){
     Shared.showToast('Selecciona al menos una pantalla para continuar');
     return;
   }
@@ -252,17 +269,17 @@ function selectedDuration(){
 }
 
 function kitScreens(){
-  return rows.filter(row => kitSelected.has(row.id) && row.status === 'Activo');
+  return state.rows.filter(row => state.kitSelected.has(row.id) && row.status === SCREEN_STATUS.ACTIVE);
 }
 
 function renderKitBuilder(){
   const query = document.getElementById('kit-search')?.value.toLowerCase() || '';
   const zone = document.getElementById('kit-zone').value || 'Todos';
-  const visible = rows.filter(row => row.status === 'Activo' && (zone === 'Todos' || row.b === zone) && 
+  const visible = state.rows.filter(row => row.status === SCREEN_STATUS.ACTIVE && (zone === 'Todos' || row.b === zone) && 
     (!query || row.n.toLowerCase().includes(query) || row.dir.toLowerCase().includes(query)));
   document.getElementById('kit-screen-list').innerHTML = visible.map(row => `
     <label class="kit-screen">
-      <input type="checkbox" data-kit-screen="${row.id}" ${kitSelected.has(row.id)?'checked':''}>
+      <input type="checkbox" data-kit-screen="${row.id}" ${state.kitSelected.has(row.id)?'checked':''}>
       <span class="screen-icon">${h(row.e)}</span>
       <span><strong>${h(row.n)}</strong><span>${h(row.b)} · ${h(row.imp)} imp/dia · ${fmt(row.precio)}/sem</span></span>
       <span class="badge">${h(row.tipo)}</span>
@@ -275,13 +292,12 @@ function renderKitPreview(){
   const duration = selectedDuration();
   const screens = kitScreens();
   const client = document.getElementById('kit-client').value.trim() || 'Cliente sin nombre';
-  const total = screens.reduce((sum,row)=>sum + row.precio * duration.mult,0);
-  const impacts = screens.reduce((sum,row)=>sum + imp(row) * duration.days,0);
-  const cpm = screens.length ? fmt(total/(impacts||1)*1000) : '$0';
+  const { total, impacts, cpm } = calculateKitMetrics(screens, duration);
+  const cpmFormatted = screens.length ? fmt(cpm) : '$0';
   const terms = document.getElementById('settings-terms').value.trim();
   
   document.getElementById('kit-selected-count').textContent = `${screens.length} ${screens.length===1?'seleccionada':'seleccionadas'}`;
-  document.getElementById('kit-state').textContent = screens.length ? 'Borrador listo' : 'Borrador';
+  document.getElementById('kit-state').textContent = screens.length ? 'Borrador listo' : KIT_STATUS.DRAFT;
   
   const metricsHtml = `
     <div class="kpi"><b>${screens.length}</b><span>Pantallas</span></div>
@@ -307,51 +323,49 @@ async function saveKit(){
     Shared.showToast('Selecciona al menos una pantalla');
     return;
   }
-  const kit = await buildKitPayload('Borrador'); // buildKitPayload es async
+  const kit = await buildKitPayload(KIT_STATUS.DRAFT); // buildKitPayload es async
   kit.archived = false; // Los kits nuevos siempre están activos
-  savedKits = [kit, ...savedKits.filter(k => k.id !== kit.id)];
+  state.savedKits = [kit, ...state.savedKits.filter(k => k.id !== kit.id)];
   renderKitHistory();
   setKitStep(1);
-  const state = { rows, kits: savedKits, brand };
-  Shared.persistDashboardState(state, 'Media kit guardado');
+  debouncedPersist('Media kit guardado');
 }
 
 function renderKitHistory(){
-  const activeKits = savedKits.filter(kit => !kit.archived);
-  const archivedKits = savedKits.filter(kit => kit.archived);
-  document.getElementById('kit-history').innerHTML = activeKits.map(kit => `
+  // --- MEJORA: Separar la lógica de filtrado de la de renderizado.
+  const activeKits = state.savedKits.filter(kit => !kit.archived);
+  const archivedKits = state.savedKits.filter(kit => kit.archived);
+
+  const renderKitRow = (kit, isArchived = false) => `
     <div class="kit-row">
-      <span><strong>${h(kit.client)}</strong><br><small>${Number(kit.screens)||0} pantallas · ${h(kit.status || 'Borrador')}</small></span>
+      <span><strong>${h(kit.client)}</strong><br><small>${Number(kit.screens)||0} pantallas · ${h(isArchived ? KIT_STATUS.ARCHIVED : (kit.status || KIT_STATUS.DRAFT))}</small></span>
       <span class="kit-actions">
         <strong>${fmt(kit.total)}</strong>
         <a class="kit-link" href="${Shared.getMediaKitUrl(kit.id)}" target="_blank" rel="noopener">Ver público</a>
-        <button class="icon-btn" type="button" data-action="copy-kit" data-id="${h(kit.id)}">Copiar</button>
-        <button class="icon-btn" type="button" data-action="download-kit" data-id="${h(kit.id)}">JSON</button>
-        <button class="icon-btn" type="button" data-action="duplicate-kit" data-id="${h(kit.id)}">Duplicar</button>
-        <button class="icon-btn pause" type="button" data-action="archive-kit" data-id="${h(kit.id)}">Archivar</button>
+        ${!isArchived ? `
+          <button class="icon-btn" type="button" data-action="copy-kit" data-id="${h(kit.id)}">Copiar</button>
+          <button class="icon-btn" type="button" data-action="download-kit" data-id="${h(kit.id)}">JSON</button>
+          <button class="icon-btn" type="button" data-action="duplicate-kit" data-id="${h(kit.id)}">Duplicar</button>
+          <button class="icon-btn pause" type="button" data-action="archive-kit" data-id="${h(kit.id)}">Archivar</button>
+        ` : `
+          <button class="icon-btn" type="button" data-action="restore-kit" data-id="${h(kit.id)}">Restaurar</button>
+        `}
       </span>
     </div>
-  `).join('') || '<div class="kit-row"><span>No hay kits guardados.</span></div>';
+  `;
+
+  document.getElementById('kit-history').innerHTML = activeKits.map(kit => renderKitRow(kit, false)).join('') || '<div class="kit-row"><span>No hay kits guardados.</span></div>';
   const archiveWrap = document.getElementById('kit-archive-wrap');
   const archiveCount = document.getElementById('kit-archive-count');
   const archive = document.getElementById('kit-archive');
   if(archiveWrap)archiveWrap.hidden = archivedKits.length === 0;
   if(archiveWrap && archivedKits.length)archiveWrap.open = true;
   if(archiveCount)archiveCount.textContent = archivedKits.length;
-  if(archive)archive.innerHTML = archivedKits.map(kit => `
-    <div class="kit-row archived">
-      <span><strong>${h(kit.client)}</strong><br><small>${Number(kit.screens)||0} pantallas · Archivado</small></span>
-      <span class="kit-actions">
-        <strong>${fmt(kit.total)}</strong>
-        <a class="kit-link" href="${Shared.getMediaKitUrl(kit.id)}" target="_blank" rel="noopener">Ver público</a>
-        <button class="icon-btn" type="button" data-action="restore-kit" data-id="${h(kit.id)}">Restaurar</button>
-      </span>
-    </div>
-  `).join('');
+  if(archive)archive.innerHTML = archivedKits.map(kit => renderKitRow(kit, true)).join('');
 }
 
 function renderMetrics(){
-  const active = rows.filter(row => row.status === 'Activo');
+  const active = state.rows.filter(row => row.status === SCREEN_STATUS.ACTIVE);
   const totalReach = active.reduce((acc,row) => acc + imp(row), 0);
   const byZone = active.reduce((acc,row)=>{acc[row.b]=(acc[row.b]||0)+imp(row);return acc;},{});
   const byType = active.reduce((acc,row)=>{acc[row.tipo]=(acc[row.tipo]||0)+1;return acc;},{});
@@ -399,44 +413,44 @@ function bindEvents(){
     if(!target)return;
     if(target.dataset.action === 'select')selectRow(target.dataset.id);
     if(target.dataset.action === 'copy-kit'){
-      const kit = savedKits.find(item => item.id === target.dataset.id);
+      const kit = state.savedKits.find(item => item.id === target.dataset.id);
       if(kit)navigator.clipboard?.writeText(new URL(Shared.getMediaKitUrl(kit.id), location.href).href).then(()=>Shared.showToast('Link copiado')).catch(()=>Shared.showToast('No se pudo copiar'));
     }
     if(target.dataset.action === 'download-kit'){
-      const kit = savedKits.find(item => item.id === target.dataset.id);
+      const kit = state.savedKits.find(item => item.id === target.dataset.id);
       if(kit){downloadKitJson(kit);Shared.showToast('JSON descargado');}
     }
     if(target.dataset.action === 'duplicate-kit'){
-      const kit = savedKits.find(item => item.id === target.dataset.id);
+      const kit = state.savedKits.find(item => item.id === target.dataset.id);
       if(kit){
-        const copy = {...kit,id:`${kit.id}-copy-${Date.now()}`,status:'Borrador',createdAt:new Date().toISOString()};
-        savedKits = [copy,...savedKits].slice(0,8);
+        const copy = {...kit,id:`${kit.id}-copy-${Date.now()}`,status:KIT_STATUS.DRAFT,createdAt:new Date().toISOString()};
+        state.savedKits = [copy,...state.savedKits].slice(0,8);
         renderKitHistory();
-        persistState('Media kit duplicado');
+        debouncedPersist('Media kit duplicado');
       }
     }
     if(target.dataset.action === 'archive-kit'){
-      savedKits = savedKits.map(item => item.id === target.dataset.id ? {...item, archived:true, archivedAt:new Date().toISOString()} : item);
+      state.savedKits = state.savedKits.map(item => item.id === target.dataset.id ? {...item, archived:true, archivedAt:new Date().toISOString()} : item);
       renderKitHistory();
-      persistState('Media kit archivado');
+      debouncedPersist('Media kit archivado');
     }
     if(target.dataset.action === 'restore-kit'){
-      savedKits = savedKits.map(item => item.id === target.dataset.id ? {...item, archived:false, restoredAt:new Date().toISOString()} : item);
+      state.savedKits = state.savedKits.map(item => item.id === target.dataset.id ? {...item, archived:false, restoredAt:new Date().toISOString()} : item);
       renderKitHistory();
-      persistState('Media kit restaurado');
+      debouncedPersist('Media kit restaurado');
     }
   });
   document.addEventListener('change', event => {
     const target = event.target.closest('[data-kit-screen]');
     if(!target)return;
     const id = Number(target.dataset.kitScreen);
-    if(target.checked)kitSelected.add(id);
-    else kitSelected.delete(id);
+    if(target.checked)state.kitSelected.add(id);
+    else state.kitSelected.delete(id);
     renderKitPreview();
   });
   document.getElementById('editor-form').addEventListener('submit', event => {
     event.preventDefault();
-    const row = rows.find(item => item.id === selectedId);
+    const row = state.rows.find(item => item.id === state.selectedId);
     if(!row)return;
     row.n = document.getElementById('edit-name').value.trim() || row.n;
     row.b = document.getElementById('edit-zone').value.trim() || row.b;
@@ -447,18 +461,17 @@ function bindEvents(){
     updateKpis();
     fillFilters();
     selectRow(row.id);
-    renderKitBuilder();    
-    const state = { rows, kits: savedKits, brand };
-    Shared.persistDashboardState(state, 'Cambios aplicados al dashboard');
+    renderKitBuilder();
+    debouncedPersist('Cambios aplicados al dashboard');
   });
   document.getElementById('export-btn').addEventListener('click', exportCsv);
   document.getElementById('kit-save-btn').addEventListener('click', saveKit);
   document.getElementById('settings-save').addEventListener('click', () => {
-    brand.name = document.getElementById('settings-brand').value.trim() || brand.name;
-    brand.logo = document.getElementById('settings-logo').value.trim() || brand.logo;
-    brand.whatsapp = document.getElementById('settings-whatsapp').value.trim() || brand.whatsapp;
-    brand.terms = document.getElementById('settings-terms').value.trim();
-    brand.validity = document.getElementById('settings-validity').value;
+    state.brand.name = document.getElementById('settings-brand').value.trim() || state.brand.name;
+    state.brand.logo = document.getElementById('settings-logo').value.trim() || state.brand.logo;
+    state.brand.whatsapp = document.getElementById('settings-whatsapp').value.trim() || state.brand.whatsapp;
+    state.brand.terms = document.getElementById('settings-terms').value.trim();
+    state.brand.validity = document.getElementById('settings-validity').value;
     applyBrand();
     renderKitPreview();
     debouncedPersist('Configuración guardada');
@@ -476,11 +489,11 @@ applyBrand();
 fillFilters();
 updateKpis();
 bindEvents();
-document.getElementById('settings-brand').value = brand.name;
-document.getElementById('settings-logo').value = brand.logo;
-document.getElementById('settings-whatsapp').value = brand.whatsapp || '';
-if(brand.terms) document.getElementById('settings-terms').value = brand.terms;
-if(brand.validity) document.getElementById('settings-validity').value = brand.validity;
+document.getElementById('settings-brand').value = state.brand.name;
+document.getElementById('settings-logo').value = state.brand.logo;
+document.getElementById('settings-whatsapp').value = state.brand.whatsapp || '';
+if(state.brand.terms) document.getElementById('settings-terms').value = state.brand.terms;
+if(state.brand.validity) document.getElementById('settings-validity').value = state.brand.validity;
 renderKitHistory();
 renderKitBuilder();
-selectRow(selectedId);
+selectRow(state.selectedId);

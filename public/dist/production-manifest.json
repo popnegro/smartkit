@@ -1,19 +1,23 @@
-{
-  "generatedAt": "2026-06-10T00:00:00.000Z",
-  "files": [
-    "index.html",
-    "dashboard.html",
-    "mediakit.html",
-    "styles.css",
-    "base.css",
-    "dashboard.css",
-    "shared.js",
-    "app.js",
-    "mediakit.js",
-    "dashboard.js",
-    "config.js",
-    "screens-data.js",
-    "assets/videos",
-    "data/kits"
-  ]
-}
+[
+  "data/data/kits/demo-trapiche.json",
+  "styles.css",
+  "dashboard.html",
+  "dashboard.css",
+  "screens-data.js",
+  "app.js",
+  "readme.md",
+  "assets/assets/videos/peatonal-sarmiento.mp4",
+  "assets/assets/videos/palmares.mp4",
+  "assets/assets/videos/plaza-independencia.mp4",
+  "assets/assets/videos/sarmiento-y-belgrano.mp4",
+  "assets/assets/videos/chacras.mp4",
+  "assets/assets/videos/maipu.mp4",
+  "mediakit.js",
+  "config.js",
+  "index.html",
+  "mediakit.html",
+  "base.css",
+  "dashboard.js",
+  "shared.js",
+  "production-manifest.json"
+]
