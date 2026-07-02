@@ -43,9 +43,9 @@ Las pantallas base viven en `screens-data.js`. Cada objeto de pantalla tiene atr
 
 ### Sincronización con `localStorage`
 
-El `dashboard.html` guarda todas las modificaciones del inventario (precios, estados, etc.) en `localStorage` bajo la clave `smartkit-dashboard-state`.
+El **Dashboard** (`dashboard.html`) guarda todas las modificaciones del inventario (precios, notas, etc.) y los media kits generados en `localStorage` bajo la clave `smartkit-dashboard-state`. Esto permite una gestión local persistente.
 
-Cuando se carga el brochure (`index.html`), este prioriza los datos guardados en `localStorage`, asegurando que los cambios del dashboard se reflejen automáticamente. Si no hay datos guardados, utiliza la información de `screens-data.js` como base.
+El **Brochure Público** (`index.html`), por otro lado, **siempre** carga los datos desde el archivo `screens-data.js`. Esto garantiza que la vista pública sea consistente para todos los visitantes y no dependa de las ediciones locales de un administrador.
 
 ### Reseteo de Datos
 

@@ -41,29 +41,24 @@ const SmartKitShared = (() => {
     toast.timer = setTimeout(() => toast.classList.remove('show'), 1800);
   }
 
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+
   function impNum(screen) {
     return parseInt(String(screen.imp || '0').replace(/\./g, ''), 10) || 0;
   }
 
   function formatMoney(value) {
     return '$' + Math.round(Number(value) || 0).toLocaleString('es-AR');
-  }
-
-  function storedPublicKits() {
-    try { return JSON.parse(localStorage.getItem(PUBLIC_KITS_STORAGE_KEY) || '[]') || []; }
-    catch { return []; }
-  }
-
-  function latestMediaKitId(currentId = '') {
-    const kits = storedPublicKits().filter(kit => !kit.archived);
-    return currentId || kits[0]?.id || '';
-  }
-
-  function updateMediaKitLinks(id = latestMediaKitId()) {
-    const href = id ? `./mediakit.html?id=${encodeURIComponent(id)}` : './mediakit.html';
-    document.querySelectorAll('[data-mediakit-link]').forEach(link => {
-      link.setAttribute('href', href);
-    });
   }
 
   function applyBrandHeader(brand = DEFAULT_BRAND) {
@@ -201,18 +196,16 @@ const SmartKitShared = (() => {
     PUBLIC_KITS_STORAGE_KEY,
     applyBrandHeader,
     escapeHtml,
+    debounce,
     getMediaKitUrl,
     formatMoney,
     impNum,
-    latestMediaKitId,
     mediaHtml,
     safeAssetUrl,
     safeBackground,
     screenSnapshot,
     showToast,
     signMediaKit,
-    storedPublicKits,
-    updateMediaKitLinks,
     verifyMediaKitSignature,
     clearAllData
   };

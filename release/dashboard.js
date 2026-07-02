@@ -12,6 +12,11 @@ let currentSection = 'inventory';
 let kitSelected = new Set();
 let savedKits = [];
 
+const debouncedPersist = Shared.debounce((message) => {
+  persistState(message || 'Cambios guardados automáticamente');
+}, 1500);
+
+
 function loadInitialData(){
   try {
     const savedState = JSON.parse(localStorage.getItem(DASHBOARD_STORAGE_KEY));
@@ -330,15 +335,12 @@ function saveKit(){
     Shared.showToast('Selecciona al menos una pantalla');
     return;
   }
-  const kit = {
-    ...buildKitPayload('Borrador'),
-    archived: true,
-    archivedAt: new Date().toISOString()
-  };
-  savedKits = [kit,...savedKits].slice(0,8);
+  const kit = await buildKitPayload('Borrador');
+  kit.archived = false; // Los kits nuevos siempre están activos
+  savedKits = [kit, ...savedKits.filter(k => k.id !== kit.id)];
   renderKitHistory();
   setKitStep(1); // Reiniciar stepper al guardar
-  persistState('Media kit guardado en archivados');
+  persistState('Media kit guardado');
 }
 
 function updatePublicKitArchive(kitId, archived) {
@@ -496,7 +498,7 @@ function bindEvents(){
     brand.validity = document.getElementById('settings-validity').value;
     applyBrand();
     renderKitPreview();
-    persistState('Configuracion aplicada');
+    debouncedPersist('Configuración guardada');
   });
   document.getElementById('reset-data-btn').addEventListener('click', () => {
     if (window.confirm('¿Estás seguro de que quieres borrar todos los datos locales? Esta acción no se puede deshacer.')) {

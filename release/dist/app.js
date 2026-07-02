@@ -20,7 +20,7 @@ const h=escapeHtml;
 const whatsappIcon='<svg slot="icon" class="whatsapp-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3.5a8.5 8.5 0 0 0-7.23 12.97L4 20l3.62-.74A8.5 8.5 0 1 0 12 3.5Zm0 1.8a6.7 6.7 0 0 1 5.72 10.18 6.7 6.7 0 0 1-9.45 2.12l-.3-.2-1.62.33.35-1.56-.22-.32A6.7 6.7 0 0 1 12 5.3Zm-2.44 3.5c-.2 0-.5.08-.77.37-.27.3-.9.88-.9 2.1 0 1.23.92 2.42 1.05 2.59.13.17 1.78 2.84 4.42 3.76 2.2.77 2.65.42 3.12-.03.38-.36.6-1.02.66-1.28.07-.27.04-.48-.15-.58l-1.78-.85c-.2-.1-.44-.05-.57.14l-.5.64c-.13.17-.32.2-.52.1-.42-.18-1.17-.51-1.92-1.18-.7-.62-1.18-1.4-1.32-1.63-.13-.23-.02-.39.1-.52l.37-.43c.12-.14.18-.3.27-.48.09-.18.04-.34-.03-.48l-.82-1.83c-.12-.27-.3-.4-.5-.4Z"/></svg>';
 const plusIcon='<svg slot="icon" class="whatsapp-icon plus-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg>';
 const documentIcon='<svg slot="icon" class="whatsapp-icon plus-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 4h14v16H5V4Zm2 2v12h10V6H7Zm2 2h6v2H9V8Zm0 4h6v2H9v-2Z"/></svg>';
-const TIPO_COL={ Peatonal:'#0891b2', Vehicular:'#b45309', Mixto:'#4f46e5', Indoor: '#16a34a' };
+const TIPO_COL={ Peatonal:'#0891b2', Vehicular:'#b45309', Mixto:'#4f46e5' };
 
 function whatsappButtonContent(label, icon=whatsappIcon){
   return `${icon}<span>${h(label)}</span>`;
@@ -250,7 +250,7 @@ function renderBrochureCard(s, eagerVideo=false){
 }
 
 function durationOptions(){
-  return Shared.DURATIONS.map(d=>`<option value="${d.v}" ${d.v===quoteDuration?'selected':''}>${d.l}</option>`).join('');
+  return Shared.DURATIONS.map(d => `<option value="${d.v}" ${d.v === quoteDuration ? 'selected' : ''}>${h(d.l)}</option>`).join('');
 }
 
 function renderScreenCard(s){
@@ -413,7 +413,7 @@ function fitMapToActiveZone(){
 }
 
 function selectedDuration(){
-  return Shared.DURATIONS.find(d=>d.v===quoteDuration)||Shared.DURATIONS[0];
+  return Shared.DURATIONS.find(d => d.v === quoteDuration) || Shared.DURATIONS[0];
 }
 
 function quoteScreens(){
@@ -477,18 +477,64 @@ function renderQuote(){
   });
 }
 
+function handleFocusTrap(event) {
+  if (event.key !== 'Tab') return;
+
+  const container = document.getElementById('mediakit-offcanvas');
+  const focusableElements = Array.from(container.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'));
+  if (focusableElements.length === 0) return;
+
+  const firstElement = focusableElements[0];
+  const lastElement = focusableElements[focusableElements.length - 1];
+
+  if (event.shiftKey) { // Shift + Tab
+    if (document.activeElement === firstElement) {
+      lastElement.focus();
+      event.preventDefault();
+    }
+  } else { // Tab
+    if (document.activeElement === lastElement) {
+      firstElement.focus();
+      event.preventDefault();
+    }
+  }
+}
+
+function setOffcanvas(open) {
+  const container = document.getElementById('mediakit-offcanvas');
+  if (!container) return;
+
+  document.body.classList.toggle('offcanvas-open', open);
+  container.setAttribute('aria-hidden', !open);
+
+  if (open) {
+    container.querySelector('button.close')?.focus();
+    container.addEventListener('keydown', handleFocusTrap);
+  } else {
+    const trigger = document.querySelector('[data-action="generate-mediakit"]:not([disabled])');
+    trigger?.focus();
+    container.removeEventListener('keydown', handleFocusTrap);
+  }
+}
+
 async function generateMediaKit(id=null){
   ensureQuoteScreen(id);
-  const popup=window.open('about:blank','_blank','noopener');
   const kit=await Shared.buildMediaKit(quoteTotals(), BRAND, window.CONFIG || {});
   if(!kit)return;
   const kits=[kit,...storedPublicKits().filter(item=>item.id!==kit.id)].slice(0,12);
   localStorage.setItem(PUBLIC_KITS_STORAGE_KEY,JSON.stringify(kits));
   updateMediaKitLinks(kit.id);
   showGeneratedFeedback(kit);
-  const href=`./mediakit.html?id=${encodeURIComponent(kit.id)}`;
-  if(popup)popup.location.href=href;
-  else window.open(href,'_blank','noopener');
+
+  const offcanvas = document.getElementById('mediakit-offcanvas');
+  const iframe = offcanvas?.querySelector('iframe');
+  if (iframe) {
+    iframe.src = Shared.getMediaKitUrl(kit.id);
+    setOffcanvas(true);
+  } else {
+    // Fallback para navegadores o contextos donde el offcanvas no esté disponible
+    window.open(Shared.getMediaKitUrl(kit.id), '_blank', 'noopener');
+  }
 }
 
 function toggleQuoteScreen(id){
@@ -588,6 +634,7 @@ function bindEvents(){
     if(action==='clear-filters'){
       activeZone='Todos';
       activeSort='recommended';
+      document.querySelectorAll('[data-sort-select] option[value="recommended"]').forEach(o => o.selected = true);
       setMobileFilters(false);
       renderBrochure();
       updateMapMarkers();
@@ -595,6 +642,7 @@ function bindEvents(){
     if(action==='toggle-mobile-quote')setMobileQuote(!mobileQuoteOpen);
     if(action==='toggle-nav')setMobileNav(!mobileNavOpen);
     if(action==='toggle-filters')setMobileFilters(!mobileFiltersOpen);
+    if(action==='close-offcanvas')setOffcanvas(false);
   });
 
   document.addEventListener('change',event=>{
@@ -636,6 +684,11 @@ function bindEvents(){
     if(activeScreenId){
       event.preventDefault();
       closeScreen();
+    }
+    const offcanvas = document.getElementById('mediakit-offcanvas');
+    if (offcanvas && offcanvas.getAttribute('aria-hidden') === 'false') {
+      event.preventDefault();
+      setOffcanvas(false);
     }
   });
 }

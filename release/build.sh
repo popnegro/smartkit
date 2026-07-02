@@ -17,4 +17,12 @@ cp index.html dashboard.html mediakit.html styles.css base.css dashboard.css app
 
 cp -R assets data dist/
 
+echo "Procesando el inventario para generar screens.js solo con pantallas activas..."
+node -e "
+const fs = require('fs');
+const screensData = fs.readFileSync('screens-data.js', 'utf-8');
+const activeScreens = eval(screensData.replace('const SCREENS=', '')).filter(s => s.active);
+fs.writeFileSync('dist/screens.js', 'const SCREENS = ' + JSON.stringify(activeScreens, null, 2) + ';');
+"
+
 echo "✅ Directorio 'dist' generado correctamente con todos los archivos de producción."
