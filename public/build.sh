@@ -32,8 +32,15 @@ npx --yes cssnano-cli base.css dist/base.css
 npx --yes cssnano-cli dashboard.css dist/dashboard.css
 
 echo "Generando production-manifest.json..."
-# Genera una lista de todos los archivos en dist y la guarda como un array JSON.
-find dist -type f | sed 's|dist/||' | node -e "const fs=require('fs');const lines=fs.readFileSync(0,'utf-8').trim().split('\n').filter(Boolean);console.log(JSON.stringify(lines,null,2));" > dist/production-manifest.json
+
+# Verifica si jq está instalado. Si es así, lo usa. Si no, usa Node.js como fallback.
+if command -v jq &> /dev/null; then
+    echo "Usando 'jq' para generar el manifiesto."
+    find dist -type f | sed 's|dist/||' | jq -R . | jq -s '.' > dist/production-manifest.json
+else
+    echo "Advertencia: 'jq' no encontrado. Usando Node.js como alternativa para generar el manifiesto."
+    find dist -type f | sed 's|dist/||' | node -e "const fs=require('fs');const lines=fs.readFileSync(0,'utf-8').trim().split('\n').filter(Boolean);console.log(JSON.stringify(lines,null,2));" > dist/production-manifest.json
+fi
 
 echo "✅ Directorio 'dist' generado y optimizado para producción."
 echo "Manifest de producción actualizado en 'dist/production-manifest.json'."
