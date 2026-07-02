@@ -9,12 +9,6 @@ const SmartKitShared = (() => {
   };
   const PUBLIC_KITS_STORAGE_KEY = 'smartkit-public-kits';
 
-  const DURATIONS = [
-    {v:'1s', l:'1 semana', mult:1, days:7},
-    {v:'15d', l:'15 días', mult:2, days:15},
-    {v:'1m', l:'1 mes', mult:4, days:30}
-  ];
-
   function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>"']/g, char => ({
       '&': '&amp;',
@@ -40,8 +34,7 @@ const SmartKitShared = (() => {
   }
 
   function updateMediaKitLinks(id = latestMediaKitId()) {
-    const basePath = window.CONFIG?.basePath || '';
-    const href = id ? `${basePath}/mediakit.html?id=${encodeURIComponent(id)}` : `${basePath}/mediakit.html`;
+    const href = id ? `./mediakit.html?id=${encodeURIComponent(id)}` : './mediakit.html';
     document.querySelectorAll('[data-mediakit-link]').forEach(link => {
       link.setAttribute('href', href);
     });
@@ -56,8 +49,7 @@ const SmartKitShared = (() => {
 
   function safeAssetUrl(value) {
     const url = String(value || '');
-    const basePath = window.CONFIG?.basePath || '.';
-    return /^(assets\/|\.\/assets\/|https:\/\/)/.test(url) ? url.replace(/^\./, basePath) : '';
+    return /^(assets\/|\.\/assets\/|https:\/\/)/.test(url) ? url : '';
   }
 
   function safeBackground(value) {
@@ -74,7 +66,6 @@ const SmartKitShared = (() => {
       type: screen.tipo,
       format: screen.dim,
       resolution: screen.res,
-      audience: screen.aud || '',
       impactsDay: screen.imp,
       priceWeek: screen.precio,
       subtotal: Math.round(screen.precio * duration.mult),
@@ -177,27 +168,6 @@ const SmartKitShared = (() => {
     location.reload(); // Recargar para limpiar estados en memoria
   }
 
-  function impNum(screen) {
-    const value = screen?.imp || screen?.impactsDay || screen || '0';
-    return parseInt(String(value).replace(/\./g,''),10) || 0;
-  }
-
-  function kitSlug(value){
-    return String(value || 'media-kit')
-      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-      .toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')
-      .slice(0,48) || 'media-kit';
-  }
-
-  function showToast(message){
-    const toast = document.getElementById('toast') || document.getElementById('mobile-feedback');
-    if (!toast) return;
-    toast.textContent = message;
-    toast.classList.add('show');
-    clearTimeout(toast.timer);
-    toast.timer = setTimeout(() => toast.classList.remove('show'), 1600);
-  }
-
   return {
     DEFAULT_BRAND,
     PUBLIC_KITS_STORAGE_KEY,
@@ -213,11 +183,7 @@ const SmartKitShared = (() => {
     storedPublicKits,
     updateMediaKitLinks,
     verifyMediaKitSignature,
-    clearAllData,
-    DURATIONS,
-    impNum,
-    kitSlug,
-    showToast
+    clearAllData
   };
 })();
 

@@ -33,7 +33,7 @@ function loadInitialData(){
   }
 }
 
-function buildKitPayload(status='Borrador'){
+async function buildKitPayload(status='Borrador'){
   const duration = selectedDuration();
   const screens = kitScreens();
   const client = document.getElementById('kit-client').value.trim() || 'Cliente sin nombre';
@@ -42,8 +42,8 @@ function buildKitPayload(status='Borrador'){
   const impacts = screens.reduce((sum,row)=>sum + imp(row) * duration.days,0);
   const createdAt = new Date();
   const validUntil = new Date(createdAt);
-  validUntil.setDate(validUntil.getDate() + 15);
-  return {
+  validUntil.setDate(validUntil.getDate() + (parseInt(brand.validity) || 15));
+  const kit = {
     id: `kit-${Shared.kitSlug(client)}-${createdAt.getTime()}`,
     client,
     contact,
@@ -61,8 +61,13 @@ function buildKitPayload(status='Borrador'){
     validUntil: validUntil.toISOString().slice(0,10),
     terms: document.getElementById('settings-terms').value.trim(),
     validity: document.getElementById('settings-validity').value,
-    brand:{...brand}
+    brand: { name: brand.name, logo: brand.logo, whatsapp: brand.whatsapp }
   };
+  kit.digitalSignature = await Shared.signMediaKit(kit, {
+    signer: window.CONFIG?.signature?.signer || brand.name,
+    secret: window.CONFIG?.signature?.secret || ''
+  });
+  return kit;
 }
 
 function downloadKitJson(kit){

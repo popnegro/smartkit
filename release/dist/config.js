@@ -1,5 +1,8 @@
 const CONFIG = {
-  // Para Vercel en /release, usar '/release'. Para desarrollo local, usar ''.
+  // Para Vercel, usar ''. Para un subdirectorio, usar '/release'.
   basePath: '',
-  // ... resto de la configuración
+  signature: {
+    secret: '', // Dejar vacío para usar el nombre de la marca, o definir un secreto.
+    signer: 'SmartKit'
+  }
 };

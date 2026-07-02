@@ -1,9 +1,9 @@
 const Shared=window.SmartKitShared;
 const DEFAULT_BRAND=Shared.DEFAULT_BRAND;
 
-let SOURCE_SCREENS=[];
-let ACTIVE_SCREENS=[];
-let BRAND={...DEFAULT_BRAND};
+let SOURCE_SCREENS = [];
+let ACTIVE_SCREENS = [];
+let BRAND = { ...DEFAULT_BRAND };
 
 const DEFAULT_ACTIVE_SCREEN_IDS=[1,2,3,4,5,6,7,10,13,16,18];
 let map, activeZone='Todos', activeSort='recommended', markers={}, selectedScreens=[], quoteDuration='1s', activeScreenId=null, mobileQuoteOpen=false, mobileNavOpen=false, mobileFiltersOpen=false, lastScreenTrigger=null, lastQuoteTrigger=null, lastFilterTrigger=null;
@@ -20,11 +20,7 @@ const h=escapeHtml;
 const whatsappIcon='<svg slot="icon" class="whatsapp-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3.5a8.5 8.5 0 0 0-7.23 12.97L4 20l3.62-.74A8.5 8.5 0 1 0 12 3.5Zm0 1.8a6.7 6.7 0 0 1 5.72 10.18 6.7 6.7 0 0 1-9.45 2.12l-.3-.2-1.62.33.35-1.56-.22-.32A6.7 6.7 0 0 1 12 5.3Zm-2.44 3.5c-.2 0-.5.08-.77.37-.27.3-.9.88-.9 2.1 0 1.23.92 2.42 1.05 2.59.13.17 1.78 2.84 4.42 3.76 2.2.77 2.65.42 3.12-.03.38-.36.6-1.02.66-1.28.07-.27.04-.48-.15-.58l-1.78-.85c-.2-.1-.44-.05-.57.14l-.5.64c-.13.17-.32.2-.52.1-.42-.18-1.17-.51-1.92-1.18-.7-.62-1.18-1.4-1.32-1.63-.13-.23-.02-.39.1-.52l.37-.43c.12-.14.18-.3.27-.48.09-.18.04-.34-.03-.48l-.82-1.83c-.12-.27-.3-.4-.5-.4Z"/></svg>';
 const plusIcon='<svg slot="icon" class="whatsapp-icon plus-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg>';
 const documentIcon='<svg slot="icon" class="whatsapp-icon plus-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 4h14v16H5V4Zm2 2v12h10V6H7Zm2 2h6v2H9V8Zm0 4h6v2H9v-2Z"/></svg>';
-const TIPO_COL={
-  Peatonal:'#0891b2',
-  Vehicular:'#b45309',
-  Mixto:'#4f46e5'
-};
+const TIPO_COL={ Peatonal:'#0891b2', Vehicular:'#b45309', Mixto:'#4f46e5' };
 
 function whatsappButtonContent(label, icon=whatsappIcon){
   return `${icon}<span>${h(label)}</span>`;
@@ -141,13 +137,23 @@ function setMobileFilters(open){
   if(!open&&lastFilterTrigger instanceof HTMLElement)lastFilterTrigger.focus({preventScroll:true});
 }
 
+function showFeedback(message){
+  const feedback=document.getElementById('mobile-feedback');
+  if(!feedback)return;
+  feedback.classList.remove('is-success');
+  feedback.textContent=message;
+  feedback.classList.add('show');
+  clearTimeout(showFeedback.timer);
+  showFeedback.timer=setTimeout(()=>feedback.classList.remove('show'),1400);
+}
+
 function showGeneratedFeedback(kit){
   const feedback=document.getElementById('mobile-feedback');
   if(!feedback)return;
   feedback.innerHTML=`<strong>Media kit generado</strong><span>${h(kit.screens)} pantallas · ${fmt(kit.total)}</span>`;
   feedback.classList.add('show','is-success');
-  clearTimeout(feedback.timer);
-  feedback.timer=setTimeout(()=>feedback.classList.remove('show','is-success'),2200);
+  clearTimeout(showFeedback.timer);
+  showFeedback.timer=setTimeout(()=>feedback.classList.remove('show','is-success'),2200);
 }
 
 function sortedScreens(list){
@@ -167,7 +173,7 @@ function isRecommended(s){
 }
 
 function loadLazyVideos(root=document){
-  const videos=[...root.querySelectorAll('video[data-src]:not([data-src=""])')];
+  const videos=[...root.querySelectorAll('video[data-src]')];
   if(!videos.length)return;
   const load=video=>{
     if(video.src)return;
@@ -231,7 +237,6 @@ function renderBrochureCard(s, eagerVideo=false){
         <p class="card-use-case">${h(screenUseCase(s))}</p>
         <div class="product-tags card-product-tags">
           <span class="product-tag availability-${availability.tone}">${h(availability.label)}</span>
-          ${s.aud ? `<span class="product-tag">${h(s.aud)}</span>` : ''}
           <span class="product-tag">CPM ${fmt(screenCpm(s))}</span>
         </div>
         <p class="muted small card-spec">${h(s.dim)} · ${h(s.res)} · ${h(s.imp)} imp/día</p>
@@ -276,7 +281,7 @@ function renderScreenCard(s){
       <div class="grid2">
         <div class="metric"><span class="muted small">Formato</span><b>${h(s.dim)}</b></div>
         <div class="metric"><span class="muted small">Resolución</span><b>${h(s.res)}</b></div>
-        <div class="metric"><span class="muted small">Audiencia</span><b>${h(s.aud || 'General')}</b></div>
+        <div class="metric"><span class="muted small">Audiencia</span><b>${h(s.aud || 'N/D')}</b></div>
         <div class="metric"><span class="muted small">Impactos/día</span><b>${h(s.imp)}</b></div>
         <div class="metric"><span class="muted small">Precio base</span><b>${fmt(s.precio)}</b></div>
       </div>
@@ -445,17 +450,19 @@ function renderQuote(){
     const whatsapp=document.getElementById(`${panel.prefix}quote-whatsapp`);
     const mediakit=document.getElementById(`${panel.prefix}quote-mediakit`);
     const summaryCount=document.getElementById(`${panel.prefix}quote-summary-count`);
-    const summaryDetail=document.getElementById(`${panel.prefix}quote-summary-detail`);
     const status=document.getElementById(`${panel.prefix}quote-status`);
     const hint=document.getElementById(`${panel.prefix}quote-action-hint`);
-    const mobileToggle=document.getElementById(`${panel.prefix}mobile-quote-toggle`);
-    const mobileCart=document.getElementById(`${panel.prefix}mobile-quote-cart`);
-    const mobileCartSummary=document.getElementById(`${panel.prefix}mobile-quote-cart-summary`);
-    const mobileCartMeta=document.getElementById(`${panel.prefix}mobile-quote-cart-meta`);
     const quotePanel=whatsapp?.closest('.quote-panel');
     const hasScreens=q.screens.length>0;
     if(durationSelect)durationSelect.innerHTML=durationHtml;
-    if(list)list.innerHTML=listHtml;
+    if(mediakit){
+      mediakit.disabled=!hasScreens;
+      mediakit.classList.toggle('is-empty',!hasScreens);
+      mediakit.innerHTML=whatsappButtonContent('Generar media kit', documentIcon);
+    }
+    if(status)status.textContent=hasScreens?'Listo':'Vacío';
+    if(hint)hint.textContent=hasScreens?'Genera una propuesta con snapshot, inversión, impactos y condiciones; luego puedes guardarla como PDF o contactar por WhatsApp.':'Agrega una pantalla al cotizador para generar una propuesta compartible.';
+    if(list)list.innerHTML=listHtml || '<div class="quote-empty">Agrega pantallas desde el brochure para armar tu plan.</div>';
     if(list)list.classList.toggle('is-empty',!hasScreens);
     if(count)count.textContent=q.screens.length;
     if(impacts)impacts.textContent=Math.round(q.impacts).toLocaleString('es-AR');
@@ -463,80 +470,23 @@ function renderQuote(){
     if(whatsapp){
       whatsapp.disabled=!hasScreens;
       whatsapp.classList.toggle('is-empty',!hasScreens);
-      whatsapp.innerHTML=hasScreens?whatsappButtonContent('Contactar'):whatsappButtonContent('Contactar', plusIcon);
+      whatsapp.innerHTML=whatsappButtonContent('Contactar');
     }
-    if(mediakit){
-      mediakit.disabled=!hasScreens;
-      mediakit.classList.toggle('is-empty',!hasScreens);
-      mediakit.innerHTML=hasScreens?whatsappButtonContent('Generar media kit', documentIcon):whatsappButtonContent('Generar media kit', documentIcon);
-    }
-    if(status)status.textContent=hasScreens?'Listo':'Vacío';
-    if(hint)hint.textContent=hasScreens?'Genera una propuesta con snapshot, inversión, impactos y condiciones; luego puedes guardarla como PDF o contactar por WhatsApp.':'Agrega una pantalla al cotizador para generar una propuesta compartible.';
     if(quotePanel)quotePanel.classList.toggle('has-selection',hasScreens);
     if(summaryCount)summaryCount.textContent=hasScreens?`${q.screens.length} ${q.screens.length===1?'pantalla':'pantallas'} · ${Math.round(q.impacts/1000).toLocaleString('es-AR')}k impactos · ${fmt(q.total)}`:'0 pantallas · Sin plan armado';
-    if(summaryDetail)summaryDetail.textContent=hasScreens?`${q.duration.l} · disponibilidad a confirmar`:'Agrega pantallas para estimar inversión';
-    if(mobileToggle){
-      const label=hasScreens?`${q.screens.length} ${q.screens.length===1?'pantalla':'pantallas'} · ${fmt(q.total)}`:'Cotizador';
-      const labelTarget=mobileToggle.querySelector('span')||mobileToggle;
-      labelTarget.textContent=label;
-    }
-    if(mobileCart){
-      mobileCart.hidden=!hasScreens;
-      mobileCart.classList.toggle('show',hasScreens);
-      mobileCart.setAttribute('aria-hidden',hasScreens?'false':'true');
-    }
-    if(mobileCartSummary)mobileCartSummary.textContent=hasScreens?`${q.screens.length} ${q.screens.length===1?'pantalla':'pantallas'} · ${fmt(q.total)}`:'Cotizador vacío';
-    if(mobileCartMeta)mobileCartMeta.textContent=hasScreens?`${Math.round(q.impacts/1000).toLocaleString('es-AR')}k impactos · ${q.duration.l}`:'Agrega pantallas para armar tu plan';
   });
-}
-
-async function buildMediaKitFromQuote(){
-  const q=quoteTotals();
-  if(!q.screens.length)return null;
-  const createdAt=new Date();
-  const validUntil=new Date(createdAt);
-  validUntil.setDate(validUntil.getDate()+15);
-  const client=`Propuesta ${BRAND.name}`;
-  const kit={
-    id:`kit-${Shared.kitSlug(client)}-${createdAt.getTime()}`,
-    client,
-    contact:'Equipo comercial',
-    duration:q.duration.l,
-    durationValue:q.duration.v,
-    days:q.duration.days,
-    screenIds:q.screens.map(s=>s.id),
-    screenSnapshots:q.screens.map(s=>screenSnapshot(s,q.duration)),
-    screens:q.screens.length,
-    total:q.total,
-    impacts:q.impacts,
-    cpm:q.impacts?Math.round(q.total/q.impacts*1000):0,
-    status:'Borrador',
-    createdAt:createdAt.toISOString(),
-    validUntil:validUntil.toISOString().slice(0,10),
-    validity:'15 días',
-    executiveSummary:`Plan recomendado de ${q.screens.length} ${q.screens.length===1?'pantalla':'pantallas'} para cubrir puntos de alto tránsito durante ${q.duration.l}, con ${Math.round(q.impacts).toLocaleString('es-AR')} impactos estimados y CPM de ${fmt(q.impacts?q.total/q.impacts*1000:0)}.`,
-    nextSteps:['Validar disponibilidad de pantallas y fechas de campaña.','Confirmar inversión, forma de pago y orden de compra.','Enviar piezas finales 72 hs hábiles antes del inicio.'],
-    terms:'Inicio de campaña sujeto a disponibilidad y aprobación de piezas. Valores expresados en ARS. La reserva se confirma con orden de compra y material aprobado.',
-    brand:{name:BRAND.name,logo:BRAND.logo,whatsapp:BRAND.whatsapp}
-  };
-  kit.digitalSignature=await SmartKitShared.signMediaKit(kit,{
-    signer:CONFIG.signature?.signer||BRAND.name,
-    secret:CONFIG.signature?.secret||''
-  });
-  return kit;
 }
 
 async function generateMediaKit(id=null){
   ensureQuoteScreen(id);
   const popup=window.open('about:blank','_blank','noopener');
-  const kit=await buildMediaKitFromQuote();
+  const kit=await Shared.buildMediaKit(quoteTotals(), BRAND, window.CONFIG || {});
   if(!kit)return;
   const kits=[kit,...storedPublicKits().filter(item=>item.id!==kit.id)].slice(0,12);
   localStorage.setItem(PUBLIC_KITS_STORAGE_KEY,JSON.stringify(kits));
   updateMediaKitLinks(kit.id);
   showGeneratedFeedback(kit);
-  const basePath = window.CONFIG?.basePath || '.';
-  const href=`${basePath}/mediakit.html?id=${encodeURIComponent(kit.id)}`;
+  const href=`./mediakit.html?id=${encodeURIComponent(kit.id)}`;
   if(popup)popup.location.href=href;
   else window.open(href,'_blank','noopener');
 }
@@ -548,7 +498,7 @@ function toggleQuoteScreen(id){
   renderBrochure();
   renderQuote();
   if(activeScreenId)openScreen(activeScreenId);
-  if(screen)Shared.showToast(wasSelected?'Quitado del cotizador':'Agregado al cotizador');
+  if(screen)showFeedback(wasSelected?'Quitado del cotizador':'Agregado al cotizador');
 }
 
 function ensureQuoteScreen(id){
@@ -563,22 +513,25 @@ function ensureQuoteScreen(id){
 function requestWhatsappQuote(id=null, trigger=null){
   ensureQuoteScreen(id);
   const q=quoteTotals();
-  if(!q.screens.length)return;
   const whatsappTarget=trigger&&!trigger.disabled?trigger:document.querySelector('[data-action="whatsapp-quote"]:not([disabled])');
   const previousHtml=whatsappTarget?.innerHTML;
-  const normalizedPhone=String(whatsappPhone||'').replace(/\D/g,'');
+  const normalizedPhone=String(BRAND.whatsapp||'').replace(/\D/g,'');
   if(whatsappTarget)whatsappTarget.innerHTML=whatsappButtonContent('Abriendo WhatsApp...');
-  const screenLines=q.screens.map(s=>`- ${s.n} (${s.b}) - ${fmt(s.precio)}/semana - CPM ${fmt(screenCpm(s))}`).join('\n');
-  const msg=`Hola, quiero consultar por esta campaña de ${BRAND.name}:
+  
+  let msg;
+  if (q.screens.length > 0) {
+    const screenLines=q.screens.map(s=>`- ${s.n} (${s.b}) - ${fmt(s.precio)}/semana - CPM ${fmt(screenCpm(s))}`).join('\n');
+    msg=`Hola, quiero consultar por esta campaña de ${BRAND.name}:
 
 Pantallas seleccionadas (${q.screens.length}):
 ${screenLines}
 
 Duración: ${q.duration.l}
 Impactos estimados: ${Math.round(q.impacts).toLocaleString('es-AR')}
-Inversión estimada: ${fmt(q.total)}
-
-Gracias.`;
+Inversión estimada: ${fmt(q.total)}`;
+  } else {
+    msg = `Hola, quiero hacer una consulta sobre las campañas de publicidad en ${BRAND.name}.`;
+  }
   if(normalizedPhone)window.open(`https://wa.me/${normalizedPhone}?text=${encodeURIComponent(msg)}`,'_blank','noopener');
   if(whatsappTarget&&previousHtml)setTimeout(()=>{whatsappTarget.innerHTML=previousHtml;},1600);
 }
