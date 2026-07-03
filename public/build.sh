@@ -1,19 +1,33 @@
 #!/bin/bash
 
-# Script para generar el directorio de producción.
+# Script para generar el directorio de producción para SmartKit.
+# Modos de ejecución:
+#   - static: (default) Build estándar con datos de `screens-data.js`.
+#   - demo: Build para Vercel, fuerza la carga de datos por defecto.
+#   - api: Build para un entorno con backend, ajusta los scripts para que consuman la API.
 
+# --- Configuración de Seguridad y Errores ---
 set -e # Salir inmediatamente si un comando falla
+set -o pipefail # Salir si un comando en una tubería falla
 
-# --- Configuración ---
-MODE=${1:-static} # 'static' es el modo por defecto si no se pasa argumento
+# --- Configuración del Build ---
+MODE=${1:-static}
 DEST_DIR="dist"
 
-if [ "$MODE" == "api" ]; then
-    DEST_DIR="dist-api"
-fi
-
-JS_FILES_TO_MINIFY=("shared.js" "mediakit.js" "config.js" "screens-data.js")
-CSS_FILES_TO_MINIFY=("styles.css" "base.css" "dashboard.css")
+# Archivos a minificar. `app.js` y `dashboard.js` se manejan por separado.
+JS_FILES_TO_MINIFY=(
+    "shared.js"
+    "mediakit.js"
+    "config.js"
+    "screens-data.js"
+)
+CSS_FILES_TO_MINIFY=(
+    "styles.css"
+    "base.css"
+    "dashboard.css"
+)
+HTML_FILES=("index.html" "dashboard.html" "mediakit.html")
+STATIC_ASSETS=("assets" "data") # Directorios para copiar
 
 # --- Funciones ---
 
@@ -25,18 +39,19 @@ limpiar() {
 
 copiar_archivos() {
     echo "Copiando archivos y directorios..."
-    cp index.html dashboard.html mediakit.html readme.md "$DEST_DIR/"
-    cp -R assets/ "$DEST_DIR/assets/"
-    cp -R data/ "$DEST_DIR/data/"
+    # Copia los archivos HTML y el readme
+    for file in "${HTML_FILES[@]}" "readme.md"; do
+        cp "$file" "$DEST_DIR/"
+    done
+    # Copia los directorios de assets
+    for asset_dir in "${STATIC_ASSETS[@]}"; do
+        cp -R "$asset_dir/" "$DEST_DIR/$asset_dir/"
+    done
 }
 
 minificar_js() {
     echo "Minificando JavaScript con Terser..."
-    if [ "$MODE" == "demo" ]; then
-        echo "  Modificando app.js y dashboard.js para modo DEMO..."
-        sed "s/if (savedState && savedState.rows?.length && !loadDefault)/if (false)/g" app.js | npx --yes terser -c -m > "$DEST_DIR/app.js"
-        sed "s/if (savedState && !loadDefault)/if (false)/g" dashboard.js | npx --yes terser -c -m > "$DEST_DIR/dashboard.js"
-    elif [ "$MODE" == "api" ]; then
+    if [ "$MODE" == "api" ]; then
         echo "  Modificando app.js y dashboard.js para modo API..."
         sed "s/const MODE = 'static';/const MODE = 'api';/" app.js | npx --yes terser -c -m > "$DEST_DIR/app.js"
         sed "s/const MODE = 'static';/const MODE = 'api';/" dashboard.js | npx --yes terser -c -m > "$DEST_DIR/dashboard.js"
@@ -46,20 +61,25 @@ minificar_js() {
         npx --yes terser -c -m -- "dashboard.js" > "$DEST_DIR/dashboard.js"
     fi
 
+    # Ejecuta la minificación en paralelo para acelerar el proceso
     for file in "${JS_FILES_TO_MINIFY[@]}"; do
-        echo "  Minificando $file..."
-        npx --yes terser -c -m -- "$file" > "$DEST_DIR/$file"
+        # El `&` al final ejecuta el comando en segundo plano
+        (npx --yes terser -c -m -- "$file" > "$DEST_DIR/$file" && echo "  ✅ Minificado: $file") &
     done
+    wait # Espera a que todos los procesos en segundo plano terminen
 }
 
 minificar_css() {
     echo "Minificando CSS con cssnano..."
+    # Ejecuta la minificación en paralelo
     for file in "${CSS_FILES_TO_MINIFY[@]}"; do
-        echo "  Minificando $file..."
-        npx --yes cssnano-cli "$file" "$DEST_DIR/$file"
+        (npx --yes cssnano-cli "$file" "$DEST_DIR/$file" && echo "  ✅ Minificado: $file") &
     done
+    wait # Espera a que todos los procesos en segundo plano terminen
 }
 
+# Función para generar un manifiesto de los archivos de producción.
+# Útil para verificar la integridad del despliegue.
 generar_manifiesto() {
     echo "Generando production-manifest.json..."
     if command -v jq &> /dev/null; then
@@ -71,28 +91,33 @@ generar_manifiesto() {
     fi
 }
 
-post_build() {
-    echo "Realizando ajustes post-build..."
-    echo "  Asegurando que index.html carga el script de datos correcto..."
-    # Busca la etiqueta de script para screens-data.js y se asegura de que no tenga la ruta relativa "./"
-    # Esto es más robusto que un reemplazo de cadena simple.
-    sed -i -E 's|src\s*=\s*"\./screens-data\.js"|src="screens-data.js"|' "$DEST_DIR/index.html"
+verificar_dependencias() {
+    echo "Verificando dependencias de build..."
+    local missing=0
+    if ! command -v npx &> /dev/null; then
+        echo "❌ Error: 'npx' no se encuentra. Por favor, instala Node.js y npm." >&2
+        missing=1
+    fi
+    # Opcional: Verificar que los paquetes existen para dar un mejor error
+    if ! npm list terser &>/dev/null && ! npx --yes terser --version &>/dev/null; then
+        echo "⚠️ Advertencia: 'terser' no parece estar instalado. 'npx' lo descargará, pero puede ser más lento."
+    fi
+    if [ "$missing" -eq 1 ]; then
+        exit 1
+    fi
+    echo "✅ Dependencias encontradas."
 }
 
 # --- Ejecución ---
 
-# Verifica si npx está disponible
-if ! command -v npx &> /dev/null; then
-    echo "Error: 'npx' no se encuentra. Por favor, instala Node.js y npm." >&2
-    exit 1
-fi
+START_TIME=$SECONDS
 
+verificar_dependencias
 limpiar
 copiar_archivos
 minificar_js
 minificar_css
 generar_manifiesto
-post_build
 
-echo "✅ Directorio '$DEST_DIR' generado y optimizado para producción en modo '$MODE'."
-echo "Manifest de producción actualizado en '$DEST_DIR/production-manifest.json'."
+ELAPSED_TIME=$(($SECONDS - $START_TIME))
+echo "✅ Build completado en ${ELAPSED_TIME}s. Directorio '$DEST_DIR' generado para modo '$MODE'."

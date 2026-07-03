@@ -35,9 +35,8 @@ const SmartKitShared = (() => {
   }
 
   function getMediaKitUrl(kitId) {
-    const basePath = window.CONFIG?.basePath || '.';
-    const relativePath = basePath ? `${basePath}/mediakit.html` : './mediakit.html';
-    return `${relativePath}?id=${encodeURIComponent(kitId)}`;
+    // Use root-relative path to avoid issues in nested routes.
+    return `/mediakit.html?id=${encodeURIComponent(kitId)}`;
   }
 
   function showToast(message) {
