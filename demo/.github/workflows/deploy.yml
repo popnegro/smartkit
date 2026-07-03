@@ -126,9 +126,14 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-
+ 
       - name: Instalar dependencias
         run: npm ci
+
+      - name: Build Demo Version
+        run: |
+          chmod +x public/build.sh
+          cd public && ./build.sh demo
 
       - name: Deploy a Vercel (Production)
         uses: amondnet/vercel-action@v25
@@ -136,7 +141,8 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'  # ← Esto marca el deploy como producción
+          vercel-args: '--prod'
+          vercel-cwd: 'public/dist' # ← Despliega el contenido de public/dist
         env:
           BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
           ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS_PRODUCTION }}
