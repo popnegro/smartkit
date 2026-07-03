@@ -421,10 +421,10 @@ tr.selected td:first-child{box-shadow: inset 4px 0 0 var(--primary)}
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="./api-client.js"></script>
+<!-- Se comenta la API y se agregan los datos locales -->
+<!-- <script src="./api-client.js"></script> -->
+<script src="./screens-data.js"></script>
 <script>
-const API = window.SmartKitAPI;
-const brand = {name:'SmartKit',logo:'SK'};
 const DASHBOARD_STORAGE_KEY = 'smartkit-dashboard-state';
 const fmt = value => '$' + Math.round(Number(value) || 0).toLocaleString('es-AR');
 const imp = screen => parseInt(String(screen.imp || '0').replace(/\./g,''),10) || 0;
@@ -433,6 +433,7 @@ const h = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;'
 let rows = [];
 let selectedId = null;
 let currentSection = 'inventory';
+let brand = {name:'SmartKit',logo:'SK'};
 let kitSelected = new Set();
 let savedKits = [];
 
@@ -442,17 +443,40 @@ const DURATIONS = [
   {v:'1m', l:'1 mes', mult:4, days:30}
 ];
 
-async function loadInitialData(){
+function loadState() {
   try {
-    rows = await API.screens.getAll();
-    selectedId = rows[0]?.id;
-    updateKpis();
-    fillFilters();
-    renderTable();
-    if(selectedId) selectRow(selectedId);
-  } catch (err) {
-    showToast('Error cargando datos del servidor');
+    const stored = localStorage.getItem(DASHBOARD_STORAGE_KEY);
+    if (stored) {
+      const state = JSON.parse(stored);
+      // Validar que los datos cargados son coherentes
+      if (Array.isArray(state.rows) && Array.isArray(state.savedKits)) {
+        return state;
+      }
+    }
+  } catch (e) {
+    console.error("Error al cargar estado desde localStorage", e);
   }
+  // Si no hay estado guardado o es inválido, se usa el de los archivos JS
+  return { rows: typeof SCREENS !== 'undefined' ? JSON.parse(JSON.stringify(SCREENS)) : [], savedKits: [] };
+}
+
+function persistState(toastMessage) {
+  try {
+    const state = { rows, savedKits };
+    localStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(state));
+    if (toastMessage) showToast(toastMessage);
+  } catch (e) {
+    console.error("Error al guardar estado en localStorage", e);
+    showToast('Error al guardar los cambios');
+  }
+}
+
+function loadInitialData(){
+  const state = loadState();
+  rows = state.rows;
+  savedKits = state.savedKits;
+  selectedId = rows[0]?.id;
+  brand = state.brand || brand;
 }
 
 function kitSlug(value){

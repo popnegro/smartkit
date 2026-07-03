@@ -1,5 +1,6 @@
 const Shared=window.SmartKitShared;
 const DEFAULT_BRAND=Shared.DEFAULT_BRAND;
+const MODE = 'static'; // El script de build lo cambiará a 'api' si es necesario
 
 let SOURCE_SCREENS = [];
 let ACTIVE_SCREENS = [];
@@ -268,7 +269,7 @@ function renderScreenCard(s){
       ${selectedScreens.includes(screen.id)?`<button type="button" aria-label="Quitar ${h(screen.n)}" data-action="toggle-quote" data-screen-id="${screen.id}">×</button>`:''}
     </div>`).join(''):'<div class="quote-empty">Agrega pantallas desde el brochure para armar tu plan.</div>';
   return `
-    ${screenHead(s,'media',`<span class="badge media-badge" style="background:${TIPO_COL[s.tipo]}22;color:${TIPO_COL[s.tipo]}">${h(s.tipo)}</span>`)}
+    ${screenHead(s,'media',`<span class="badge media-badge" style="background:${Shared.TIPO_COL[s.tipo]}22;color:${Shared.TIPO_COL[s.tipo]}">${h(s.tipo)}</span>`)}
       <button type="button" class="close" aria-label="Cerrar ficha" data-action="close-screen">×</button>
     <div class="content screen-card">
       <h2>${h(s.n)}</h2>
@@ -600,19 +601,6 @@ function applyBrand(){
   document.getElementById('hero-copy').textContent=BRAND.heroCopy;
 }
 
-function applyTheme(){
-  const root=document.documentElement;
-  const vars={
-    '--brand-primary':THEME.primary,
-    '--brand-primary-strong':THEME.primaryStrong,
-    '--brand-success':THEME.success,
-    '--brand-success-strong':THEME.successStrong
-  };
-  Object.entries(vars).forEach(([name,value])=>{
-    if(value)root.style.setProperty(name,value);
-  });
-}
-
 function bindEvents(){
   document.addEventListener('click',event=>{
     const viewButton=event.target.closest('[data-view]');
@@ -697,19 +685,38 @@ function bindEvents(){
 }
 
 async function initApp() {
-  try {
-    SOURCE_SCREENS = typeof SCREENS !== 'undefined' ? SCREENS : [];
-    ACTIVE_SCREENS = SOURCE_SCREENS.filter(s => s.active);
-    console.log(`SmartKit: Cargando ${ACTIVE_SCREENS.length} pantallas activas desde screens-data.js.`);
-    zones = ['Todos', ...new Set(ACTIVE_SCREENS.map(s => s.b))];
-    activeMetrics.totalReach = ACTIVE_SCREENS.reduce((acc, s) => acc + impNum(s), 0);
-  } catch (err) {
-    console.error('Fallo al cargar las pantallas', err);
+  const urlParams = new URLSearchParams(window.location.search);
+  const loadDefault = urlParams.get('load') === 'default';
+  const savedState = Shared.loadDashboardState();
+
+  if (MODE === 'api') {
+    try {
+      console.log('SmartKit: Modo API, cargando desde /inventory...');
+      const response = await fetch('/inventory');
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      SOURCE_SCREENS = await response.json();
+    } catch (err) {
+      console.error('Fallo al cargar las pantallas desde la API', err);
+      SOURCE_SCREENS = [];
+    }
+  } else if (savedState && savedState.rows?.length && !loadDefault) {
+    console.log(`SmartKit: Cargando ${savedState.rows.length} pantallas desde localStorage.`);
+    SOURCE_SCREENS = savedState.rows;
+    if (savedState.brand) Object.assign(BRAND, savedState.brand);
+  } else if (typeof SCREENS !== 'undefined' && Array.isArray(SCREENS)) {
+    console.log(`SmartKit: Cargando ${SCREENS.length} pantallas desde screens-data.js.`);
+    SOURCE_SCREENS = JSON.parse(JSON.stringify(SCREENS));
+  } else {
+    console.error('Error: No se encontraron datos de pantallas.');
     SOURCE_SCREENS = [];
-    ACTIVE_SCREENS = [];
   }
 
+  ACTIVE_SCREENS = SOURCE_SCREENS.filter(s => s.status === 'Activo' || (typeof s.active !== 'undefined' ? s.active : true));
+  zones = ['Todos', ...new Set(ACTIVE_SCREENS.map(s => s.b))];
+  activeMetrics.totalReach = ACTIVE_SCREENS.reduce((acc, s) => acc + impNum(s), 0);
+
   applyBrand();
+  Shared.updateMediaKitLinks();
   bindEvents();
   initMap();
   renderBrochure();

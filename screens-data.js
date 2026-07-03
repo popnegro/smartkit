@@ -21,24 +21,7 @@ const SCREENS=[
   {id:20,lat:-32.8300,lng:-68.8200,n:'Acceso Norte Ruta 40',b:'Las Heras Norte',dir:'Ruta Nacional 40 km 1085',dim:'10x5 m',res:'4K UHD',imp:'55.000',precio:120000,tipo:'Mixto',e:'AN',g:'linear-gradient(135deg,#075985,#92400e)',video:'./assets/videos/palmares.mp4'}
 ];
 
-const DURATIONS=[
-  {v:'1s',l:'1 semana',mult:1,days:7},
-  {v:'2s',l:'2 semanas',mult:1.8,days:14},
-  {v:'1m',l:'1 mes',mult:3.2,days:30},
-  {v:'3m',l:'3 meses',mult:8,days:90}
-];
-
-const TIPO_COL={
-  Peatonal:'#0891b2',
-  Vehicular:'#b45309',
-  Mixto:'#4f46e5'
-};
-
 const METRICS={
   market:'Gran Mendoza',
   currency:'ARS'
-};
-
-function impNum(screen){
-  return parseInt(String(screen.imp || screen || '0').replace(/\./g,''),10) || 0;
 }

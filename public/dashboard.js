@@ -4,6 +4,7 @@ const fmt = Shared.formatMoney;
 const imp = Shared.impNum;
 const h = Shared.escapeHtml;
 
+const MODE = 'static'; // El script de build lo cambiará a 'api' si es necesario
 // --- MEJORA: Centralizar el estado de la aplicación en un solo objeto.
 const state = {
   rows: [],
@@ -27,15 +28,27 @@ const debouncedPersist = Shared.debounce((message) => {
 }, 1500);
 
 
-function loadInitialData(){
+async function loadInitialData(){
+  const urlParams = new URLSearchParams(window.location.search);
+  const loadDefault = urlParams.get('load') === 'default';
+
   const savedState = Shared.loadDashboardState();
-  if (savedState) {
+  if (MODE === 'api') {
+    try {
+      console.log('SmartKit: Modo API, cargando desde /inventory...');
+      const response = await fetch('/inventory');
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      state.rows = await response.json();
+    } catch (err) {
+      console.error('Fallo al cargar las pantallas desde la API', err);
+      state.rows = [];
+    }
+  } else if (savedState && !loadDefault) {
     state.rows = savedState.rows;
     state.savedKits = savedState.kits || [];
     Object.assign(state.brand, savedState.brand || {});
   } else {
     state.rows = JSON.parse(JSON.stringify(SCREENS));
-    // El estado 'active' se setea por defecto al no haber estado guardado.
     state.rows.forEach(row => { row.status = row.active ? SCREEN_STATUS.ACTIVE : SCREEN_STATUS.PAUSED; });
     Shared.showToast('Datos iniciales cargados');
   }
@@ -48,41 +61,6 @@ function calculateKitMetrics(screens, duration) {
   const impacts = screens.reduce((sum, row) => sum + imp(row) * duration.days, 0);
   const cpm = impacts ? Math.round(total / impacts * 1000) : 0;
   return { total, impacts, cpm };
-}
-
-async function buildKitPayload(status = KIT_STATUS.DRAFT){
-  const duration = selectedDuration();
-  const screens = kitScreens();
-  const client = document.getElementById('kit-client').value.trim() || 'Cliente sin nombre';
-  const contact = document.getElementById('kit-contact').value.trim() || 'Contacto a confirmar';
-  const { total, impacts, cpm } = calculateKitMetrics(screens, duration);
-  const createdAt = new Date();
-  const validUntil = new Date(createdAt);
-  validUntil.setDate(validUntil.getDate() + (parseInt(state.brand.validity) || 15));
-  const kit = {
-    id: `kit-${Shared.kitSlug(client)}-${createdAt.getTime()}`,
-    client,
-    contact,
-    duration: duration.l,
-    durationValue: duration.v,
-    days: duration.days,
-    screenIds: screens.map(row => row.id),
-    screenSnapshots: screens.map(row => Shared.screenSnapshot(row,duration)),
-    screens: screens.length,
-    total,
-    impacts,
-    cpm,
-    status,
-    createdAt: createdAt.toISOString(),
-    validUntil: validUntil.toISOString().slice(0,10),
-    terms: document.getElementById('settings-terms').value.trim(),
-    validity: document.getElementById('settings-validity').value,
-    brand: { name: state.brand.name, logo: state.brand.logo, whatsapp: state.brand.whatsapp }
-  };
-  kit.digitalSignature = await Shared.signMediaKit(kit, {
-    signer: window.CONFIG?.signature?.signer || state.brand.name,
-  });
-  return kit;
 }
 
 function downloadKitJson(kit){
@@ -323,10 +301,21 @@ async function saveKit(){
     Shared.showToast('Selecciona al menos una pantalla');
     return;
   }
-  const kit = await buildKitPayload(KIT_STATUS.DRAFT); // buildKitPayload es async
+
+  const duration = selectedDuration();
+  const { total, impacts } = calculateKitMetrics(screens, duration);
+  const quote = { screens, duration, total, impacts };
+  
+  const kit = await Shared.buildMediaKit(quote, state.brand, window.CONFIG || {}, KIT_STATUS.DRAFT);
+  if (!kit) {
+    Shared.showToast('Error al generar el media kit');
+    return;
+  }
+
+  kit.client = document.getElementById('kit-client').value.trim() || 'Cliente sin nombre';
+  kit.contact = document.getElementById('kit-contact').value.trim() || 'Contacto a confirmar';
   kit.archived = false; // Los kits nuevos siempre están activos
   state.savedKits = [kit, ...state.savedKits.filter(k => k.id !== kit.id)];
-  renderKitHistory();
   setKitStep(1);
   debouncedPersist('Media kit guardado');
 }
@@ -484,16 +473,18 @@ function bindEvents(){
   });
 }
 
-loadInitialData();
-applyBrand();
-fillFilters();
-updateKpis();
-bindEvents();
-document.getElementById('settings-brand').value = state.brand.name;
-document.getElementById('settings-logo').value = state.brand.logo;
-document.getElementById('settings-whatsapp').value = state.brand.whatsapp || '';
-if(state.brand.terms) document.getElementById('settings-terms').value = state.brand.terms;
-if(state.brand.validity) document.getElementById('settings-validity').value = state.brand.validity;
-renderKitHistory();
-renderKitBuilder();
-selectRow(state.selectedId);
+(async () => {
+  await loadInitialData();
+  applyBrand();
+  fillFilters();
+  updateKpis();
+  bindEvents();
+  document.getElementById('settings-brand').value = state.brand.name;
+  document.getElementById('settings-logo').value = state.brand.logo;
+  document.getElementById('settings-whatsapp').value = state.brand.whatsapp || '';
+  if(state.brand.terms) document.getElementById('settings-terms').value = state.brand.terms;
+  if(state.brand.validity) document.getElementById('settings-validity').value = state.brand.validity;
+  renderKitHistory();
+  renderKitBuilder();
+  selectRow(state.selectedId);
+})();

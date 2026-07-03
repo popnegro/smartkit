@@ -456,60 +456,66 @@ function renderQuote(){
       <div><strong>${h(s.n)}</strong><div class="muted small">${h(s.b)} · ${fmt(s.precio)}/semana</div></div>
       <button type="button" aria-label="Quitar ${h(s.n)}" data-action="toggle-quote" data-screen-id="${s.id}">×</button>
     </div>`).join(''):'';
-  [
-    {prefix:'',duration:'duration-select'}
-  ].forEach(panel=>{
-    const durationSelect=document.getElementById(panel.duration);
-    const list=document.getElementById(`${panel.prefix}quote-list`);
-    const count=document.getElementById(`${panel.prefix}quote-count`);
-    const impacts=document.getElementById(`${panel.prefix}quote-impacts`);
-    const total=document.getElementById(`${panel.prefix}quote-total`);
-    const whatsapp=document.getElementById(`${panel.prefix}quote-whatsapp`);
-    const mediakit=document.getElementById(`${panel.prefix}quote-mediakit`);
-    const summaryCount=document.getElementById(`${panel.prefix}quote-summary-count`);
-    const summaryDetail=document.getElementById(`${panel.prefix}quote-summary-detail`);
-    const status=document.getElementById(`${panel.prefix}quote-status`);
-    const hint=document.getElementById(`${panel.prefix}quote-action-hint`);
-    const mobileToggle=document.getElementById(`${panel.prefix}mobile-quote-toggle`);
-    const mobileCart=document.getElementById(`${panel.prefix}mobile-quote-cart`);
-    const mobileCartSummary=document.getElementById(`${panel.prefix}mobile-quote-cart-summary`);
-    const mobileCartMeta=document.getElementById(`${panel.prefix}mobile-quote-cart-meta`);
-    const quotePanel=whatsapp?.closest('.quote-panel');
-    const hasScreens=q.screens.length>0;
-    if(durationSelect)durationSelect.innerHTML=durationHtml;
-    if(list)list.innerHTML=listHtml;
-    if(list)list.classList.toggle('is-empty',!hasScreens);
-    if(count)count.textContent=q.screens.length;
-    if(impacts)impacts.textContent=Math.round(q.impacts).toLocaleString('es-AR');
-    if(total)total.textContent=fmt(q.total);
-    if(whatsapp){
-      whatsapp.disabled=!hasScreens;
-      whatsapp.classList.toggle('is-empty',!hasScreens);
-      whatsapp.innerHTML=hasScreens?whatsappButtonContent('Contactar'):whatsappButtonContent('Contactar', plusIcon);
-    }
-    if(mediakit){
-      mediakit.disabled=!hasScreens;
-      mediakit.classList.toggle('is-empty',!hasScreens);
-      mediakit.innerHTML=hasScreens?whatsappButtonContent('Generar media kit', documentIcon):whatsappButtonContent('Generar media kit', documentIcon);
-    }
-    if(status)status.textContent=hasScreens?'Listo':'Vacío';
-    if(hint)hint.textContent=hasScreens?'Genera una propuesta con snapshot, inversión, impactos y condiciones; luego puedes guardarla como PDF o contactar por WhatsApp.':'Agrega una pantalla al cotizador para generar una propuesta compartible.';
-    if(quotePanel)quotePanel.classList.toggle('has-selection',hasScreens);
-    if(summaryCount)summaryCount.textContent=hasScreens?`${q.screens.length} ${q.screens.length===1?'pantalla':'pantallas'} · ${Math.round(q.impacts/1000).toLocaleString('es-AR')}k impactos · ${fmt(q.total)}`:'0 pantallas · Sin plan armado';
-    if(summaryDetail)summaryDetail.textContent=hasScreens?`${q.duration.l} · disponibilidad a confirmar`:'Agrega pantallas para estimar inversión';
-    if(mobileToggle){
-      const label=hasScreens?`${q.screens.length} ${q.screens.length===1?'pantalla':'pantallas'} · ${fmt(q.total)}`:'Cotizador';
-      const labelTarget=mobileToggle.querySelector('span')||mobileToggle;
-      labelTarget.textContent=label;
-    }
-    if(mobileCart){
-      mobileCart.hidden=!hasScreens;
-      mobileCart.classList.toggle('show',hasScreens);
-      mobileCart.setAttribute('aria-hidden',hasScreens?'false':'true');
-    }
-    if(mobileCartSummary)mobileCartSummary.textContent=hasScreens?`${q.screens.length} ${q.screens.length===1?'pantalla':'pantallas'} · ${fmt(q.total)}`:'Cotizador vacío';
-    if(mobileCartMeta)mobileCartMeta.textContent=hasScreens?`${Math.round(q.impacts/1000).toLocaleString('es-AR')}k impactos · ${q.duration.l}`:'Agrega pantallas para armar tu plan';
-  });
+
+  const elements = {
+    durationSelect: document.getElementById('duration-select'),
+    list: document.getElementById('quote-list'),
+    count: document.getElementById('quote-count'),
+    impacts: document.getElementById('quote-impacts'),
+    total: document.getElementById('quote-total'),
+    whatsapp: document.getElementById('quote-whatsapp'),
+    mediakit: document.getElementById('quote-mediakit'),
+    summaryCount: document.getElementById('quote-summary-count'),
+    summaryDetail: document.getElementById('quote-summary-detail'),
+    status: document.getElementById('quote-status'),
+    hint: document.getElementById('quote-action-hint'),
+    mobileToggle: document.getElementById('mobile-quote-toggle'),
+    mobileCart: document.getElementById('mobile-quote-cart'),
+    mobileCartSummary: document.getElementById('mobile-quote-cart-summary'),
+    mobileCartMeta: document.getElementById('mobile-quote-cart-meta'),
+    quotePanel: document.querySelector('.quote-panel')
+  };
+
+  const hasScreens = q.screens.length > 0;
+
+  if (elements.durationSelect) elements.durationSelect.innerHTML = durationHtml;
+  if (elements.list) {
+    elements.list.innerHTML = listHtml;
+    elements.list.classList.toggle('is-empty', !hasScreens);
+  }
+  if (elements.count) elements.count.textContent = q.screens.length;
+  if (elements.impacts) elements.impacts.textContent = Math.round(q.impacts).toLocaleString('es-AR');
+  if (elements.total) elements.total.textContent = fmt(q.total);
+
+  if (elements.whatsapp) {
+    elements.whatsapp.disabled = !hasScreens;
+    elements.whatsapp.classList.toggle('is-empty', !hasScreens);
+    elements.whatsapp.innerHTML = hasScreens ? whatsappButtonContent('Contactar') : whatsappButtonContent('Contactar', plusIcon);
+  }
+  if (elements.mediakit) {
+    elements.mediakit.disabled = !hasScreens;
+    elements.mediakit.classList.toggle('is-empty', !hasScreens);
+    elements.mediakit.innerHTML = hasScreens ? whatsappButtonContent('Generar media kit', documentIcon) : whatsappButtonContent('Generar media kit', documentIcon);
+  }
+
+  if (elements.status) elements.status.textContent = hasScreens ? 'Listo' : 'Vacío';
+  if (elements.hint) elements.hint.textContent = hasScreens ? 'Genera una propuesta con snapshot, inversión, impactos y condiciones; luego puedes guardarla como PDF o contactar por WhatsApp.' : 'Agrega una pantalla al cotizador para generar una propuesta compartible.';
+  if (elements.quotePanel) elements.quotePanel.classList.toggle('has-selection', hasScreens);
+  if (elements.summaryCount) elements.summaryCount.textContent = hasScreens ? `${q.screens.length} ${q.screens.length === 1 ? 'pantalla' : 'pantallas'} · ${Math.round(q.impacts / 1000).toLocaleString('es-AR')}k impactos · ${fmt(q.total)}` : '0 pantallas · Sin plan armado';
+  if (elements.summaryDetail) elements.summaryDetail.textContent = hasScreens ? `${q.duration.l} · disponibilidad a confirmar` : 'Agrega pantallas para estimar inversión';
+
+  if (elements.mobileToggle) {
+    const label = hasScreens ? `${q.screens.length} ${q.screens.length === 1 ? 'pantalla' : 'pantallas'} · ${fmt(q.total)}` : 'Cotizador';
+    const labelTarget = elements.mobileToggle.querySelector('span') || elements.mobileToggle;
+    labelTarget.textContent = label;
+  }
+  if (elements.mobileCart) {
+    elements.mobileCart.hidden = !hasScreens;
+    elements.mobileCart.classList.toggle('show', hasScreens);
+    elements.mobileCart.setAttribute('aria-hidden', hasScreens ? 'false' : 'true');
+  }
+  if (elements.mobileCartSummary) elements.mobileCartSummary.textContent = hasScreens ? `${q.screens.length} ${q.screens.length === 1 ? 'pantalla' : 'pantallas'} · ${fmt(q.total)}` : 'Cotizador vacío';
+  if (elements.mobileCartMeta) elements.mobileCartMeta.textContent = hasScreens ? `${Math.round(q.impacts / 1000).toLocaleString('es-AR')}k impactos · ${q.duration.l}` : 'Agrega pantallas para armar tu plan';
 }
 
 async function buildMediaKitFromQuote(){

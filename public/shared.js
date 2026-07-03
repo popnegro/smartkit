@@ -1,10 +1,11 @@
 const SmartKitShared = (() => {
   const DURATIONS = [
     {v:'1s', l:'1 semana', mult:1, days:7},
-    {v:'15d', l:'15 días', mult:2, days:15},
-    {v:'1m', l:'1 mes', mult:4, days:30}
+    {v:'2s',l:'2 semanas',mult:1.8,days:14},
+    {v:'1m',l:'1 mes',mult:3.2,days:30},
+    {v:'3m',l:'3 meses',mult:8,days:90}
   ];
-  const DASHBOARD_STORAGE_KEY = 'smartkit-dashboard-state';
+  const DASHBOARD_STORAGE_KEY = 'smartkit-dashboard-state'; // Usado en dashboard.js
   const PUBLIC_KITS_STORAGE_KEY = 'smartkit-public-kits';
 
   const DEFAULT_BRAND = {
@@ -14,6 +15,13 @@ const SmartKitShared = (() => {
     heroCopy: 'Planifica campañas DOOH, selecciona ubicaciones digitales y genera una reserva comercial en minutos.',
     terms: 'Inicio de campaña sujeto a disponibilidad y aprobación de piezas. Valores expresados en ARS.',
     validity: '15 días'
+  };
+
+  const TIPO_COL={
+    Peatonal:'#0891b2',
+    Vehicular:'#b45309',
+    Mixto:'#4f46e5',
+    Indoor: '#16a34a'
   };
 
   function escapeHtml(value) {
@@ -27,7 +35,7 @@ const SmartKitShared = (() => {
   }
 
   function getMediaKitUrl(kitId) {
-    const basePath = window.CONFIG?.basePath || '';
+    const basePath = window.CONFIG?.basePath || '.';
     const relativePath = basePath ? `${basePath}/mediakit.html` : './mediakit.html';
     return `${relativePath}?id=${encodeURIComponent(kitId)}`;
   }
@@ -54,7 +62,7 @@ const SmartKitShared = (() => {
   }
 
   function impNum(screen) {
-    return parseInt(String(screen.imp || '0').replace(/\./g, ''), 10) || 0;
+    return parseInt(String(screen.imp || screen || '0').replace(/\./g, ''), 10) || 0;
   }
 
   function formatMoney(value) {
@@ -66,6 +74,10 @@ const SmartKitShared = (() => {
     const name = document.getElementById('brand-name');
     if (logo) logo.textContent = brand.logo || DEFAULT_BRAND.logo;
     if (name) name.textContent = brand.name || DEFAULT_BRAND.name;
+  }
+
+  function kitSlug(value){
+    return String(value || 'media-kit').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
   }
 
   function safeAssetUrl(value) {
@@ -171,6 +183,43 @@ const SmartKitShared = (() => {
     return `<div class="${h(className)} video-head" style="background:${h(background)}"><span class="media-fallback" aria-hidden="true">${h(initials)}</span>${video}</div>`;
   }
 
+  async function buildMediaKit(quote, brand, config, status = 'Borrador') {
+    if (!quote || !quote.screens.length) return null;
+
+    const createdAt = new Date();
+    const validityDays = parseInt(brand.validity) || 15;
+    const validUntil = new Date(createdAt);
+    validUntil.setDate(validUntil.getDate() + validityDays);
+
+    const client = `Propuesta ${brand.name}`;
+    const kit = {
+      id: `kit-${kitSlug(client)}-${createdAt.getTime()}`,
+      client,
+      contact: 'Equipo comercial',
+      duration: quote.duration.l,
+      durationValue: quote.duration.v,
+      days: quote.duration.days,
+      screenIds: quote.screens.map(s => s.id),
+      screenSnapshots: quote.screens.map(s => screenSnapshot(s, quote.duration)),
+      screens: quote.screens.length,
+      total: quote.total,
+      impacts: quote.impacts,
+      cpm: quote.impacts ? Math.round(quote.total / quote.impacts * 1000) : 0,
+      status,
+      createdAt: createdAt.toISOString(),
+      validUntil: validUntil.toISOString().slice(0, 10),
+      terms: brand.terms || DEFAULT_BRAND.terms,
+      validity: brand.validity || DEFAULT_BRAND.validity,
+      brand: { name: brand.name, logo: brand.logo, whatsapp: brand.whatsapp }
+    };
+
+    kit.digitalSignature = await signMediaKit(kit, {
+      signer: config.signature?.signer || brand.name,
+      secret: config.signature?.secret || ''
+    });
+    return kit;
+  }
+
   async function clearAllData() {
     // 1. Eliminar LocalStorage relacionado con la app
     localStorage.removeItem(PUBLIC_KITS_STORAGE_KEY);
@@ -191,15 +240,19 @@ const SmartKitShared = (() => {
 
   function loadDashboardState() {
     try {
-      const savedState = JSON.parse(localStorage.getItem(DASHBOARD_STORAGE_KEY));
+      const stateJSON = localStorage.getItem(DASHBOARD_STORAGE_KEY);
+      if (!stateJSON) return null;
+
+      const savedState = JSON.parse(stateJSON);
       if (savedState && savedState.rows && Array.isArray(savedState.rows)) {
-        // Sincronizar estado 'active' con la fuente de verdad (screens-data.js)
-        const sourceScreens = new Map(window.SCREENS.map(s => [s.id, s]));
-        savedState.rows.forEach(row => {
-          const sourceScreen = sourceScreens.get(row.id);
-          row.status = sourceScreen && sourceScreen.active ? 'Activo' : 'Pausado';
-        });
-        showToast('Estado local cargado');
+        // Sincronizar con la fuente de verdad (screens-data.js) para el estado 'active'
+        if (typeof SCREENS !== 'undefined') {
+          const sourceScreens = new Map(SCREENS.map(s => [s.id, s]));
+          savedState.rows.forEach(row => {
+            const sourceScreen = sourceScreens.get(row.id);
+            row.active = sourceScreen ? sourceScreen.active : false;
+          });
+        }
         return savedState;
       }
     } catch (err) {
@@ -227,24 +280,49 @@ const SmartKitShared = (() => {
     }
   }
 
+  function storedPublicKits() {
+    try { return JSON.parse(localStorage.getItem(PUBLIC_KITS_STORAGE_KEY) || '[]') || []; }
+    catch { return []; }
+  }
+
+  function latestMediaKitId(currentId = '') {
+    const kits = storedPublicKits().filter(kit => !kit.archived);
+    return currentId || kits[0]?.id || '';
+  }
+
+  function updateMediaKitLinks(id = latestMediaKitId()) {
+    const href = id ? getMediaKitUrl(id) : './mediakit.html';
+    document.querySelectorAll('[data-mediakit-link]').forEach(link => {
+      link.setAttribute('href', href);
+    });
+  }
+
   return {
     DEFAULT_BRAND,
     DURATIONS,
+    PUBLIC_KITS_STORAGE_KEY,
+    TIPO_COL,
     applyBrandHeader,
+    buildMediaKit,
+    clearAllData,
+    debounce,
     escapeHtml,
     getMediaKitUrl,
     formatMoney,
     impNum,
+    kitSlug,
+    latestMediaKitId,
+    loadDashboardState,
     mediaHtml,
+    persistDashboardState,
     safeAssetUrl,
     safeBackground,
     screenSnapshot,
     showToast,
     signMediaKit,
+    storedPublicKits,
+    updateMediaKitLinks,
     verifyMediaKitSignature,
-    clearAllData,
-    loadDashboardState,
-    persistDashboardState
   };
 })();
 
