@@ -127,13 +127,15 @@ jobs:
       name: preview
       url: ${{ steps.deploy.outputs.preview-url }}
     steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
+      - name: Descargar workspace
+        uses: actions/download-artifact@v4
+        with:
+          name: workspace
+          path: .
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
       - name: Deploy a Vercel (Preview)
         id: deploy
         uses: amondnet/vercel-action@v25
@@ -168,11 +170,16 @@ jobs:
       name: production
       url: https://smartkit-demo.vercel.app # Reemplazar con tu dominio de producción
     steps:
-      - name: Descargar artefacto de producción
+      - name: Descargar workspace
         uses: actions/download-artifact@v4
         with:
-          name: production-dist
-          path: public/dist
+          name: workspace
+          path: .
+
+      - name: Build Demo Version
+        run: |
+          chmod +x public/build.sh
+          cd public && ./build.sh demo
 
       - name: Deploy a Vercel (Production)
         uses: amondnet/vercel-action@v25
@@ -180,7 +187,6 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: 'public' # Indica a Vercel que despliegue este directorio
           vercel-args: '--prod'
         env:
           BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
