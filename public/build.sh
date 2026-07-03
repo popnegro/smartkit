@@ -23,8 +23,6 @@ JS_FILES_TO_MINIFY=(
 )
 CSS_FILES_TO_MINIFY=(
     "styles.css"
-    "base.css"
-    "dashboard.css"
 )
 HTML_FILES=("index.html" "dashboard.html" "mediakit.html")
 STATIC_ASSETS=("assets" "data") # Directorios para copiar
@@ -57,8 +55,8 @@ minificar_js() {
         sed "s/const MODE = 'static';/const MODE = 'api';/" dashboard.js | npx --yes terser -c -m > "$DEST_DIR/dashboard.js"
     else
         echo "  Minificando app.js y dashboard.js..."
-        npx --yes terser -c -m -- "app.js" > "$DEST_DIR/app.js"
-        npx --yes terser -c -m -- "dashboard.js" > "$DEST_DIR/dashboard.js"
+        (npx --yes terser -c -m -- "app.js" > "$DEST_DIR/app.js" && echo "  ✅ Minificado: app.js") &
+        (npx --yes terser -c -m -- "dashboard.js" > "$DEST_DIR/dashboard.js" && echo "  ✅ Minificado: dashboard.js") &
     fi
 
     # Ejecuta la minificación en paralelo para acelerar el proceso
