@@ -71,6 +71,14 @@ generar_manifiesto() {
     fi
 }
 
+post_build() {
+    echo "Realizando ajustes post-build..."
+    echo "  Asegurando que index.html carga el script de datos correcto..."
+    # Reemplaza la etiqueta de script original por la minificada.
+    # Funciona incluso si el archivo ya fue modificado.
+    sed -i 's|src="./screens-data.js"|src="screens-data.js"|' "$DEST_DIR/index.html"
+}
+
 # --- Ejecución ---
 
 # Verifica si npx está disponible
@@ -84,6 +92,7 @@ copiar_archivos
 minificar_js
 minificar_css
 generar_manifiesto
+post_build
 
 echo "✅ Directorio '$DEST_DIR' generado y optimizado para producción en modo '$MODE'."
 echo "Manifest de producción actualizado en '$DEST_DIR/production-manifest.json'."

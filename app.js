@@ -715,18 +715,25 @@ function bindEvents(){
 }
 
 async function initApp() {
-  // --- CORRECCIÓN PARA PRODUCCIÓN ESTÁTICA ---
-  // Se elimina la llamada a la API y se cargan los datos directamente
-  // desde la variable global `SCREENS` definida en `screens-data.js`.
-  if (typeof SCREENS !== 'undefined' && Array.isArray(SCREENS)) {
-    SOURCE_SCREENS = SCREENS;
-    ACTIVE_SCREENS = SOURCE_SCREENS.filter(s => s.status === 'Activo' || typeof s.status === 'undefined'); // Se incluyen pantallas sin estado definido para compatibilidad.
-    zones = ['Todos', ...new Set(ACTIVE_SCREENS.map(s => s.b))];
-    activeMetrics.totalReach = ACTIVE_SCREENS.reduce((acc, s) => acc + impNum(s), 0);
+  const savedState = Shared.loadDashboardState?.();
+  if (savedState?.rows?.length) {
+    SOURCE_SCREENS = savedState.rows;
+    ACTIVE_SCREENS = SOURCE_SCREENS.filter(s => s.status === 'Activo');
+  } else if (typeof SCREENS !== 'undefined' && Array.isArray(SCREENS)) {
+    // Clonar para no modificar el objeto original
+    SOURCE_SCREENS = JSON.parse(JSON.stringify(SCREENS));
+    // Estandarizar el estado de las pantallas, igual que en el dashboard
+    SOURCE_SCREENS.forEach(s => {
+      s.status = s.active ? 'Activo' : 'Pausado';
+    });
+    ACTIVE_SCREENS = SOURCE_SCREENS.filter(s => s.status === 'Activo');
   } else {
     console.error('Error: La variable global SCREENS no fue encontrada. Asegúrate de que screens-data.js se está cargando correctamente.');
     ACTIVE_SCREENS = [];
   }
+
+  zones = ['Todos', ...new Set(ACTIVE_SCREENS.map(s => s.b))];
+  activeMetrics.totalReach = ACTIVE_SCREENS.reduce((acc, s) => Shared.impNum(s), 0);
 
   applyBrand();
   Shared.updateMediaKitLinks();

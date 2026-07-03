@@ -178,6 +178,7 @@ function updateEditor(row){
   document.getElementById('edit-audience').value = row.aud || '';
   document.getElementById('edit-video').value = row.video || '';
   document.getElementById('edit-note').value = row.note;
+  document.getElementById('edit-status').value = row.status || SCREEN_STATUS.ACTIVE;
   renderPreview(row);
 }
 
@@ -446,6 +447,7 @@ function bindEvents(){
     row.aud = document.getElementById('edit-audience').value.trim();
     row.precio = Number(document.getElementById('edit-price').value) || row.precio;
     row.note = document.getElementById('edit-note').value.trim();
+    row.status = document.getElementById('edit-status').value;
     document.getElementById('last-action').textContent = `Actualizada #${row.id}`;
     updateKpis();
     fillFilters();
