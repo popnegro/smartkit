@@ -74,9 +74,9 @@ generar_manifiesto() {
 post_build() {
     echo "Realizando ajustes post-build..."
     echo "  Asegurando que index.html carga el script de datos correcto..."
-    # Reemplaza la etiqueta de script original por la minificada.
-    # Funciona incluso si el archivo ya fue modificado.
-    sed -i 's|src="./screens-data.js"|src="screens-data.js"|' "$DEST_DIR/index.html"
+    # Busca la etiqueta de script para screens-data.js y se asegura de que no tenga la ruta relativa "./"
+    # Esto es más robusto que un reemplazo de cadena simple.
+    sed -i -E 's|src\s*=\s*"\./screens-data\.js"|src="screens-data.js"|' "$DEST_DIR/index.html"
 }
 
 # --- Ejecución ---
