@@ -282,7 +282,7 @@ function renderScreenCard(s){
       <div class="grid2">
         <div class="metric"><span class="muted small">Formato</span><b>${h(s.dim)}</b></div>
         <div class="metric"><span class="muted small">Resolución</span><b>${h(s.res)}</b></div>
-        <div class="metric"><span class="muted small">Audiencia</span><b>${h(s.aud || 'N/D')}</b></div>
+        <div class="metric"><span class="muted small">Audiencia</span><b>${h(s.aud || 'General')}</b></div>
         <div class="metric"><span class="muted small">Impactos/día</span><b>${h(s.imp)}</b></div>
         <div class="metric"><span class="muted small">Precio base</span><b>${fmt(s.precio)}</b></div>
       </div>
