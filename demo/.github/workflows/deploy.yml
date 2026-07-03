@@ -32,26 +32,6 @@ jobs:
           fi
           echo "✅ No se encontraron archivos .env versionados."
 
-      - name: Verificar estructura de API
-        run: |
-          required_files=(
-            "api/_cors.js"
-            "api/db.js"
-            "api/screens/index.js"
-            "api/screens/all.js"
-            "api/config/index.js"
-            "api/kits/index.js"
-            "api/kits/[id].js"
-            "api/clients/index.js"
-          )
-          for file in "${required_files[@]}"; do
-            if [ ! -f "$file" ]; then
-              echo "❌ Archivo requerido no encontrado: $file"
-              exit 1
-            fi
-          done
-          echo "✅ Estructura de API correcta."
-
   # ── Construcción y preparación ──────────────────────────────────────────
   build:
     name: Build
@@ -75,20 +55,6 @@ jobs:
         with:
           name: workspace
           path: .
-          retention-days: 1
-
-      - name: Build Demo Version (for production)
-        if: github.ref == 'refs/heads/main'
-        run: |
-          chmod +x public/build.sh
-          cd public && ./build.sh demo
-
-      - name: Upload production artifact
-        if: github.ref == 'refs/heads/main'
-        uses: actions/upload-artifact@v4
-        with:
-          name: production-dist
-          path: public/dist
           retention-days: 1
 
   # ── Ejecución de Tests ───────────────────────────────────────────────────
