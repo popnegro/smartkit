@@ -219,6 +219,78 @@ const SmartKitShared = (() => {
     return kit;
   }
 
+  async function renderMediaKitPage(kit, config = {}) {
+    const app = document.getElementById('app');
+    if (!app) return;
+
+    const h = escapeHtml;
+    const fmt = formatMoney;
+    const brand = kit.brand || DEFAULT_BRAND;
+    const signature = await verifyMediaKitSignature(kit, config.signature);
+
+    document.title = `${brand.name} - Propuesta para ${kit.client}`;
+    applyBrandHeader(brand);
+
+    const signatureStates = {
+      valid: { text: 'Propuesta Verificada', class: 'badge-success' },
+      invalid: { text: 'Propuesta Alterada', class: 'badge-danger' },
+      unsigned: { text: 'Propuesta no firmada', class: 'badge-warning' }
+    };
+    const sigState = signatureStates[signature.state] || signatureStates.unsigned;
+
+    app.innerHTML = `
+      <div class="mk-header">
+        <div>
+          <span class="eyebrow">Propuesta comercial para</span>
+          <h1>${h(kit.client)}</h1>
+          <p class="muted">
+            Válida hasta el ${h(kit.validUntil)} · 
+            <span class="badge ${sigState.class}">${sigState.text}</span>
+          </p>
+        </div>
+        <div class="mk-actions">
+          <button class="btn" onclick="window.print()">Guardar PDF</button>
+          <a href="https://wa.me/${h(brand.whatsapp || '')}" class="btn primary" target="_blank" rel="noopener">Contactar por WhatsApp</a>
+        </div>
+      </div>
+
+      <div class="mk-kpis">
+        <div class="kpi"><b>${kit.screens}</b><span>Pantallas</span></div>
+        <div class="kpi"><b>${Math.round(kit.impacts / 1000).toLocaleString('es-AR')}k</b><span>Impactos</span></div>
+        <div class="kpi"><b>${fmt(kit.total)}</b><span>Inversión (${h(kit.duration)})</span></div>
+        <div class="kpi"><b>${fmt(kit.cpm)}</b><span>CPM Promedio</span></div>
+      </div>
+
+      <div class="mk-grid">
+        <div class="mk-screen-list">
+          ${kit.screenSnapshots.map(s => `
+            <div class="mk-screen-card">
+              ${mediaHtml(s, 'mk-screen-media', { preload: 'none' })}
+              <div class="mk-screen-body">
+                <h3>${h(s.name)}</h3>
+                <p class="muted">${h(s.address)} · ${h(s.zone)}</p>
+                <div class="mk-screen-tags">
+                  <span class="badge">${h(s.type)}</span>
+                  <span class="badge">${h(s.format)}</span>
+                  <span class="badge">${h(s.resolution)}</span>
+                </div>
+                <div class="mk-screen-price">
+                  <span>Subtotal (${h(kit.duration)})</span>
+                  <strong>${fmt(s.subtotal)}</strong>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        <aside class="mk-sidebar">
+          <div class="panel">
+            <div class="panel-head"><h3>Condiciones</h3></div>
+            <div class="panel-pad muted small">${h(kit.terms).replace(/\n/g, '<br>')}</div>
+          </div>
+        </aside>
+      </div>`;
+  }
+
   async function clearAllData() {
     // 1. Eliminar LocalStorage relacionado con la app
     localStorage.removeItem(PUBLIC_KITS_STORAGE_KEY);
@@ -313,6 +385,7 @@ const SmartKitShared = (() => {
     latestMediaKitId,
     loadDashboardState,
     mediaHtml,
+    renderMediaKitPage,
     persistDashboardState,
     safeAssetUrl,
     safeBackground,

@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const app = document.getElementById('app');
   if (!app) return;
+
+  const h = SmartKitShared.escapeHtml;
   
   const params = new URLSearchParams(location.search);
   const kitId = params.get('id');
@@ -23,13 +25,40 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   if (kit) {
-    SmartKitShared.renderMediaKitPage(kit, window.CONFIG || {});
+    await SmartKitShared.renderMediaKitPage(kit, window.CONFIG || {});
+    notifyAdminOfView(kit.id, kit.client);
   } else {
     renderEmptyState(kitId, app);
   }
 
+  /**
+   * Llama a un endpoint de la API para notificar que un media kit ha sido visto.
+   * Solo se ejecuta una vez por sesión del navegador para evitar spam.
+   * @param {string} kitId - El ID del media kit.
+   * @param {string} clientName - El nombre del cliente para incluir en la notificación.
+   */
+  async function notifyAdminOfView(kitId, clientName) {
+    const notificationKey = `sk_notified_view_${kitId}`;
+    if (sessionStorage.getItem(notificationKey)) {
+      console.log('Notificación para este kit ya fue enviada en esta sesión.');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/notify-view', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kitId, clientName }),
+      });
+      if (response.ok) {
+        sessionStorage.setItem(notificationKey, 'true');
+      }
+    } catch (error) {
+      console.error('Error al intentar notificar la vista del media kit:', error);
+    }
+  }
+
   function renderEmptyState(id, container) {
-    const h = SmartKitShared.escapeHtml;
     SmartKitShared.applyBrandHeader();
     document.title += ' - Propuesta no encontrada';
     app.innerHTML = `
