@@ -24,7 +24,8 @@
     <nav class="nav" id="primary-nav" aria-label="Vistas principales">
       <button id="btn-brochure" class="on" type="button" aria-current="page" data-view="brochure">Brochure</button>
       <button id="btn-map" type="button" data-view="map">Mapa</button>
-      <a class="nav-link" href="./mediakit.html" data-mediakit-link>Media Kit</a>
+      <a href="./mediakit.html" class="nav-link" data-mediakit-link>Media Kit</a>
+      <a href="./dashboard.html" class="nav-link">Dashboard</a>
     </nav>
     <div class="header-actions">
       <button class="mobile-quote-toggle" id="mobile-quote-toggle" type="button" aria-controls="quote-panel" aria-expanded="false" data-action="toggle-mobile-quote">
@@ -130,8 +131,24 @@
   </nav>
 </div>
 
+<div id="mediakit-offcanvas" class="offcanvas-container" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="offcanvas-title">
+  <div class="offcanvas-backdrop" data-action="close-offcanvas"></div>
+  <div class="offcanvas-panel">
+    <div class="offcanvas-header">
+      <h2 id="offcanvas-title" class="sr-only">Media Kit Generado</h2>
+      <div class="offcanvas-actions">
+        <button type="button" class="btn" data-action="print-mediakit">Imprimir a PDF</button>
+        <button type="button" class="close" aria-label="Cerrar media kit" data-action="close-offcanvas">×</button>
+      </div>
+    </div>
+    <div class="offcanvas-content">
+      <iframe src="about:blank" title="Vista previa del Media Kit" name="mediakit-frame"></iframe>
+    </div>
+  </div>
+</div>
+
 <script src="./config.js"></script>
-<script src="./screens-data.js"></script>
+<script src="./screens.js"></script>
 <script src="./shared.js"></script>
 <script src="./app.js"></script>
 </body>

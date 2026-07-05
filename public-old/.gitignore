@@ -1,4 +1,0 @@
-# Ignorar la carpeta de dependencias de Node
-node_modules
-# ¡MUY IMPORTANTE! Ignorar el archivo de variables de entorno para no exponer secretos.
-.env

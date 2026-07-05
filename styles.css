@@ -52,7 +52,7 @@
 .quote-summary strong{font-size:16px}
 .quote-summary span{font-size:13px}
 .quote-list.is-empty{display:none}
-.quote-panel .quote-list:not(.is-empty){max-height:188px;overflow-y:auto;padding-right:4px}
+.quote-panel .quote-list:not(.is-empty){max-height:188px;padding-right:2px}
 .quote-panel .quote-item{grid-template-columns:minmax(0,1fr) auto;background:#fff}
 .quote-panel .quote-item strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .quote-total{gap:8px}
@@ -210,6 +210,51 @@
 @media(max-width:850px){
   .hero{background:linear-gradient(180deg,rgba(248,250,252,.86) 0%,rgba(248,250,252,.78) 44%,rgba(246,248,251,.96) 88%,var(--bg)),url(https://images.unsplash.com/photo-1514924013411-cbf25faa35bb?auto=format&fit=crop&w=1800&q=75) center/cover}
 }
+
+body.offcanvas-open {
+  overflow: hidden;
+}
+
+.offcanvas-container {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: flex-end;
+  visibility: hidden;
+}
+.offcanvas-container[aria-hidden="false"] {
+  visibility: visible;
+}
+.offcanvas-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(7, 17, 31, 0.6);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.offcanvas-container[aria-hidden="false"] .offcanvas-backdrop {
+  opacity: 1;
+}
+.offcanvas-panel {
+  width: min(95vw, 1120px);
+  height: 100%;
+  background: var(--bg);
+  box-shadow: var(--m3-elevation-3);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+.offcanvas-container[aria-hidden="false"] .offcanvas-panel {
+  transform: translateX(0);
+}
+.offcanvas-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.offcanvas-actions { display: flex; align-items: center; gap: 8px; }
+.offcanvas-actions .btn { min-height: 40px; padding: 0 12px; font-size: 13px; }
+.offcanvas-actions .close { position: static; transform: none; }
+.offcanvas-content { overflow: auto; }
+.offcanvas-content iframe { width: 100%; height: 100%; border: 0; }
 
 .mediakit-page{min-height:100vh;background:var(--bg)}
 .mediakit-page .page{min-height:100vh}
