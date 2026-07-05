@@ -21,10 +21,10 @@ JS_FILES_TO_MINIFY=(
     "config.js"
 )
 CSS_FILES_TO_MINIFY=(
-    "styles.css"
-    "dashboard.css",
+    "styles.css",
+    "dashboard.css"
 )
-HTML_FILES=("index.html" "dashboard.html" "mediakit.html" "screens.json")
+HTML_FILES=("index.html" "dashboard.html" "mediakit.html")
 STATIC_ASSETS=("assets" "data") # Directorios para copiar
 
 # --- Funciones ---
@@ -87,9 +87,7 @@ versionar_assets() {
     fi
 
     echo "  ID de Build: $BUILD_ID"
-    # Use a more portable sed command that works on both Linux (Vercel) and macOS.
-    find "$DEST_DIR" -name "*.html" -exec sed -i.bak -e "s/\(href=\"[^\"]*\.css\)\"/\1?v=$BUILD_ID\"/g" {} +
-    find "$DEST_DIR" -name "*.html" -exec sed -i.bak -e "s/\(src=\"[^\"]*\.js\)\"/\1?v=$BUILD_ID\"/g" {} +
+    find "$DEST_DIR" -name "*.html" -exec sed -i.bak "s/\(href\|src\)="\(.*\/.*\.\(css\|js\)\)"/\1=\"\2?v=$BUILD_ID\"/g" {} +
 }
 
 # Función para generar un manifiesto de los archivos de producción.

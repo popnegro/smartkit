@@ -717,15 +717,20 @@ function bindEvents(){
       state.sourceScreens = savedState.rows;
     if (savedState.brand) Object.assign(state.brand, savedState.brand);
   } else if (typeof SCREENS !== 'undefined' && Array.isArray(SCREENS)) {
-      // Fallback a la variable global si existe (para compatibilidad)
-      console.warn(`SmartKit: Usando variable global 'SCREENS'. Se recomienda migrar a screens.json.`);
-      state.sourceScreens = JSON.parse(JSON.stringify(SCREENS));
+    // Fallback a la variable global si existe (para compatibilidad)
+    console.warn(`SmartKit: Usando variable global 'SCREENS'. Se recomienda migrar a screens.json.`);
+    state.sourceScreens = JSON.parse(JSON.stringify(SCREENS));
   } else {
     // El método preferido: cargar desde JSON.
-    console.log('SmartKit: Cargando desde screens.json...');
-    const response = await fetch('./screens.json');
-    if (!response.ok) throw new Error('No se pudo cargar screens.json');
-    state.sourceScreens = await response.json();
+    try {
+      console.log('SmartKit: Cargando desde screens.json...');
+      const response = await fetch('./screens.json');
+      if (!response.ok) throw new Error('No se pudo cargar screens.json');
+      state.sourceScreens = await response.json();
+    } catch (error) {
+      console.error('Error al cargar datos de pantallas:', error);
+      state.sourceScreens = [];
+    }
   }
 
     state.activeScreens = state.sourceScreens.filter(s => s.status === 'Activo' || (typeof s.active !== 'undefined' ? s.active : true));

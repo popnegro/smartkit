@@ -12,14 +12,12 @@ smartkit/
 ├── dashboard.html             # Acceso Usuarios: gestor de inventario y media kits
 ├── mediakit.html              # Pagina de vista de Media Kit
 ├── shared.js                  # Lógica y helpers compartidos
-├── app.js                     # Logica del brochure, mapa y cotizador
+├── app.js                     # Lógica del brochure, mapa y cotizador
 ├── mediakit.js                # Lógica de renderizado para mediakit.html
 ├── styles.css                 # Estilos del brochure y media kit
-├── base.css                   # Estilos base compartidos
 ├── dashboard.css              # Estilos del dashboard
 ├── dashboard.js               # Lógica del dashboard
-├── config.js                  # Marca, WhatsApp e inventario activo inicial
-├── screens-data.js            # Fuente base de pantallas
+├── screens.json               # Fuente de datos del inventario de pantallas
 ├── assets/                    # Videos y otros recursos estáticos
 ├── data/kits/                 # Media kits publicos en JSON
 ├── tests/                     # Smoke tests de Playwright
@@ -39,17 +37,17 @@ python3 -m http.server 3000
 
 ## Datos
 
-Las pantallas base viven en `screens-data.js`. Cada objeto de pantalla tiene atributos como `id`, `n` (nombre), `precio`, `status` y el nuevo campo `aud` (audiencia).
+El inventario de pantallas se gestiona en el archivo `screens.json`. Cada objeto de pantalla tiene atributos como `id`, `n` (nombre), `precio`, `status` y el nuevo campo `aud` (audiencia).
 
 ### Sincronización con `localStorage`
 
 El `dashboard.html` guarda todas las modificaciones del inventario (precios, estados, etc.) en `localStorage` bajo la clave `smartkit-dashboard-state`.
 
-Cuando se carga el brochure (`index.html`), este prioriza los datos guardados en `localStorage`, asegurando que los cambios del dashboard se reflejen automáticamente. Si no hay datos guardados, utiliza la información de `screens-data.js` como base.
+Cuando se carga el brochure (`index.html`), este prioriza los datos guardados en `localStorage`, asegurando que los cambios del dashboard se reflejen automáticamente. Si no hay datos guardados, la aplicación carga la información desde `screens.json` como base.
 
 ### Reseteo de Datos
 
-Para volver al estado original, puedes ir a la pestaña **Configuración** en el dashboard y usar el botón **"Resetear Datos Locales"**. Esto eliminará todos los datos guardados en el navegador y recargará la aplicación desde `screens-data.js`.
+Para volver al estado original, puedes ir a la pestaña **Configuración** en el dashboard y usar el botón **"Resetear Datos Locales"**. Esto eliminará todos los datos guardados en el navegador y recargará la aplicación desde `screens.json`.
 
 ### Persistencia Remota
 
