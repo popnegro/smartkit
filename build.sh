@@ -51,27 +51,27 @@ minificar_js() {
     echo "Minificando JavaScript con Terser..."
     if [ "$MODE" == "api" ]; then
         echo "  Modificando app.js y dashboard.js para modo API..."
-        sed "s/const MODE = 'static';/const MODE = 'api';/" app.js | npx --yes terser -c -m > "$DEST_DIR/app.js"
-        sed "s/const MODE = 'static';/const MODE = 'api';/" dashboard.js | npx --yes terser -c -m > "$DEST_DIR/dashboard.js"
+        sed "s/const MODE = 'static';/const MODE = 'api';/" app.js | ./node_modules/.bin/terser -c -m > "$DEST_DIR/app.js"
+        sed "s/const MODE = 'static';/const MODE = 'api';/" dashboard.js | ./node_modules/.bin/terser -c -m > "$DEST_DIR/dashboard.js"
     else
         echo "  Minificando app.js y dashboard.js..."
-        (npx --yes terser -c -m -- "app.js" > "$DEST_DIR/app.js" && echo "  ✅ Minificado: app.js") &
-        (npx --yes terser -c -m -- "dashboard.js" > "$DEST_DIR/dashboard.js" && echo "  ✅ Minificado: dashboard.js") &
+        (./node_modules/.bin/terser -c -m -- "app.js" > "$DEST_DIR/app.js" && echo "  ✅ Minificado: app.js") &
+        (./node_modules/.bin/terser -c -m -- "dashboard.js" > "$DEST_DIR/dashboard.js" && echo "  ✅ Minificado: dashboard.js") &
     fi
 
     # Ejecuta la minificación en paralelo para acelerar el proceso
     for file in "${JS_FILES_TO_MINIFY[@]}"; do
         # El `&` al final ejecuta el comando en segundo plano
-        (npx --yes terser -c -m -- "$file" > "$DEST_DIR/$file" && echo "  ✅ Minificado: $file") &
+        (./node_modules/.bin/terser -c -m -- "$file" > "$DEST_DIR/$file" && echo "  ✅ Minificado: $file") &
     done
     wait # Espera a que todos los procesos en segundo plano terminen
 }
 
 minificar_css() {
-    echo "Minificando CSS con cssnano..."
+    echo "Minificando CSS con postcss y cssnano..."
     # Ejecuta la minificación en paralelo
     for file in "${CSS_FILES_TO_MINIFY[@]}"; do
-        (npx --yes cssnano-cli "$file" "$DEST_DIR/$file" && echo "  ✅ Minificado: $file") &
+        (./node_modules/.bin/postcss "$file" --use cssnano -o "$DEST_DIR/$file" && echo "  ✅ Minificado: $file") &
     done
     wait # Espera a que todos los procesos en segundo plano terminen
 }
@@ -91,16 +91,12 @@ generar_manifiesto() {
 
 verificar_dependencias() {
     echo "Verificando dependencias de build..."
-    local missing=0
-    if ! command -v npx &> /dev/null; then
-        echo "❌ Error: 'npx' no se encuentra. Por favor, instala Node.js y npm." >&2
-        missing=1
+    if [ ! -d "node_modules" ]; then
+        echo "❌ Error: El directorio 'node_modules' no se encuentra. Ejecuta 'npm install' primero." >&2
+        exit 1
     fi
-    # Opcional: Verificar que los paquetes existen para dar un mejor error
-    if ! npm list terser &>/dev/null && ! npx --yes terser --version &>/dev/null; then
-        echo "⚠️ Advertencia: 'terser' no parece estar instalado. 'npx' lo descargará, pero puede ser más lento."
-    fi
-    if [ "$missing" -eq 1 ]; then
+    if [ ! -f "./node_modules/.bin/terser" ] || [ ! -f "./node_modules/.bin/postcss" ]; then
+        echo "❌ Error: Faltan binarios de build. Asegúrate de que 'terser' y 'postcss-cli' estén en tu package.json y ejecuta 'npm install'." >&2
         exit 1
     fi
     echo "✅ Dependencias encontradas."

@@ -1,0 +1,12 @@
+{
+  "name": "smartkit",
+  "version": "1.0.0",
+  "description": "Static DOOH catalog and mediakit generator",
+  "private": true,
+  "devDependencies": {
+    "cssnano": "^7.0.1",
+    "postcss": "^8.4.38",
+    "postcss-cli": "^11.0.0",
+    "terser": "^5.31.0"
+  }
+}
