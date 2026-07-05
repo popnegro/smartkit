@@ -12,6 +12,7 @@ const DashboardApp = (() => {
     selectedId: null,
     currentSection: 'inventory',
     kitSelected: new Set(),
+    bulkSelected: new Set(),
     savedKits: [],
     brand: { name: 'SmartKit', logo: 'SK', terms: '', validity: '15 dias', whatsapp: '' }
   };
@@ -56,32 +57,19 @@ const DashboardApp = (() => {
   }
 
   async function loadInitialData() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const loadDefault = urlParams.get('load') === 'default';
-    const savedState = Shared.loadDashboardState();
-
-    if (savedState && savedState.rows && savedState.rows.length > 0 && !loadDefault) {
-      state.rows = savedState.rows.map(row => ({
-        ...row,
-        status: row.status || (row.active ? SCREEN_STATUS.ACTIVE : SCREEN_STATUS.PAUSED)
-      }));
-      state.savedKits = savedState.kits || [];
-      Object.assign(state.brand, savedState.brand || {});
-      document.getElementById('data-status').textContent = 'Datos desde localStorage';
-    } else {
-      try {
-        if (loadDefault) {
-          Shared.showToast('Forzando carga desde screens.json');
-          // En un escenario de API, podrías querer mantener el fallback a JSON para demos.
-        }
-        console.log('SmartKit Dashboard: Cargando desde la API...');
-        const response = await authedFetch('/api/screens'); // Usar fetch autenticado
-        if (!response.ok) throw new Error('No se pudo cargar el inventario desde la API.');
-        state.rows = await response.json();
-        state.rows.forEach(row => { row.status = row.active ? SCREEN_STATUS.ACTIVE : SCREEN_STATUS.PAUSED; });
-        document.getElementById('data-status').textContent = 'Datos desde API';
-        Shared.showToast('Datos iniciales cargados desde la API');
-      } catch (error) { console.error(error); state.rows = []; }
+    try {
+      console.log('SmartKit Dashboard: Cargando desde la API...');
+      const response = await authedFetch('/api/screens');
+      if (!response.ok) throw new Error('No se pudo cargar el inventario desde la API.');
+      
+      const data = await response.json();
+      state.rows = data.map(row => ({ ...row, status: row.active ? SCREEN_STATUS.ACTIVE : SCREEN_STATUS.PAUSED }));
+      document.getElementById('data-status').textContent = 'Datos desde API';
+      Shared.showToast('Inventario cargado desde la API');
+    } catch (error) {
+      console.error('Error fatal al cargar el inventario:', error);
+      document.getElementById('data-status').textContent = 'Error de carga';
+      state.rows = [];
     }
     if (state.rows.length > 0) {
       state.selectedId = state.rows[0].id;
@@ -127,21 +115,37 @@ const DashboardApp = (() => {
   }
 
   function fillFilters() {
-    const zones = ['Todos', ...new Set(state.rows.map(row => row.b))];
-    const types = ['Todos', ...new Set(state.rows.map(row => row.tipo))];
-    const zoneOptions = zones.map(zone => `<option value="${h(zone)}">${h(zone)}</option>`).join('');
-    const typeOptions = types.map(type => `<option value="${h(type)}">${h(type)}</option>`).join('');
+    const zones = ['Todas', ...new Set(state.rows.map(row => row.b))];
+    const statuses = ['Todos', 'Activo', 'Pausado'];
+    
+    const zoneChips = zones.map(zone => `<button class="chip" data-filter="zone" data-value="${h(zone)}">${h(zone)}</button>`).join('');
+    const statusChips = statuses.map(status => `<button class="chip" data-filter="status" data-value="${h(status)}">${h(status)}</button>`).join('');
 
-    document.getElementById('zone-filter').innerHTML = zoneOptions;
-    document.getElementById('type-filter').innerHTML = typeOptions;
+    document.getElementById('zone-filter-chips').innerHTML = `<span class="filter-label">Zona:</span> ${zoneChips}`;
+    document.getElementById('status-filter-chips').innerHTML = `<span class="filter-label">Estado:</span> ${statusChips}`;
+
+    updateFilterChips();
+
     document.getElementById('kit-zone').innerHTML = zoneOptions;
     document.getElementById('kit-duration').innerHTML = Shared.DURATIONS.map(d => `<option value="${d.v}">${d.l}</option>`).join('');
   }
 
+  function updateFilterChips() {
+    document.querySelectorAll('[data-filter]').forEach(chip => {
+      const filterType = chip.dataset.filter;
+      const value = chip.dataset.value;
+      const isActive = state.filters[filterType] === value;
+      chip.classList.toggle('on', isActive);
+    });
+    const hasFilters = state.filters.zone !== 'Todas' || state.filters.status !== 'Todos';
+    document.getElementById('btn-clear-filters').style.display = hasFilters ? 'flex' : 'none';
+  }
+
   function filteredRows() {
     const query = document.getElementById('search').value.trim().toLowerCase();
-    const zone = document.getElementById('zone-filter').value;
-    const type = document.getElementById('type-filter').value;
+    const zone = state.filters.zone;
+    const status = state.filters.status;
+
     return state.rows.filter(row => {
       const matchesQuery = !query || [row.n, row.dir, row.b, row.tipo].some(v => String(v).toLowerCase().includes(query));
       const matchesZone = zone === 'Todos' || row.b === zone;
@@ -158,8 +162,8 @@ const DashboardApp = (() => {
     }
     document.getElementById('result-count').textContent = `${list.length} ${list.length === 1 ? 'resultado' : 'resultados'}`;
     document.getElementById('screen-tbody').innerHTML = list.map(row => `
-      <tr class="${row.id === state.selectedId ? 'selected' : ''}" data-action="select" data-id="${row.id}">
-        <td><div class="screen-cell"><span class="screen-icon">${h(row.e)}</span><div><strong>${h(row.n)}</strong><span>${h(row.dir)} · ${h(row.b)}</span></div></div></td>
+      <tr class="${row.id === state.selectedId ? 'selected' : ''} ${state.bulkSelected.has(row.id) ? 'bulk-selected' : ''}" data-row-id="${row.id}">
+        <td><input type="checkbox" data-action="bulk-select" data-id="${row.id}"></td><td><div class="screen-cell"><span class="screen-icon">${h(row.e)}</span><div><strong>${h(row.n)}</strong><span>${h(row.dir)} · ${h(row.b)}</span></div></div></td>
         <td><span class="badge">${h(row.tipo)}</span></td>
         <td>${h(row.imp)}</td>
         <td><strong>${fmt(row.precio)}</strong></td>
@@ -188,6 +192,7 @@ const DashboardApp = (() => {
   }
 
   function updateEditor(row) {
+    document.getElementById('editor-form').reset();
     if (!row) return;
     document.getElementById('editor-form').style.display = 'grid';
     document.getElementById('editor-empty').style.display = 'none';
@@ -200,6 +205,15 @@ const DashboardApp = (() => {
     document.getElementById('edit-note').value = row.note || '';
     document.getElementById('edit-status').value = row.status || SCREEN_STATUS.ACTIVE;
     renderPreview(row);
+  }
+
+  function showNewScreenForm() {
+    state.selectedId = null; // Deseleccionar cualquier fila
+    renderTable();
+    document.getElementById('editor-form').reset();
+    document.getElementById('editor-form').style.display = 'grid';
+    document.getElementById('editor-empty').style.display = 'none';
+    document.getElementById('ed-title').textContent = 'Nueva Pantalla';
   }
 
   function selectRow(id, doRenderTable = true) {
@@ -407,9 +421,18 @@ const DashboardApp = (() => {
   function bindEvents() {
     document.querySelectorAll('[data-section]').forEach(btn => btn.addEventListener('click', () => setSection(btn.dataset.section)));
 
-    ['search', 'zone-filter', 'type-filter'].forEach(id => {
-      document.getElementById(id).addEventListener('input', renderTable);
+    document.getElementById('sb-toggle').addEventListener('click', () => {
+      document.getElementById('app').classList.toggle('nav-collapsed');
     });
+
+    document.addEventListener('click', (event) => {
+      const row = event.target.closest('[data-row-id]');
+      if (row && !event.target.matches('input[type="checkbox"]')) {
+        selectRow(row.dataset.rowId);
+      }
+    });
+
+    document.getElementById('btn-clear-filters').addEventListener('click', clearFilters);
 
     ['kit-client', 'kit-contact', 'settings-terms'].forEach(id => {
       document.getElementById(id).addEventListener('input', renderKitPreview);
@@ -428,7 +451,6 @@ const DashboardApp = (() => {
       const step = target.dataset.step;
 
       const actions = {
-        'select': () => selectRow(id),
         'copy-kit': () => { const kit = state.savedKits.find(k => k.id === id); if (kit) navigator.clipboard?.writeText(new URL(Shared.getMediaKitUrl(kit.id), location.href).href).then(() => Shared.showToast('Link copiado')).catch(() => Shared.showToast('No se pudo copiar')); },
         'download-kit': () => {
           const kit = state.savedKits.find(k => k.id === id);
@@ -470,32 +492,45 @@ const DashboardApp = (() => {
 
     document.getElementById('editor-form').addEventListener('submit', async (event) => {
       event.preventDefault();
-      const row = state.rows.find(item => item.id === state.selectedId);
-      if (!row) return;
+      const isNew = state.selectedId === null;
+      const row = isNew ? {} : state.rows.find(item => item.id === state.selectedId);
+      if (!isNew && !row) return;
 
-      // Prepara el objeto con los datos actualizados del formulario
+      const submitButton = event.target.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+      submitButton.textContent = 'Guardando...';
+
       const updatedRowData = {
-        ...row, // Mantiene los campos no editables
+        ...row,
         n: document.getElementById('edit-name').value.trim() || row.n,
         b: document.getElementById('edit-zone').value.trim() || row.b,
         aud: document.getElementById('edit-audience').value.trim(),
         precio: Number(document.getElementById('edit-price').value) || row.precio,
         note: document.getElementById('edit-note').value.trim(),
-        status: document.getElementById('edit-status').value
+        status: document.getElementById('edit-status').value,
+        id: isNew ? Date.now() : row.id, // Asigna un nuevo ID si es nuevo
+        e: (document.getElementById('edit-name').value.trim() || 'NN').substring(0, 2).toUpperCase()
       };
 
-      // Actualiza el estado local inmediatamente para una UI fluida (Optimistic Update)
-      Object.assign(row, updatedRowData);
+      if (isNew) {
+        state.rows.unshift(updatedRowData);
+      } else {
+        Object.assign(row, updatedRowData);
+      }
 
-      document.getElementById('last-action').textContent = `Actualizada #${row.id}`;
+      await updateScreenAPI(updatedRowData);
+
+      submitButton.disabled = false;
+      submitButton.textContent = 'Guardado ✓';
+      setTimeout(() => {
+        submitButton.textContent = 'Guardar Pantalla';
+      }, 2000);
+
+      document.getElementById('last-action').textContent = isNew ? `Creada #${updatedRowData.id}` : `Actualizada #${updatedRowData.id}`;
       updateKpis();
       fillFilters();
-      selectRow(row.id);
+      selectRow(updatedRowData.id);
       renderKitBuilder();
-      
-      // Envía la actualización a la API como única fuente de verdad.
-      // La función updateScreenAPI ya debería existir en tu código.
-      await updateScreenAPI(updatedRowData);
     });
 
     document.getElementById('export-btn').addEventListener('click', exportCsv);

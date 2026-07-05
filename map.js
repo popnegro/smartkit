@@ -56,14 +56,15 @@ function loadConfig(){
 
 async function loadScreens(){
   try {
-    const response = await fetch('/api/screens');
-    if (!response.ok) throw new Error('No se pudo cargar el inventario desde la API.');
-    const allScreens = await response.json();
-    screens = allScreens.filter(s => (s.status === 'Activo' || s.active) && s.lat && s.lng);
+    console.log('SmartKit Map: Cargando desde /screens.json...');
+    const response = await fetch('/screens.json');
+    if (!response.ok) throw new Error('No se pudo cargar el inventario.');
+    const data = await response.json();
+    screens = data.filter(s => (s.status === 'Activo' || s.active) && s.lat && s.lng);
   } catch (error) {
     console.error('Error al cargar pantallas en el mapa:', error);
     screens = [];
-    $('map-counter').textContent = 'Error al cargar datos';
+    if ($('map-counter')) $('map-counter').textContent = 'Error al cargar datos';
   }
   updateCounts();
 }
@@ -266,7 +267,7 @@ function updateCounts(){
   $('cnt-all').textContent = screens.length;
   tipos.forEach(t => {
     const el = document.querySelector(`.chip[data-tipo="${t}"] .chip-count`);
-    if(el) el.textContent = screens.filter(s=>s.tipo===t).length;
+    if(el) el.textContent = screens.filter(s => s.tipo === t).length;
   });
 }
 

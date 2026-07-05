@@ -49,33 +49,6 @@ function screenUseCase(s){
   return 'Ideal para campañas masivas y audiencias mixtas';
 }
 
-function setView(v, fitMap=true){
-  if(!document.getElementById('view-'+v))v='brochure';
-  document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
-  document.getElementById('view-'+v).classList.add('on');
-  document.querySelectorAll('.view').forEach(x=>x.setAttribute('aria-hidden',x.id!==`view-${v}`?'true':'false'));
-  document.getElementById('btn-map').classList.toggle('on',v==='map');
-  document.getElementById('btn-brochure').classList.toggle('on',v==='brochure');
-  document.querySelectorAll('.mobile-nav-destination').forEach(btn=>{
-    const active=btn.dataset.view===v;
-    btn.classList.toggle('on',active);
-    if(active)btn.setAttribute('aria-current','page');
-    else btn.removeAttribute('aria-current');
-  });
-  document.querySelectorAll('.nav button').forEach(btn=>btn.removeAttribute('aria-current'));
-  document.getElementById('btn-'+v)?.setAttribute('aria-current','page');
-  const mobileToggle=document.getElementById('mobile-quote-toggle');
-  setMobileNav(false);
-  setMobileFilters(false);
-  if (v !== 'brochure') setMobileQuote(false);
-  if(mobileToggle)mobileToggle.hidden=false;
-  const filterToggle=document.getElementById('mobile-filter-toggle');
-  if(filterToggle)filterToggle.hidden=v!=='brochure';
-  const actionNav=document.getElementById('mobile-action-nav');
-  if(actionNav)actionNav.hidden=false;
-  if(v==='map'&&map)setTimeout(()=>{map.invalidateSize();if(fitMap)fitMapToActiveZone();},80);
-}
-
 function setZone(zone){
   state.activeZone = zone;
   renderBrochure();
@@ -606,11 +579,6 @@ function applyBrand(){
 
 function bindEvents(){
   document.addEventListener('click',event=>{
-    const viewButton=event.target.closest('[data-view]');
-    if(viewButton&&viewButton instanceof HTMLButtonElement){
-      setView(viewButton.dataset.view);
-      return;
-    }
     const actionTarget=event.target.closest('[data-action]');
     if(!actionTarget){
       if (state.mobileNavOpen && !event.target.closest('.top')) setMobileNav(false);
@@ -681,25 +649,16 @@ function bindEvents(){
   const urlParams = new URLSearchParams(window.location.search);
   const loadDefault = urlParams.get('load') === 'default';
   const savedState = Shared.loadDashboardState();
-
-  if (savedState && savedState.rows?.length && !loadDefault) {
-      console.log(`SmartKit: Cargando ${savedState.rows.length} pantallas desde localStorage.`);
-      state.sourceScreens = savedState.rows;
-    if (savedState.brand) Object.assign(state.brand, savedState.brand);
-  } else {
-    // Modificado: Cargar desde la API externa en lugar de screens.json.
-    try {
-      console.log('SmartKit: Cargando desde la API de inventario...');
-      // La URL del endpoint de tu API. Puede estar en una variable de configuración.
-      const response = await fetch('/api/screens'); 
-      if (!response.ok) throw new Error('No se pudo cargar el inventario desde la API.');
-      state.sourceScreens = await response.json();
-    } catch (error) {
-      console.error('Error al cargar datos de pantallas:', error);
-      // Mejora: Mostrar un error en la UI si la carga falla.
-      document.getElementById('cards').innerHTML = `<div class="empty-state">Error al cargar el inventario. Por favor, intenta recargar la página.</div>`;
-      state.sourceScreens = [];
-    }
+  
+  try {
+    console.log('SmartKit: Cargando desde /screens.json...');
+    const response = await fetch('/screens.json'); 
+    if (!response.ok) throw new Error('No se pudo cargar el inventario.');
+    state.sourceScreens = await response.json();
+  } catch (error) {
+    console.error('Error al cargar datos de pantallas:', error);
+    document.getElementById('cards').innerHTML = `<div class="empty-state"><h3>Error al cargar el inventario</h3><p>Por favor, intenta recargar la página.</p></div>`;
+    state.sourceScreens = [];
   }
 
     // Corregido: Unificar el criterio para pantallas activas.
@@ -715,7 +674,6 @@ function bindEvents(){
   renderBrochure(); // Mover renderBrochure() antes de initMap()
   bindEvents();
   initMap();
-    setView('brochure', false);
   }
 
   return { init };

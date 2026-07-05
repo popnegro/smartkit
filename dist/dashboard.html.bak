@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SmartKit · Dashboard</title>
-<link rel="stylesheet" href="styles.css?v=1084df2">
+<link rel="stylesheet" href="styles.css?v=ae3f0d0">
 </head>
 <body style="visibility: hidden;">
 
@@ -42,15 +42,24 @@
       </div>
     </header>
 
-    <section class="kpis" id="kpis-row"></section>
+    <section class="kpis" id="kpis-row">
+      <div class="kpi"><b id="kpi-published">0/0</b><span>Publicadas</span></div>
+      <div class="kpi"><b id="kpi-active">0</b><span>Activas</span></div>
+      <div class="kpi"><b id="kpi-reach">0</b><span>Reach diario</span></div>
+      <div class="kpi"><b id="kpi-revenue">$0</b><span>Potencial/sem</span></div>
+      <div class="kpi"><b id="kpi-cpm">$0</b><span>CPM Promedio</span></div>
+    </section>
 
     <!-- INVENTORY -->
     <section class="section on" id="section-inventory">
       <div class="layout">
         <div class="panel">
           <div class="panel-head">
-            <div><span class="eyebrow">Inventario</span><h2>Pantallas</h2></div>
-            <span class="badge bd-ok" id="result-count">0 resultados</span>
+            <div>
+              <span class="eyebrow">Inventario</span>
+              <h2>Pantallas</h2>
+            </div>
+            <button class="btn pri" id="btn-new-screen">+ Nueva Pantalla</button>
           </div>
           <div class="bulk-bar" id="bulk-bar">
             <span class="badge bd-warn"><span id="bulk-count">0</span> seleccionadas</span>
@@ -59,14 +68,10 @@
             <button class="btn sm ghost" id="bulk-clear">Limpiar</button>
           </div>
           <div class="filters">
-            <div class="field grow"><label>Buscar</label><input type="search" id="search" placeholder="Nombre, zona…"></div>
-            <div class="field"><label>Zona</label><select id="zone-filter"></select></div>
-            <div class="field"><label>Tipo</label>
-              <select id="type-filter"><option>Todos</option><option>Peatonal</option><option>Vehicular</option><option>Mixto</option></select>
-            </div>
-            <div class="field"><label>Estado</label>
-              <select id="status-filter"><option>Todos</option><option>Activo</option><option>Pausado</option></select>
-            </div>
+            <div class="field grow" style="position:relative"><span class="search-icon">🔍</span><input type="search" id="search" placeholder="Buscar por nombre, zona o tipo…" style="padding-left:30px"></div>
+            <div class="filter-chips" id="zone-filter-chips"></div>
+            <div class="filter-chips" id="status-filter-chips"></div>
+            <button class="btn ghost sm" id="btn-clear-filters" style="display:none">Limpiar filtros</button>
           </div>
           <div class="table-wrap">
             <table>
@@ -120,17 +125,10 @@
           <div class="filters">
             <div class="field grow"><label>Cliente</label><input id="kit-client" placeholder="Ej: Bodega Trapiche"></div>
             <div class="field"><label>Contacto</label><input id="kit-contact" placeholder="Nombre (opcional)"></div>
-            <div class="field"><label>Duración</label>
-              <select id="kit-duration">
-                <option value="1">1 semana</option><option value="2">2 semanas</option>
-                <option value="4" selected>4 semanas</option><option value="8">8 semanas</option>
-                <option value="12">12 semanas</option>
-              </select>
-            </div>
-            <div class="field"><label>Zona</label><select id="kit-zone"></select></div>
-            <div class="field"><label>Validez</label>
-              <select id="kit-validity"><option value="7">7 días</option><option value="15" selected>15 días</option><option value="30">30 días</option></select>
-            </div>
+            <div class="field"><label>Validez</label><select id="kit-validity"><option value="7">7 días</option><option value="15" selected>15 días</option><option value="30">30 días</option></select></div>
+          </div>
+          <div class="filters" style="border-top:0">
+            <div class="filter-chips" id="kit-duration-chips"></div>
           </div>
           <div class="panel-head">
             <div><span class="eyebrow">Selección</span><h2>Pantallas del kit</h2></div>
