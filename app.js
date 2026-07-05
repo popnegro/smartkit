@@ -724,6 +724,8 @@ function bindEvents(){
       state.sourceScreens = await response.json();
     } catch (error) {
       console.error('Error al cargar datos de pantallas:', error);
+      // Mejora: Mostrar un error en la UI si la carga falla.
+      document.getElementById('cards').innerHTML = `<div class="empty-state">Error al cargar el inventario. Por favor, intenta recargar la página.</div>`;
       state.sourceScreens = [];
     }
   }
