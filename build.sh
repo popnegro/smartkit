@@ -21,10 +21,10 @@ JS_FILES_TO_MINIFY=(
     "config.js"
 )
 CSS_FILES_TO_MINIFY=(
-    "styles.css",
+    "styles.css"
     "dashboard.css"
 )
-HTML_FILES=("index.html" "dashboard.html" "mediakit.html")
+HTML_FILES=("index.html" "dashboard.html" "mediakit.html" "screens.json")
 STATIC_ASSETS=("assets" "data") # Directorios para copiar
 
 # --- Funciones ---
@@ -38,7 +38,7 @@ limpiar() {
 copiar_archivos() {
     echo "Copiando archivos y directorios..."
     # Copia los archivos HTML y el readme
-    for file in "${HTML_FILES[@]}" "readme.md"; do
+    for file in "${HTML_FILES[@]}" "readme.md" "screens.json"; do
         cp "$file" "$DEST_DIR/"
     done
     # Copia los directorios de assets
@@ -87,7 +87,9 @@ versionar_assets() {
     fi
 
     echo "  ID de Build: $BUILD_ID"
-    find "$DEST_DIR" -name "*.html" -exec sed -i.bak "s/\(href\|src\)="\(.*\/.*\.\(css\|js\)\)"/\1=\"\2?v=$BUILD_ID\"/g" {} +
+    # Use a more portable sed command that works on both Linux (Vercel) and macOS.
+    find "$DEST_DIR" -name "*.html" -exec sed -i.bak -e "s/\(href=\"[^\"]*\.css\)\"/\1?v=$BUILD_ID\"/g" {} +
+    find "$DEST_DIR" -name "*.html" -exec sed -i.bak -e "s/\(src=\"[^\"]*\.js\)\"/\1?v=$BUILD_ID\"/g" {} +
 }
 
 # Función para generar un manifiesto de los archivos de producción.
