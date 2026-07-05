@@ -155,7 +155,9 @@ const DashboardApp = (() => {
 
   function selectRow(id, doRenderTable = true) {
     state.selectedId = Number(id);
-    const row = state.rows.find(item => item.id === state.selectedId) || state.rows;
+    // Corregido: Si no se encuentra la fila, usar la primera del array como fallback.
+    // Esto evita que se pase el array completo al editor.
+    const row = state.rows.find(item => item.id === state.selectedId) || state.rows[0];
     updateEditor(row);
     if (doRenderTable) renderTable();
   }

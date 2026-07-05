@@ -332,7 +332,7 @@ const SmartKitShared = (() => {
 
   function persistDashboardState(state, toastMessage) {
     try {
-      if (!state || !state.rows) {
+      if (!state || !Array.isArray(state.rows)) {
         throw new Error("El estado a persistir es inválido.");
       }
       const stateToSave = {
