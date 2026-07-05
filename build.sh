@@ -18,6 +18,7 @@ DEST_DIR="dist"
 JS_FILES_TO_MINIFY=(
     "shared.js"
     "mediakit.js"
+    "config.js"
 )
 CSS_FILES_TO_MINIFY=(
     "styles.css"

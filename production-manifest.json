@@ -10,7 +10,6 @@
     "app.js",
     "mediakit.js",
     "dashboard.js",
-    "config.js",
     "assets/videos",
     "data/kits"
   ]
