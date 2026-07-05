@@ -716,10 +716,6 @@ function bindEvents(){
       console.log(`SmartKit: Cargando ${savedState.rows.length} pantallas desde localStorage.`);
       state.sourceScreens = savedState.rows;
     if (savedState.brand) Object.assign(state.brand, savedState.brand);
-  } else if (typeof SCREENS !== 'undefined' && Array.isArray(SCREENS)) {
-    // Fallback a la variable global si existe (para compatibilidad)
-    console.warn(`SmartKit: Usando variable global 'SCREENS'. Se recomienda migrar a screens.json.`);
-    state.sourceScreens = JSON.parse(JSON.stringify(SCREENS));
   } else {
     // El método preferido: cargar desde JSON.
     try {
