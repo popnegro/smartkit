@@ -126,8 +126,10 @@ const DashboardApp = (() => {
 
     updateFilterChips();
 
-    document.getElementById('kit-zone').innerHTML = zoneOptions;
-    document.getElementById('kit-duration').innerHTML = Shared.DURATIONS.map(d => `<option value="${d.v}">${d.l}</option>`).join('');
+    // Refactorizado: Usar chips para la duración en el constructor de kits
+    document.getElementById('kit-duration-chips').innerHTML = `<span class="filter-label">Duración:</span>` + Shared.DURATIONS.map(d => 
+      `<button class="chip" data-filter="kit-duration" data-value="${d.v}">${h(d.l)}</button>`
+    ).join('');
   }
 
   function updateFilterChips() {
@@ -425,7 +427,15 @@ const DashboardApp = (() => {
       document.getElementById('app').classList.toggle('nav-collapsed');
     });
 
+    document.getElementById('btn-new-screen').addEventListener('click', showNewScreenForm);
+
     document.addEventListener('click', (event) => {
+      const filterChip = event.target.closest('[data-filter]');
+      if (filterChip) {
+        state.filters[filterChip.dataset.filter] = filterChip.dataset.value;
+        renderTable();
+        updateFilterChips();
+      }
       const row = event.target.closest('[data-row-id]');
       if (row && !event.target.matches('input[type="checkbox"]')) {
         selectRow(row.dataset.rowId);
@@ -433,6 +443,11 @@ const DashboardApp = (() => {
     });
 
     document.getElementById('btn-clear-filters').addEventListener('click', clearFilters);
+
+
+    ['search', 'zone-filter', 'type-filter'].forEach(id => {
+      document.getElementById(id).addEventListener('input', renderTable);
+    });
 
     ['kit-client', 'kit-contact', 'settings-terms'].forEach(id => {
       document.getElementById(id).addEventListener('input', renderKitPreview);
