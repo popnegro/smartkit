@@ -26,7 +26,7 @@
   };
 
   // ── Semilla única de inventario (antes duplicada en 3 archivos) ──
-  const SEED_SCREENS = [
+  const SEED_SCREENS = Object.freeze([
     { id: 'sc-01', nombre: 'Sarmiento y 9 de Julio', zona: 'Centro', tipo: 'Peatonal', impactos: 14200, precio: 95000, status: 'Activo', lat: -32.8894, lng: -68.8458, nota: 'Esquina comercial de máximo tránsito peatonal.' },
     { id: 'sc-02', nombre: 'Palmares Open Mall', zona: 'Palmares', tipo: 'Mixto', impactos: 22500, precio: 145000, status: 'Activo', lat: -32.9121, lng: -68.8306, nota: 'Acceso principal al shopping. Vehicular y peatonal.' },
     { id: 'sc-03', nombre: 'Las Heras y Mitre', zona: 'Las Heras', tipo: 'Peatonal', impactos: 8800, precio: 68000, status: 'Activo', lat: -32.8716, lng: -68.8388, nota: 'Zona comercial barrial. Alto tráfico local.' },
@@ -37,9 +37,9 @@
     { id: 'sc-08', nombre: 'Godoy Cruz Belgrano', zona: 'Godoy Cruz', tipo: 'Vehicular', impactos: 25800, precio: 155000, status: 'Activo', lat: -32.9246, lng: -68.8488, nota: 'Corredor vehicular de alto volumen.' },
     { id: 'sc-09', nombre: 'Chacras de Coria Acceso', zona: 'Luján', tipo: 'Vehicular', impactos: 16700, precio: 125000, status: 'Activo', lat: -33.0158, lng: -68.8642, nota: 'Acceso a Chacras. Ideal turismo y bodegas.' },
     { id: 'sc-10', nombre: 'Terminal de Ómnibus', zona: 'Centro', tipo: 'Peatonal', impactos: 18400, precio: 118000, status: 'Activo', lat: -32.8868, lng: -68.8284, nota: 'Alta rotación. Público diverso 24h.' },
-  ];
+  ]);
 
-  const DEFAULT_CONFIG = {
+  const DEFAULT_CONFIG = Object.freeze({
     brand: 'SmartKit',
     logo: 'SK',
     whatsapp: '5492616000000',
@@ -47,7 +47,7 @@
     heroCopy: 'Planificá campañas digitales outdoor. Seleccioná ubicaciones, estimá alcance e inversión, y generá tu propuesta en minutos.',
     terms: 'Inicio de campaña sujeto a disponibilidad y aprobación de piezas creativas. Valores expresados en ARS. Propuesta válida por 15 días.',
     validityDays: 15,
-  };
+  });
 
   // ── localStorage helpers ──
   function lsGet(k, def) {
@@ -126,11 +126,11 @@
     setCart(ids) { lsSet(KEYS.CART, ids); emit(KEYS.CART); },
     isInCart(id) { return this.getCart().includes(id); },
     toggleCart(id) {
-      const c = this.getCart();
-      const i = c.indexOf(id);
-      if (i >= 0) c.splice(i, 1); else c.push(id);
-      this.setCart(c);
-      return c.includes(id);
+      const cartSet = new Set(this.getCart());
+      const isInCartBefore = cartSet.has(id);
+      if (isInCartBefore) cartSet.delete(id); else cartSet.add(id);
+      this.setCart(Array.from(cartSet));
+      return !isInCartBefore;
     },
     clearCart() { this.setCart([]); },
 
