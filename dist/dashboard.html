@@ -3,27 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="./dashboard.css?v=5acbbbe">
-<title>SmartKit - Dashboard de Gestion</title>
+<title>SmartKit · Dashboard</title>
+<link rel="stylesheet" href="dashboard.css?v=d63c2d9">
 </head>
-<body>
-<div class="app">
-  <aside class="sidebar" aria-label="Navegacion de gestion">
+<body style="visibility: hidden;">
+
+<div class="app" id="app">
+  <aside class="sidebar">
+    <button class="sb-toggle" id="sb-toggle" title="Colapsar menú">‹</button>
     <div class="brand">
       <div class="logo" id="dash-logo">SK</div>
-      <div>
+      <div class="brand-text">
         <strong id="dash-brand">SmartKit</strong>
-        <span>Gestion comercial DOOH</span>
+        <span>Gestión DOOH</span>
       </div>
     </div>
-    <nav class="nav" aria-label="Secciones del dashboard">
-      <button class="active" type="button" data-section="inventory">Inventario</button>
-      <button type="button" data-section="mediakits">Media Kits</button>
-      <button type="button" data-section="metrics">Metricas</button>
-      <button type="button" data-section="settings">Configuracion</button>
+    <nav class="menu">
+      <button class="nav-btn on" data-sec="inventory" title="Inventario"><i>📦</i><span>Inventario</span></button>
+      <button class="nav-btn" data-sec="mediakits" title="Media Kits"><i>📄</i><span>Media Kits</span></button>
+      <button class="nav-btn" data-sec="metrics" title="Métricas"><i>📈</i><span>Métricas</span></button>
+      <button class="nav-btn" data-sec="settings" title="Configuración"><i>⚙️</i><span>Configuración</span></button>
     </nav>
-    <div class="sidebar-footer">
-      <strong>Estado:</strong> <span id="data-status">Cargando...</span>
+    <div class="sb-footer">
+      <a href="index.html" target="_blank">← Brochure público</a><br>
+      <a href="map.html" target="_blank">← Mapa de pantallas</a><br>
+      <button id="logout-btn">Cerrar sesión</button>
     </div>
   </aside>
 
@@ -31,250 +35,191 @@
     <header class="topbar">
       <div>
         <span class="eyebrow">Dashboard</span>
-        <h1 id="page-title">Gestion de pantallas</h1>
-        <p id="page-copy">Administra inventario, disponibilidad, precios y vista comercial desde una sola superficie.</p>
+        <h1 id="page-title">Gestión de pantallas</h1>
+        <p id="page-desc">Inventario, precios, disponibilidad y propuestas comerciales.</p>
       </div>
       <div class="actions">
-        <button class="btn" type="button" id="export-btn">Exportar CSV</button>
+        <button class="btn" id="btn-export">Exportar CSV</button>
+        <button class="btn pri" id="btn-save">Guardar cambios</button>
+        <span class="badge-warn" id="unsaved" style="display:none">● Cambios sin guardar</span>
       </div>
     </header>
 
-    <section class="kpis" aria-label="Indicadores principales">
-      <div class="kpi"><b id="kpi-published">0 / 0</b><span>Publicadas / inventario</span></div>
-      <div class="kpi"><b id="kpi-active">0</b><span>Pantallas activas</span></div>
-      <div class="kpi"><b id="kpi-reach">0</b><span>Impactos diarios</span></div>
-      <div class="kpi"><b id="kpi-revenue">$0</b><span>Potencial semanal</span></div>
-      <div class="kpi"><b id="kpi-cpm">$0</b><span>CPM promedio</span></div>
-    </section>
+    <section class="kpis" id="kpis-row"></section>
 
-    <section class="section" id="section-inventory">
-    <div class="layout">
-      <section class="panel" aria-label="Inventario de pantallas">
-        <div class="panel-head">
-          <div>
-            <span class="eyebrow">Inventario</span>
-            <h2>Pantallas publicadas</h2>
-          </div>
-          <span class="badge active" id="result-count">0 resultados</span>
-        </div>
-        <div class="filters">
-          <div class="field">
-            <label for="search">Buscar</label>
-            <input id="search" type="search" placeholder="Nombre, direccion o zona">
-          </div>
-          <div class="field">
-            <label for="zone-filter">Zona</label>
-            <select id="zone-filter"></select>
-          </div>
-          <div class="field">
-            <label for="type-filter">Tipo</label>
-            <select id="type-filter"></select>
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Pantalla</th>
-                <th>Tipo</th>
-                <th>Impactos/dia</th>
-                <th>Precio semana</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="screen-table"></tbody>
-          </table>
-        </div>
-      </section>
-
-      <aside class="panel drawer" aria-label="Detalle editable">
-        <div class="panel-head">
-          <div>
-            <span class="eyebrow">Detalle</span>
-            <h2 id="editor-title">Selecciona una pantalla</h2>
-          </div>
-        </div>
-        <div class="preview" id="preview"></div>
-        <form class="editor" id="editor-form">
-          <div class="field">
-            <label for="edit-name">Nombre comercial</label>
-            <input id="edit-name" name="name" type="text" autocomplete="off">
-          </div>
-          <div class="field">
-            <label for="edit-zone">Zona</label>
-            <input id="edit-zone" name="zone" type="text" autocomplete="off">
-          </div>
-          <div class="field">
-            <label for="edit-price">Precio semanal</label>
-            <input id="edit-price" name="price" type="number" min="0" step="1000">
-          </div>
-          <div class="field">
-            <label for="edit-audience">Audiencia</label>
-            <input id="edit-audience" name="audience" type="text" autocomplete="off" placeholder="Ej: General, ABC1">
-          </div>
-          <div class="field">
-            <label for="edit-video">Video del head</label>
-            <input id="edit-video" name="video" type="text" placeholder="./assets/videos/pantalla.mp4" autocomplete="off">
-          </div>
-          <div class="field">
-            <label for="edit-note">Nota interna</label>
-            <textarea id="edit-note" name="note" placeholder="Ej: validar disponibilidad antes de cotizar"></textarea>
-          </div>
-          <div class="field">
-            <label for="edit-status">Estado</label>
-            <select id="edit-status" name="status">
-              <option value="Activo">Activo (Visible en brochure)</option>
-              <option value="Pausado">Pausado (Oculto de brochure)</option>
-            </select>
-          </div>
-          <button class="btn success" type="submit">Aplicar al dashboard</button>
-        </form>
-        <div class="status-line">
-          <span>Ultima accion</span>
-          <strong id="last-action">Sin cambios</strong>
-        </div>
-      </aside>
-    </div>
-    </section>
-
-    <section class="section" id="section-mediakits" hidden>
-      <div class="kit-layout">
-        <section class="panel section-pad" aria-label="Constructor de media kit">
-          <nav class="stepper-nav">
-            <div class="step-item active" data-step-nav="1"><span class="step-num">1</span> Datos</div>
-            <div class="step-item" data-step-nav="2"><span class="step-num">2</span> Inventario</div>
-            <div class="step-item" data-step-nav="3"><span class="step-num">3</span> Revisión</div>
-          </nav>
-
-          <div class="step-panel active" data-step-panel="1">
-            <div class="panel-head compact"><div><span class="eyebrow">Paso 1</span><h2>Información del cliente</h2></div></div>
-            <div class="field">
-              <label for="kit-client">Cliente / Campaña</label>
-              <input id="kit-client" type="text" placeholder="Ej: Bodega Trapiche - Lanzamiento Verano">
-            </div>
-            <div class="field">
-              <label for="kit-contact">Persona de contacto</label>
-              <input id="kit-contact" type="text" placeholder="Nombre y apellido o Departamento">
-            </div>
-            <div class="field">
-              <label for="kit-duration">Duración de la campaña</label>
-              <select id="kit-duration"></select>
-            </div>
-            <div class="step-footer">
-              <span></span>
-              <button class="btn primary" type="button" onclick="setKitStep(2)">Siguiente: Seleccionar pantallas</button>
-            </div>
-          </div>
-
-          <div class="step-panel" data-step-panel="2">
-            <div class="panel-head compact">
-              <div><span class="eyebrow">Paso 2</span><h2>Selección de pantallas</h2></div>
-              <span class="badge active" id="kit-selected-count">0 seleccionadas</span>
-            </div>
-            <div class="filters kit-builder-filters">
-              <div class="field">
-                <label for="kit-search">Buscar pantalla</label>
-                <input id="kit-search" type="search" placeholder="Nombre o dirección...">
-              </div>
-              <div class="field">
-                <label for="kit-zone">Zona</label>
-                <select id="kit-zone"></select>
-              </div>
-            </div>
-            <div class="kit-screen-list" id="kit-screen-list"></div>
-            <div class="step-footer">
-              <button class="btn ghost" type="button" onclick="setKitStep(1)">Atrás</button>
-              <button class="btn primary" type="button" id="btn-to-step-3" onclick="setKitStep(3)">Siguiente: Revisar propuesta</button>
-            </div>
-          </div>
-
-          <div class="step-panel" data-step-panel="3">
-            <div class="panel-head compact">
-              <div><span class="eyebrow">Paso 3</span><h2>Resumen y confirmación</h2></div>
-              <span class="badge warning" id="kit-state">Borrador listo</span>
-            </div>
-            <p class="muted">Revisa los totales y la validez antes de archivar el Media Kit. Podrás editar los datos de marca en la pestaña Configuración.</p>
-            <div class="kit-summary" id="kit-final-metrics">
-              <!-- Se llena dinamicamente -->
-            </div>
-            <div class="step-footer">
-              <button class="btn ghost" type="button" onclick="setKitStep(2)">Atrás</button>
-              <div class="actions">
-                <button class="btn success" type="button" id="kit-save-btn">Guardar Media Kit</button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <aside class="panel kit-preview" aria-label="Preview de media kit">
-          <div class="panel-head compact">
-            <div>
-              <span class="eyebrow">Preview</span>
-              <h2>Vista del cliente</h2>
-            </div>
-          </div>
-          <div class="kit-doc" id="kit-preview"></div>
-          <div class="panel">
-            <div class="panel-head">
-              <div>
-                <span class="eyebrow">Repositorio</span>
-                <h2>Kits generados</h2>
-              </div>
-            </div>
-            <div class="kit-list panel-pad" id="kit-history"></div>
-            <details class="kit-archive panel-pad" id="kit-archive-wrap">
-              <summary>Archivados <span id="kit-archive-count">0</span></summary>
-              <div class="kit-list" id="kit-archive"></div>
-            </details>
-          </div>
-        </aside>
-      </div>
-    </section>
-
-    <section class="section" id="section-metrics" hidden>
+    <!-- INVENTORY -->
+    <section class="section on" id="sec-inventory">
       <div class="layout">
-        <section class="panel" aria-label="Reach diario por zona">
-          <div class="panel-head"><div><span class="eyebrow">Metricas</span><h2>Reach diario por zona</h2></div></div>
-          <div class="chart-list" id="zone-chart"></div>
-        </section>
-        <aside class="panel" aria-label="Distribucion por tipo de transito">
-          <div class="panel-head"><div><span class="eyebrow">Distribucion</span><h2>Tipos de transito</h2></div></div>
-          <div class="chart-list" id="type-chart"></div>
+        <div class="panel">
+          <div class="panel-head">
+            <div><span class="eyebrow">Inventario</span><h2>Pantallas</h2></div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="badge bd-ok" id="result-count">0 resultados</span>
+            </div>
+          </div>
+          <div class="bulk-bar" id="bulk-bar">
+            <span class="badge bd-warn"><span id="bulk-count">0</span> seleccionadas</span>
+            <button class="btn sm ok" data-bulk="Activo">Publicar</button>
+            <button class="btn sm" data-bulk="Pausado">Pausar</button>
+            <button class="btn sm ghost" id="bulk-clear">Limpiar</button>
+          </div>
+          <div class="filters">
+            <div class="field grow"><label>Buscar</label><input type="search" id="f-search" placeholder="Nombre, zona…"></div>
+            <div class="field"><label>Zona</label><select id="f-zone"></select></div>
+            <div class="field"><label>Tipo</label>
+              <select id="f-type"><option>Todos</option><option>Peatonal</option><option>Vehicular</option><option>Mixto</option></select>
+            </div>
+            <div class="field"><label>Estado</label>
+              <select id="f-status"><option>Todos</option><option>Activo</option><option>Pausado</option></select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:36px"><input type="checkbox" id="sel-all"></th>
+                  <th class="sort" data-k="nombre">Pantalla</th>
+                  <th class="sort" data-k="tipo">Tipo</th>
+                  <th class="sort" data-k="impactos">Impactos/día</th>
+                  <th class="sort" data-k="precio">Precio/sem</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="screen-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <aside class="panel drawer" id="editor-panel">
+          <div class="panel-head" style="border-bottom:1px solid var(--ln)">
+            <div><span class="eyebrow">Detalle</span><h2 id="ed-title">Seleccioná una pantalla</h2></div>
+          </div>
+          <div id="editor-body"><p class="empty-sel">Hacé clic en ✏️ para editar una pantalla.</p></div>
         </aside>
       </div>
     </section>
 
-    <section class="section" id="section-settings" hidden>
+    <!-- MEDIA KITS -->
+    <section class="section" id="sec-mediakits">
+      <div class="kit-layout">
+        <div class="panel">
+          <div class="panel-head">
+            <div><span class="eyebrow">Media Kit</span><h2>Constructor de propuesta</h2></div>
+            <span class="badge bd-warn" id="kit-draft-badge">Borrador</span>
+          </div>
+          <div class="filters">
+            <div class="field grow"><label>Cliente</label><input id="kit-client" placeholder="Ej: Bodega Trapiche"></div>
+            <div class="field"><label>Contacto</label><input id="kit-contact" placeholder="Nombre"></div>
+            <div class="field"><label>Duración</label>
+              <select id="kit-dur">
+                <option value="1">1 semana</option><option value="2">2 semanas</option>
+                <option value="4" selected>4 semanas</option><option value="8">8 semanas</option>
+                <option value="12">12 semanas</option>
+              </select>
+            </div>
+            <div class="field"><label>Zona</label><select id="kit-zone"></select></div>
+            <div class="field"><label>Validez</label>
+              <select id="kit-validity"><option value="7">7 días</option><option value="15" selected>15 días</option><option value="30">30 días</option></select>
+            </div>
+          </div>
+          <div class="panel-pad">
+            <div class="field"><label>Notas para el cliente</label><textarea id="kit-notes" placeholder="Ej: Precio especial por lanzamiento…"></textarea></div>
+          </div>
+          <div class="panel-head">
+            <div><span class="eyebrow">Selección</span><h2>Pantallas del kit</h2></div>
+            <span class="badge bd-ok" id="kit-sel-count">0 seleccionadas</span>
+          </div>
+          <div class="kit-list" id="kit-screen-list"></div>
+        </div>
+
+        <aside>
+          <div class="panel" style="margin-bottom:14px">
+            <div class="panel-head">
+              <div><span class="eyebrow">Preview</span><h2>Documento</h2></div>
+              <button class="btn ok" id="btn-save-kit">Archivar propuesta</button>
+            </div>
+            <div class="kit-doc" id="kit-preview"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div><span class="eyebrow">Historial</span><h2>Propuestas generadas</h2></div></div>
+            <div class="kit-history" id="kit-history"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- METRICS -->
+    <section class="section" id="sec-metrics">
+      <div class="charts-grid">
+        <div class="panel">
+          <div class="panel-head"><div><span class="eyebrow">Métricas</span><h2>Reach diario por zona</h2></div></div>
+          <div class="chart-rows" id="chart-zones"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><div><span class="eyebrow">Distribución</span><h2>Tipos de tránsito</h2></div></div>
+          <div class="chart-rows" id="chart-types"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="section" id="sec-settings">
       <div class="settings-grid">
-        <section class="panel">
+        <div class="panel">
           <div class="panel-head"><div><span class="eyebrow">Marca</span><h2>Datos visibles</h2></div></div>
-          <div class="editor section-pad">
-            <div class="field"><label for="settings-brand">Nombre</label><input id="settings-brand" type="text"></div>
-            <div class="field"><label for="settings-logo">Logo corto</label><input id="settings-logo" type="text"></div>
-            <div class="field"><label for="settings-whatsapp">WhatsApp comercial</label><input id="settings-whatsapp" type="text"></div>
+          <div class="panel-pad" style="display:grid;gap:11px">
+            <div class="field"><label>Nombre de marca</label><input id="cfg-brand" type="text"></div>
+            <div class="field"><label>Logo corto (2 letras)</label><input id="cfg-logo" type="text" maxlength="3"></div>
+            <div class="field"><label>WhatsApp comercial</label><input id="cfg-wa" type="text" placeholder="5492616000000"></div>
           </div>
-        </section>
-        <section class="panel">
-          <div class="panel-head"><div><span class="eyebrow">Plantilla</span><h2>Condiciones del mediakit</h2></div></div>
-          <div class="editor section-pad">
-            <div class="field"><label for="settings-validity">Validez comercial</label><select id="settings-validity"><option value="7 dias">7 dias</option><option value="15 dias">15 dias</option><option value="30 dias">30 dias</option></select></div>
-            <div class="field"><label for="settings-terms">Condiciones</label><textarea id="settings-terms">Inicio de campana sujeto a disponibilidad y aprobacion de piezas. Valores expresados en ARS.</textarea></div>
-            <button class="btn success" type="button" id="settings-save">Aplicar configuracion</button>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><div><span class="eyebrow">Plantilla</span><h2>Condiciones del media kit</h2></div></div>
+          <div class="panel-pad" style="display:grid;gap:11px">
+            <div class="field"><label>Validez por defecto</label>
+              <select id="cfg-validity"><option value="7">7 días</option><option value="15">15 días</option><option value="30">30 días</option></select>
+            </div>
+            <div class="field"><label>Condiciones generales</label><textarea id="cfg-terms" style="min-height:100px"></textarea></div>
+            <div class="field"><label>Hero title (brochure)</label><input id="cfg-hero" type="text"></div>
+            <button class="btn ok" id="btn-cfg-save">Guardar configuración</button>
           </div>
-        </section>
-        <section class="panel">
-          <div class="panel-head"><div><span class="eyebrow">Sistema</span><h2>Gestión de datos locales</h2></div></div>
-          <div class="editor section-pad"><p class="muted">Borra todos los datos guardados en este navegador (inventario y kits) y recarga la aplicación desde los archivos base.</p><button class="btn danger" id="reset-data-btn" type="button">Resetear Datos Locales</button></div>
-        </section>
+        </div>
       </div>
     </section>
   </main>
 </div>
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="./config.js?v=5acbbbe"></script>
-<script src="./shared.js?v=5acbbbe"></script>
-<script src="./dashboard.js?v=5acbbbe"></script>
+<!-- Login View -->
+<div class="login-view" id="login-view">
+  <div class="login-box">
+    <h2>Acceso al Dashboard</h2>
+    <p>Ingresá tus credenciales para gestionar el inventario.</p>
+    <form id="login-form">
+      <div class="field"><label for="username">Usuario</label><input type="text" id="username" name="username" required></div>
+      <div class="field"><label for="password">Contraseña</label><input type="password" id="password" name="password" required></div>
+      <p id="login-error" style="color:var(--danger);font-size:12px;display:none;"></p>
+      <button type="submit" class="btn pri">Ingresar</button>
+    </form>
+  </div>
+</div>
+
+
+<!-- Confirmation modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h3 id="modal-title">¿Confirmar acción?</h3>
+    <p id="modal-body">Esta acción no se puede deshacer.</p>
+    <div class="modal-actions">
+      <button class="btn" id="modal-cancel">Cancelar</button>
+      <button class="btn danger" id="modal-confirm">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="shared.js?v=d63c2d9"></script>
+<script src="dashboard.js?v=d63c2d9"></script>
 </body>
 </html>

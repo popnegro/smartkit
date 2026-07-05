@@ -227,7 +227,7 @@ function screenHead(s, className, overlay='', eager=className==='media'){
 }
 
 function renderBrochureCard(s, eagerVideo=false){
-  const selected=selectedScreens.includes(s.id);
+  const selected=state.selectedScreens.includes(s.id);
   const recommended=isRecommended(s);
   const availability=screenAvailability(s);
   const badgeText=selected?'Seleccionada':recommended?'Recomendada':h(s.tipo);
@@ -528,14 +528,20 @@ async function generateMediaKit(id=null){
   const kit=await Shared.buildMediaKit(quoteTotals(), BRAND, window.CONFIG || {}, 'Borrador');
   if(!kit)return;
 
-  // Mejora: Persistir el kit generado en el estado del dashboard para consistencia.
-  const dashboardState = Shared.loadDashboardState() || { rows: state.sourceScreens, kits: [], brand: state.brand };
-  const updatedKits = [kit, ...(dashboardState.kits || []).filter(k => k.id !== kit.id)];
-  Shared.persistDashboardState({
-    rows: dashboardState.rows,
-    kits: updatedKits,
-    brand: dashboardState.brand
-  });
+  // Mejora: Enviar el kit a la API para persistencia remota.
+  try {
+    const response = await fetch('/api/kits', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(kit)
+    });
+    if (!response.ok) throw new Error('No se pudo guardar el media kit en el servidor.');
+    console.log('Media kit guardado en la API con éxito.');
+  } catch (error) {
+    console.error(error);
+    // Opcional: Guardar en localStorage como fallback si la API falla.
+    Shared.showToast('Error al guardar la propuesta, se guardó localmente.', 'error');
+  }
 
   showGeneratedFeedback(kit);
 
@@ -703,11 +709,12 @@ function bindEvents(){
       state.sourceScreens = savedState.rows;
     if (savedState.brand) Object.assign(state.brand, savedState.brand);
   } else {
-    // El método preferido: cargar desde JSON.
+    // Modificado: Cargar desde la API externa en lugar de screens.json.
     try {
-      console.log('SmartKit: Cargando desde screens.json...');
-      const response = await fetch('./screens.json');
-      if (!response.ok) throw new Error('No se pudo cargar screens.json');
+      console.log('SmartKit: Cargando desde la API de inventario...');
+      // La URL del endpoint de tu API. Puede estar en una variable de configuración.
+      const response = await fetch('/api/screens'); 
+      if (!response.ok) throw new Error('No se pudo cargar el inventario desde la API.');
       state.sourceScreens = await response.json();
     } catch (error) {
       console.error('Error al cargar datos de pantallas:', error);
@@ -717,7 +724,11 @@ function bindEvents(){
     }
   }
 
-    state.activeScreens = state.sourceScreens.filter(s => s.status === 'Activo' || (typeof s.active !== 'undefined' ? s.active : true));
+    // Corregido: Unificar el criterio para pantallas activas.
+    // Prioriza el campo `status` del dashboard, y si no existe, usa el `active` del JSON.
+    state.activeScreens = state.sourceScreens.filter(s =>
+      s.status ? s.status === 'Activo' : (s.active !== false)
+    );
     state.zones = ['Todos', ...new Set(state.activeScreens.map(s => s.b))];
     state.activeMetrics.totalReach = state.activeScreens.reduce((acc, s) => acc + impNum(s), 0);
 

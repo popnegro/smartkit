@@ -18,13 +18,15 @@ DEST_DIR="dist"
 JS_FILES_TO_MINIFY=(
     "shared.js"
     "mediakit.js"
+    "map.js"
     "config.js"
 )
 CSS_FILES_TO_MINIFY=(
     "styles.css"
     "dashboard.css"
+    "map.css"
 )
-HTML_FILES=("index.html" "dashboard.html" "mediakit.html" "screens.json")
+HTML_FILES=("index.html" "dashboard.html" "mediakit.html" "map.html" "screens.json")
 STATIC_ASSETS=("assets" "data") # Directorios para copiar
 
 # --- Funciones ---

@@ -1,8 +1,11 @@
 [
   "data/data/kits/demo-trapiche.json",
+  "map.html.bak",
+  "map.js",
   "styles.css",
   "screens.json",
   "dashboard.html",
+  "map.css",
   "dashboard.css",
   "app.js",
   "readme.md",
@@ -20,6 +23,7 @@
   "dashboard.js",
   "mediakit.html.bak",
   "index.html.bak",
+  "map.html",
   "shared.js",
   "production-manifest.json"
 ]

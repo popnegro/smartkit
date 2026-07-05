@@ -3,41 +3,358 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SmartKit - Media Kit</title>
-<link rel="stylesheet" href="./styles.css?v=5acbbbe">
-</head>
-<body class="mediakit-page">
-<div class="page">
-  <header class="top">
-    <div class="brand">
-      <div class="logo" id="brand-logo">SK</div>
-      <div>
-        <strong id="brand-name">SmartKit</strong>
-        <span>Media kit comercial</span>
-      </div>
-    </div>
-    <div class="header-actions">
-      <a class="btn" href="./index.html" aria-label="Volver al cotizador">
-        <span>Volver al Catálogo</span>
-      </a>
-    </nav>
-  </header>
-  <main class="mk-wrap" id="app" aria-live="polite"></main>
-</div>
-<nav class="mobile-action-nav" id="mobile-action-nav" aria-label="Navegación principal">
-  <a class="mobile-nav-destination" href="./index.html">
-    <span>Brochure</span>
-  </a>
-  <a class="mobile-nav-destination" href="./index.html?view=map">
-    <span>Mapa</span>
-  </a>
-  <a class="mobile-nav-destination on" href="./mediakit.html" data-mediakit-link aria-current="page">
-    <span>Media Kit</span>
-  </a>
-</nav>
+<title>SmartKit – Media Kit</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css?v=d63c2d9">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js?v=d63c2d9"></script>
+<style>
+:root{--pri:#0369a1;--pdk:#075985;--teal:#0f766e;--bg:#f6f8fb;--panel:#fff;--soft:#f8fafc;--tx:#0f172a;--mu:#475569;--ln:#d9e2ec;--r:14px;--sh:0 1px 3px rgba(15,23,42,.07),0 8px 28px rgba(15,23,42,.07)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:15px;line-height:1.55}
+button,input{font:inherit;outline:none;cursor:pointer}
+a{color:inherit;text-decoration:none}
 
-<script src="./config.js?v=5acbbbe"></script>
-<script src="./shared.js?v=5acbbbe"></script>
-<script src="./mediakit.js?v=5acbbbe"></script>
+/* ── TOP BAR ── */
+.top{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--ln);display:flex;align-items:center;gap:14px;padding:10px 24px;min-height:56px}
+.brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.logo{width:36px;height:36px;border-radius:10px;background:var(--pdk);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px}
+.brand strong{font-size:15px;font-weight:700}
+.nav{display:flex;gap:6px;margin-left:auto}
+.nav a,.nav button{min-height:34px;border:1px solid var(--ln);border-radius:8px;background:#fff;color:var(--mu);font-weight:600;font-size:13px;padding:0 13px;display:flex;align-items:center;transition:all .15s}
+.nav a:hover,.nav button:hover{color:var(--pri);border-color:#bae6fd}
+.nav a.pri{background:var(--pdk);border-color:var(--pdk);color:#fff}
+.nav a.pri:hover{background:var(--pri)}
+
+/* ── PAGE ── */
+.page{max-width:760px;margin:0 auto;padding:32px 24px 64px}
+
+/* ── EMPTY STATE ── */
+.empty-state{text-align:center;padding:80px 24px}
+.empty-icon{font-size:52px;margin-bottom:18px;opacity:.5}
+.empty-state h2{font-size:24px;font-weight:800;margin-bottom:10px}
+.empty-state p{color:var(--mu);max-width:400px;margin:0 auto 24px}
+.btn-pri{min-height:44px;border:none;border-radius:10px;background:var(--pdk);color:#fff;font-weight:700;font-size:14px;padding:0 22px;transition:all .15s}
+.btn-pri:hover{background:var(--pri)}
+.btn-wa{min-height:44px;border:none;border-radius:10px;background:#16a34a;color:#fff;font-weight:700;font-size:14px;padding:0 22px;transition:all .15s}
+.btn-wa:hover{background:#15803d}
+.btn-ghost{min-height:40px;border:1px solid var(--ln);border-radius:10px;background:#fff;color:var(--tx);font-weight:600;font-size:13px;padding:0 16px;transition:all .15s}
+.btn-ghost:hover{border-color:#94a3b8}
+
+/* ── HERO SECTION ── */
+.mk-hero{background:linear-gradient(135deg,var(--pdk) 0%,var(--teal) 100%);color:#fff;border-radius:var(--r);padding:30px 28px;margin-bottom:20px}
+.mk-eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;opacity:.75;margin-bottom:8px}
+.mk-hero h1{font-size:30px;font-weight:900;line-height:1.1;margin-bottom:6px}
+.mk-hero-meta{font-size:13px;opacity:.8;margin-bottom:20px}
+.expired-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);border-radius:999px;font-size:12px;font-weight:700;padding:3px 10px;margin-top:8px;color:#fff}
+
+/* ── KPI SUMMARY ── */
+.mk-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.mk-kpi{background:var(--panel);border:1px solid var(--ln);border-radius:var(--r);padding:14px;box-shadow:var(--sh)}
+.mk-kpi b{display:block;font-size:20px;font-weight:800;line-height:1.1;color:var(--pdk)}
+.mk-kpi span{font-size:12px;color:var(--mu);margin-top:2px;display:block}
+
+/* ── SECTION ── */
+.mk-section{background:var(--panel);border:1px solid var(--ln);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:16px;overflow:hidden}
+.mk-section-head{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid var(--ln)}
+.mk-section-head h2{font-size:15px;font-weight:700}
+.eyebrow{display:block;color:var(--mu);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+
+/* ── MAP ── */
+#mk-map{height:260px;background:#0a1323}
+
+/* ── SCREEN LIST ── */
+.mk-screen{display:flex;align-items:center;gap:14px;padding:13px 18px;border-bottom:1px solid var(--ln)}
+.mk-screen:last-child{border-bottom:0}
+.mk-screen-icon{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--pdk),var(--teal));display:grid;place-items:center;color:#fff;font-size:18px;font-weight:800;flex-shrink:0}
+.mk-screen-info{flex:1;min-width:0}
+.mk-screen-info strong{display:block;font-weight:700;font-size:14px}
+.mk-screen-info span{color:var(--mu);font-size:12px}
+.mk-screen-specs{display:flex;gap:10px;margin-top:5px;flex-wrap:wrap}
+.spec{font-size:11px;background:var(--soft);border:1px solid var(--ln);border-radius:999px;padding:2px 9px;color:var(--mu)}
+.mk-screen-price{text-align:right;flex-shrink:0}
+.mk-screen-price strong{display:block;font-weight:700;font-size:14px;color:var(--pdk);font-family:monospace}
+.mk-screen-price span{font-size:11px;color:var(--mu)}
+
+/* ── CONDITIONS ── */
+.mk-conditions{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:16px 18px}
+.condition-box{border:1px solid var(--ln);border-radius:10px;background:var(--soft);padding:14px}
+.condition-box h3{font-size:13px;font-weight:700;margin-bottom:6px}
+.condition-box p,.condition-box li{font-size:12px;color:var(--mu);line-height:1.6}
+.condition-box ul{padding-left:14px}
+.mk-cta{grid-column:1/-1;background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:1px solid #bae6fd;border-radius:10px;padding:20px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.mk-cta-text h3{font-size:15px;font-weight:700;margin-bottom:4px}
+.mk-cta-text p{font-size:12px;color:var(--mu)}
+.mk-cta-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;height:20px;border-radius:999px;font-size:10px;font-weight:700;padding:0 8px;white-space:nowrap}
+.bd-p{background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe}
+.bd-v{background:#ccfbf1;color:#065f46;border:1px solid #99f6e4}
+.bd-m{background:#ede9fe;color:#5b21b6;border:1px solid #c4b5fd}
+
+/* ── SIGNATURE ── */
+.mk-sig{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border-top:1px solid var(--ln);font-size:12px;color:var(--mu)}
+.sig-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;flex-shrink:0}
+.sig-dot.unsigned{background:#94a3b8}
+
+/* ── PRINT ── */
+@media print{
+  .top,.nav,.mk-cta-actions,.no-print{display:none!important}
+  .page{padding:0;max-width:100%}
+  .mk-hero{border-radius:0}
+  body{background:#fff}
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:640px){
+  .mk-kpis{grid-template-columns:1fr 1fr}
+  .mk-conditions{grid-template-columns:1fr}
+  .mk-cta{flex-direction:column;align-items:flex-start}
+  .page{padding:20px 16px 48px}
+  .top{padding:10px 16px}
+  .mk-hero{padding:22px 18px}
+  .mk-hero h1{font-size:22px}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <div class="logo" id="brand-logo">SK</div>
+    <strong id="brand-name">SmartKit</strong>
+  </div>
+  <nav class="nav">
+    <a href="index.html">Brochure</a>
+    <a href="dashboard.html" class="no-print">Dashboard</a>
+    <a href="index.html" class="pri">+ Nueva propuesta</a>
+  </nav>
+</header>
+
+<main class="page" id="app"></main>
+
+<script>
+/* ══════════════════════════════════════════════
+   mediakit.js — Vista pública de propuesta
+═══════════════════════════════════════════════ */
+(function(){
+'use strict';
+
+const K_KITS = 'sk_v1_public-kits';
+const K_CFG  = 'sk_v1_config';
+
+const DEFAULT_CFG = {
+  brand:'SmartKit',logo:'SK',whatsapp:'5492616000000',
+  terms:'Inicio de campaña sujeto a disponibilidad y aprobación de piezas creativas. Valores en ARS. Propuesta válida por 15 días.',
+};
+
+const $ = id => document.getElementById(id);
+const fmt = n => '$' + Math.round(n).toLocaleString('es-AR');
+const fmtImp = n => n >= 1000 ? (n/1000).toFixed(1)+'k' : String(n);
+const esc = s => String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const badgeClass = {Peatonal:'bd-p',Vehicular:'bd-v',Mixto:'bd-m'};
+const dotColor = {Peatonal:'#0369a1',Vehicular:'#0f766e',Mixto:'#7c3aed'};
+
+// ── Load config ──
+let cfg = DEFAULT_CFG;
+try{ cfg = {...DEFAULT_CFG,...JSON.parse(localStorage.getItem(K_CFG)||'{}')}; }catch(_){}
+
+// ── Apply brand ──
+function applyBrand(){
+  const logo=$('brand-logo'), name=$('brand-name');
+  if(logo) logo.textContent=cfg.logo;
+  if(name) name.textContent=cfg.brand;
+  document.title=`${cfg.brand} · Media Kit`;
+}
+
+// ── Load kit ──
+function loadKit(){
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id') || '';
+
+  let allKits = {};
+  try{ allKits = JSON.parse(localStorage.getItem(K_KITS)||'{}'); }catch(_){}
+
+  // If id provided, look it up; otherwise use most recent kit
+  let kit = id ? allKits[id] : null;
+
+  if(!kit && !id){
+    // Show latest kit for demo purposes
+    const kits = Object.values(allKits).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+    kit = kits[0] || null;
+  }
+
+  return kit;
+}
+
+// ── Render ──
+function init(){
+  applyBrand();
+  const kit = loadKit();
+  if(kit){
+    renderKit(kit);
+  } else {
+    renderEmpty();
+  }
+}
+
+function renderEmpty(){
+  $('app').innerHTML=`
+    <div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <h2>Sin propuesta cargada</h2>
+      <p>Generá un media kit desde el brochure seleccionando pantallas y haciendo clic en "Generar media kit". El link que obtenés apunta a esta página.</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <a href="index.html"><button class="btn-pri">Ir al brochure</button></a>
+        <a href="dashboard.html"><button class="btn-ghost">Ir al dashboard</button></a>
+      </div>
+    </div>`;
+}
+
+function renderKit(kit){
+  const brand = kit.brand || cfg.brand;
+  const whatsapp = (kit.whatsapp || cfg.whatsapp || '').replace(/\D/g,'');
+  const screens = kit.screens || [];
+  const totals = kit.totals || {};
+  const now = new Date();
+  const createdDate = kit.createdAt ? new Date(kit.createdAt).toLocaleDateString('es-AR') : '—';
+  const validDate = kit.validUntil ? new Date(kit.validUntil).toLocaleDateString('es-AR') : '—';
+  const isExpired = kit.validUntil ? new Date() > new Date(kit.validUntil) : false;
+  const cpm = totals.impactsTotal > 0 ? (totals.investment / totals.impactsTotal * 1000) : 0;
+  const clientName = kit.client || kit.clientName || 'Cliente';
+  const contactName = kit.contact || '';
+  const terms = kit.terms || kit.notes || cfg.terms;
+
+  const waMsg = encodeURIComponent(
+    `Hola ${brand}! Quiero avanzar con la propuesta para ${clientName}.\n\nInversión: ${fmt(totals.investment)}\nPantallas: ${totals.screens}\nDuración: ${kit.weekLabel||kit.weeks+' sem'}`
+  );
+  const waUrl = whatsapp ? `https://wa.me/${whatsapp}?text=${waMsg}` : '#';
+
+  $('app').innerHTML=`
+    <!-- HERO -->
+    <section class="mk-hero">
+      <div class="mk-eyebrow">Propuesta DOOH · ${esc(brand)}</div>
+      <h1>${esc(clientName)}</h1>
+      <div class="mk-hero-meta">
+        ${contactName?`<span>${esc(contactName)} · </span>`:''}
+        ${esc(kit.weekLabel||kit.weeks+' semanas')} · Generado el ${createdDate}
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:12px;opacity:.8">Válida hasta ${validDate}</span>
+        ${isExpired?`<span class="expired-badge">⚠ Propuesta vencida</span>`:''}
+      </div>
+    </section>
+
+    <!-- KPIs -->
+    <section class="mk-kpis">
+      <div class="mk-kpi"><b>${totals.screens||screens.length}</b><span>Pantallas</span></div>
+      <div class="mk-kpi"><b>${fmtImp(totals.impactsTotal||0)}</b><span>Impactos totales</span></div>
+      <div class="mk-kpi"><b>${fmt(totals.investment||0)}</b><span>Inversión total</span></div>
+      <div class="mk-kpi"><b>${fmt(Math.round(cpm))}</b><span>CPM estimado</span></div>
+    </section>
+
+    <!-- MAP + SCREENS -->
+    <section class="mk-section">
+      <div class="mk-section-head">
+        <div>
+          <span class="eyebrow">Ubicaciones</span>
+          <h2>Pantallas incluidas</h2>
+        </div>
+        <span style="font-size:12px;color:var(--mu)">${screens.length} pantalla${screens.length!==1?'s':''}</span>
+      </div>
+      <div id="mk-map"></div>
+      ${screens.map(s=>`
+        <div class="mk-screen">
+          <div class="mk-screen-icon">${esc((s.nombre||s.name||'').substring(0,2).toUpperCase())}</div>
+          <div class="mk-screen-info">
+            <strong>${esc(s.nombre||s.name||'—')}</strong>
+            <span>${esc(s.zona||s.zone||'—')}</span>
+            <div class="mk-screen-specs">
+              <span class="badge ${badgeClass[s.tipo||s.type]||''}">${esc(s.tipo||s.type||'—')}</span>
+              <span class="spec">${fmtImp(s.impactos||s.impactsDay||0)} imp/día</span>
+              ${s.dim||s.format?`<span class="spec">${esc(s.dim||s.format)}</span>`:''}
+            </div>
+          </div>
+          <div class="mk-screen-price">
+            <strong>${fmt(s.precioCampana||s.precioCampaña||s.subtotal||(s.precio||s.priceWeek||0)*(kit.weeks||1))}</strong>
+            <span>campaña ${kit.weekLabel||kit.weeks+' sem'}</span>
+          </div>
+        </div>`).join('')}
+    </section>
+
+    <!-- CONDITIONS -->
+    <section class="mk-section">
+      <div class="mk-section-head">
+        <div>
+          <span class="eyebrow">Condiciones</span>
+          <h2>Detalle comercial</h2>
+        </div>
+      </div>
+      <div class="mk-conditions">
+        <div class="condition-box">
+          <h3>Condiciones generales</h3>
+          <p>${esc(terms)}</p>
+        </div>
+        <div class="condition-box">
+          <h3>Formatos y entrega</h3>
+          <ul>
+            <li>Formatos aceptados: MP4 H.264, JPG, PNG</li>
+            <li>Resolución mínima: Full HD (1920×1080)</li>
+            <li>Entrega de piezas: 72 hs hábiles antes del inicio</li>
+            <li>Validez de esta propuesta: hasta ${validDate}</li>
+          </ul>
+        </div>
+        <div class="mk-cta">
+          <div class="mk-cta-text">
+            <h3>Reservar propuesta</h3>
+            <p>Confirmá disponibilidad, fechas y piezas con el equipo comercial.</p>
+          </div>
+          <div class="mk-cta-actions">
+            ${whatsapp?`<a href="${waUrl}" target="_blank" rel="noopener"><button class="btn-wa">Contactar por WhatsApp</button></a>`:''}
+            <button class="btn-ghost no-print" onclick="window.print()">Guardar PDF</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SIGNATURE -->
+    <div class="mk-sig">
+      <div class="sig-dot"></div>
+      <span>Propuesta generada por <strong>${esc(brand)}</strong> · SmartKit DOOH · ${createdDate}</span>
+    </div>`;
+
+  // Init map
+  if(window.L){
+    const mapEl=$('mk-map');
+    if(mapEl && screens.some(s=>s.lat&&s.lng)){
+      const lMap=L.map('mk-map',{zoomControl:true,attributionControl:false});
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(lMap);
+      const pts=[];
+      screens.forEach(s=>{
+        if(!s.lat||!s.lng) return;
+        const icon=L.divIcon({
+          className:'',iconSize:[34,34],
+          html:`<div style="width:34px;height:34px;border-radius:50%;border:2px solid #fff;background:${dotColor[s.tipo||s.type]||'#64748b'};display:grid;place-items:center;color:#fff;font-size:12px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.4)">${esc((s.nombre||s.name||'').substring(0,2).toUpperCase())}</div>`
+        });
+        L.marker([s.lat,s.lng],{icon}).addTo(lMap).bindPopup(`<b>${esc(s.nombre||s.name)}</b><br>${esc(s.zona||s.zone)}`);
+        pts.push([s.lat,s.lng]);
+      });
+      if(pts.length===1){
+        lMap.setView(pts[0],14);
+      } else if(pts.length>1){
+        lMap.fitBounds(L.latLngBounds(pts),{padding:[40,40]});
+      }
+    } else if(mapEl){
+      mapEl.style.display='none';
+    }
+  }
+}
+
+// ── Init ──
+document.readyState==='loading'
+  ?document.addEventListener('DOMContentLoaded',init)
+  :init();
+
+})();
+</script>
 </body>
 </html>

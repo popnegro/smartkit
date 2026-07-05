@@ -3,149 +3,105 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css?v=5acbbbe">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js?v=5acbbbe"></script>
-<link rel="stylesheet" href="./styles.css?v=5acbbbe">
+<title>SmartKit – Brochure DOOH</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css?v=d63c2d9">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js?v=d63c2d9"></script>
+<link rel="stylesheet" href="styles.css?v=d63c2d9">
 </head>
 <body>
-<a class="skip-link" href="#view-brochure">Saltar al contenido</a>
-<div class="app">
-  <header class="top">
-    <div class="brand">
-      <div class="logo" id="brand-logo">SK</div>
-      <div><strong id="brand-name">SmartKit</strong></div>
-    </div>
-    <button class="menu-toggle" id="menu-toggle" type="button" aria-controls="primary-nav" aria-expanded="false" data-action="toggle-nav">
-      <span class="menu-toggle-icon" aria-hidden="true"></span>
-      <span>Menu</span>
-    </button>
-    <nav class="nav" id="primary-nav" aria-label="Vistas principales">
-      <button id="btn-brochure" class="on" type="button" aria-current="page" data-view="brochure">Brochure</button>
-      <button id="btn-map" type="button" data-view="map">Mapa</button>
-      <a href="./mediakit.html" class="nav-link" data-mediakit-link>Último Kit</a>
-    </nav>
-    <div class="header-actions">
-      <button class="mobile-quote-toggle" id="mobile-quote-toggle" type="button" aria-controls="quote-panel" aria-expanded="false" data-action="toggle-mobile-quote">
-        <span>Cotizador</span>
-      </button>
-    </div>
-  </header>
 
-  <main class="main" aria-label="Experiencia comercial de pantallas">
-    <section id="view-map" class="view" aria-label="Mapa de pantallas" aria-hidden="true">
-      <div id="map" role="application" aria-label="Mapa interactivo de pantallas"></div>
-      <div class="legend">
-        <span><i class="dot dot-peatonal"></i>Peatonal</span>
-        <span><i class="dot dot-vehicular"></i>Vehicular</span>
-        <span><i class="dot dot-mixto"></i>Mixto</span>
-      </div>
-      <aside id="screen-panel" class="side" role="dialog" aria-modal="false" aria-label="Detalle de pantalla seleccionada" aria-live="polite" tabindex="-1"></aside>
-    </section>
-
-    <section id="view-brochure" class="view brochure on" aria-label="Brochure de pantallas">
-      <div class="hero">
-        <div class="hero-inner">
-          <h1 id="hero-title">SmartKit</h1>
-          <p id="hero-copy">Planifica campañas DOOH, selecciona ubicaciones digitales y genera una reserva comercial en minutos.</p>
-          <div class="stats" id="hero-stats" role="group" aria-label="Resumen de inventario"></div>
-        </div>
-      </div>
-
-      <div class="wrap">
-        <div class="brochure-grid">
-          <section class="catalog" aria-label="Pantallas disponibles">
-            <div class="catalog-head">
-              <div>
-                <span class="quote-eyebrow">Inventario disponible</span>
-                <h2>Pantallas</h2>
-              </div>
-              <div class="catalog-tools">
-                <span class="catalog-count" id="catalog-count">0 pantallas</span>
-                <button class="catalog-filter-toggle" id="mobile-filter-toggle" type="button" aria-controls="zone-filters" aria-expanded="false" data-action="toggle-filters">
-                  Filtros
-                </button>
-              </div>
-            </div>
-            <div class="active-filter-chip" id="active-filter-chip" hidden></div>
-            <div class="cards" id="cards"></div>
-          </section>
-
-          <aside class="quote-panel" id="quote-panel" aria-label="Cotizador de campana" tabindex="-1">
-            <div class="quote-panel-head">
-              <div>
-                <span class="quote-eyebrow">Plan de campaña</span>
-                <h2>Cotizador en vivo</h2>
-              </div>
-              <span class="quote-status" id="quote-status">Vacio</span>
-            </div>
-            <div class="quote-summary" aria-live="polite" aria-atomic="true">
-              <strong id="quote-summary-count">0 pantallas · Sin plan armado</strong>
-              <span id="quote-summary-detail">Agrega pantallas para estimar inversion</span>
-            </div>
-            <div class="quote-field control-panel">
-              <label for="duration-select">Duracion</label>
-              <div class="select-shell"><select id="duration-select" data-duration-select></select></div>
-            </div>
-            <div id="quote-list" class="quote-list"></div>
-            <div class="quote-total">
-              <div class="quote-meta"><span>Pantallas</span><strong id="quote-count">0</strong></div>
-              <div class="quote-meta"><span>Impactos estimados</span><strong id="quote-impacts">0</strong></div>
-              <div>
-                <span class="muted small">Inversion estimada</span>
-                <div id="quote-total" class="price">$0</div>
-              </div>
-            </div>
-            <div class="quote-actions">
-              <button id="quote-mediakit" class="btn primary quote-btn quote-mediakit is-empty" data-action="generate-mediakit" disabled aria-label="Generar propuesta comercial">
-                <svg slot="icon" class="whatsapp-icon plus-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 4h14v16H5V4Zm2 2v12h10V6H7Zm2 2h6v2H9V8Zm0 4h6v2H9v-2Z"/></svg>
-                <span>Generar Propuesta</span>
-              </button>
-              <button id="quote-whatsapp" class="btn success quote-btn quote-whatsapp is-empty" data-action="whatsapp-quote" disabled aria-label="Contactar por WhatsApp">
-                <svg slot="icon" class="whatsapp-icon plus-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg>
-                <span>Contactar</span>
-              </button>
-              <p class="quote-action-hint" id="quote-action-hint">Agrega una pantalla al cotizador para generar una propuesta compartible.</p>
-            </div>
-          </aside>
-
-          <div class="filters quote-filters" id="zone-filters" role="group" aria-label="Filtros de pantallas"></div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <div class="mobile-feedback" id="mobile-feedback" role="status" aria-live="polite" aria-atomic="true"></div>
-  <nav class="mobile-action-nav" id="mobile-action-nav" aria-label="Navegacion principal">
-    <button class="mobile-nav-destination" type="button" data-view="brochure">
-      <span>Brochure</span>
-    </button>
-    <button class="mobile-nav-destination" type="button" data-view="map">
-      <span>Mapa</span>
-    </button>
-    <a class="mobile-nav-destination" href="./mediakit.html" data-mediakit-link>
-      <span>Media Kit</span>
-    </a>
+<header class="top">
+  <div class="brand">
+    <div class="logo" id="brand-logo">SK</div>
+    <strong id="brand-name">SmartKit</strong>
+  </div>
+  <nav class="nav">
+    <button class="on" data-view="brochure">Brochure</button>
+    <button data-view="map">Mapa</button>
+    <button class="nav-link-kit" data-action="open-kit">Media Kit</button>
   </nav>
-</div>
+</header>
 
-<div id="mediakit-offcanvas" class="offcanvas-container" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="offcanvas-title">
-  <div class="offcanvas-backdrop" data-action="close-offcanvas"></div>
-  <div class="offcanvas-panel">
-    <div class="offcanvas-header">
-      <h2 id="offcanvas-title" class="sr-only">Media Kit Generado</h2>
-      <div class="offcanvas-actions">
-        <button type="button" class="btn" data-action="print-mediakit" onclick="document.getElementsByName('mediakit-frame')[0].contentWindow.print()">Imprimir a PDF</button>
-        <button type="button" class="close" aria-label="Cerrar media kit" data-action="close-offcanvas">×</button>
-      </div>
-    </div>
-    <div class="offcanvas-content">
-      <iframe src="about:blank" title="Vista previa del Media Kit" name="mediakit-frame"></iframe>
+<div id="view-brochure" class="view on brochure-wrap">
+  <div class="hero">
+    <h1 id="hero-title">SmartKit</h1>
+    <p id="hero-copy">Planificá campañas DOOH, seleccioná ubicaciones digitales y generá una propuesta comercial en minutos.</p>
+    <div class="stats" id="hero-stats"></div>
+  </div>
+  <div class="wrap">
+    <div class="zone-filters" id="zone-filters"></div>
+    <div class="brochure-grid">
+      <section>
+        <div class="catalog-head">
+          <div><span class="eyebrow">Inventario disponible</span><h2>Pantallas</h2></div>
+          <span class="catalog-count" id="cat-count">0 pantallas</span>
+        </div>
+        <div class="cards" id="cards"></div>
+      </section>
+      <aside class="quote-panel">
+        <div class="qp-head">
+          <div><span class="eyebrow">Plan de campaña</span><h2>Cotizador</h2></div>
+          <span class="q-status" id="q-status">Vacío</span>
+        </div>
+        <div class="q-summary">
+          <strong id="q-sum-count">0 pantallas · Sin plan armado</strong>
+          <span id="q-sum-detail">Agregá pantallas para estimar inversión</span>
+        </div>
+        <div class="q-field">
+          <label>Duración</label>
+          <select class="duration-sel" id="dur-select">
+            <option value="1">1 semana</option>
+            <option value="2">2 semanas</option>
+            <option value="4" selected>4 semanas (1 mes)</option>
+            <option value="8">8 semanas (2 meses)</option>
+            <option value="12">12 semanas (1 trimestre)</option>
+          </select>
+        </div>
+        <div class="q-list" id="q-list"></div>
+        <div class="q-total">
+          <div class="q-meta"><span>Pantallas</span><strong id="q-count">0</strong></div>
+          <div class="q-meta"><span>Impactos estimados</span><strong id="q-impacts">0</strong></div>
+          <div style="margin-top:4px">
+            <span class="mu sm">Inversión estimada</span>
+            <div class="q-investment" id="q-total">$0</div>
+          </div>
+        </div>
+        <div class="q-actions">
+          <button class="q-btn mk" id="btn-mk" disabled>Generar media kit</button>
+          <button class="q-btn wa" id="btn-wa" disabled>Contactar por WhatsApp</button>
+          <p class="q-hint" id="q-hint">Agregá pantallas al cotizador para continuar.</p>
+        </div>
+      </aside>
     </div>
   </div>
 </div>
 
-<script src="./config.js?v=5acbbbe"></script>
-<script src="./shared.js?v=5acbbbe"></script>
-<script src="./app.js?v=5acbbbe"></script>
+<div id="view-map" class="view">
+  <div id="map"></div>
+  <div class="legend">
+    <span><i class="dot dot-p"></i>Peatonal</span>
+    <span><i class="dot dot-v"></i>Vehicular</span>
+    <span><i class="dot dot-m"></i>Mixto</span>
+  </div>
+  <div id="sc-panel">
+    <div class="scp-inner">
+      <button class="scp-close" id="scp-close">✕</button>
+      <div id="scp-content"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Media Kit Modal -->
+<div class="mk-overlay" id="mk-overlay">
+  <div class="mk-modal" id="mk-modal">
+    <button class="btn" style="margin-bottom:16px" id="mk-close">← Volver</button>
+    <div id="mk-content"></div>
+  </div>
+</div>
+
+<script src="shared.js?v=d63c2d9"></script>
+<script src="app.js?v=d63c2d9"></script>
 </body>
 </html>

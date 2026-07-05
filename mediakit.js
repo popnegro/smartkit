@@ -10,23 +10,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (kitId) {
     try {
-      const response = await fetch(`./data/kits/${encodeURIComponent(kitId)}.json`);
-      if (response.ok) {
-        kit = await response.json();
-      } else {
-        const dashboardState = window.SmartKitShared.loadDashboardState() || { kits: [] };
-        kit = dashboardState.kits?.find(k => k.id === kitId);
-      }
+      // Prioridad 1: Cargar desde la API.
+      const response = await fetch(`/api/kits/${encodeURIComponent(kitId)}`);
+      if (!response.ok) throw new Error('Kit no encontrado en la API.');
+      kit = await response.json();
     } catch (error) {
-      console.error('Error al cargar el media kit:', error);
-      const dashboardState = window.SmartKitShared.loadDashboardState() || { kits: [] };
+      // Prioridad 2: Fallback a localStorage (útil para borradores o modo offline).
+      console.warn('Kit no encontrado en API, buscando en localStorage...', error);
+      const dashboardState = window.SmartKitShared.loadDashboardState();
       kit = dashboardState.kits?.find(k => k.id === kitId);
     }
   }
 
   if (kit) {
     await SmartKitShared.renderMediaKitPage(kit, window.CONFIG || {});
-    notifyAdminOfView(kit.id, kit.client);
+    if (kit.id && !kit.id.startsWith('kit-draft-') && !kit.id.startsWith('demo-')) {
+      notifyAdminOfView(kit.id, kit.client);
+    }
   } else {
     renderEmptyState(kitId, app);
   }

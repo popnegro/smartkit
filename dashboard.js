@@ -1,6 +1,7 @@
 const DashboardApp = (() => {
   const Shared = window.SmartKitShared;
   const { formatMoney: fmt, impNum: imp, escapeHtml: h } = Shared;
+  const AUTH_TOKEN_KEY = 'sk_auth_token';
 
   const SECTIONS = { INVENTORY: 'inventory', MEDIAKITS: 'mediakits', METRICS: 'metrics', SETTINGS: 'settings' };
   const KIT_STATUS = { DRAFT: 'Borrador', ARCHIVED: 'Archivado' };
@@ -15,34 +16,97 @@ const DashboardApp = (() => {
     brand: { name: 'SmartKit', logo: 'SK', terms: '', validity: '15 dias', whatsapp: '' }
   };
 
+  // Modificado: debouncedPersist ahora solo guarda datos específicos del cliente (kits, marca).
+  // El inventario (state.rows) se gestiona exclusivamente a través de la API.
   const debouncedPersist = Shared.debounce((message) => {
-    const persistableState = { rows: state.rows, kits: state.savedKits, brand: state.brand };
+    const persistableState = { kits: state.savedKits, brand: state.brand };
     Shared.persistDashboardState(persistableState, message || 'Cambios guardados automáticamente');
   }, 1500);
+
+  // Esta función debería ser tu única vía para actualizar el inventario.
+
+  /**
+   * Un fetch wrapper que añade el token de autenticación y maneja errores 401.
+   */
+  async function authedFetch(url, options = {}) {
+    const token = localStorage.getItem(AUTH_TOKEN_KEY);
+    const headers = {
+      ...options.headers,
+      'Content-Type': 'application/json',
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(url, { ...options, headers });
+
+    if (response.status === 401) {
+      // Token inválido o expirado
+      logout();
+      throw new Error('Sesión expirada. Por favor, ingresa de nuevo.');
+    }
+
+    return response;
+  }
+
+  async function login(username, password) {
+    const errorEl = document.getElementById('login-error');
+    errorEl.style.display = 'none';
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Error de autenticación');
+      localStorage.setItem(AUTH_TOKEN_KEY, data.token);
+      location.reload(); // Recargar para iniciar la app
+    } catch (error) {
+      errorEl.textContent = error.message;
+      errorEl.style.display = 'block';
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    location.reload();
+  }
 
   async function loadInitialData() {
     const urlParams = new URLSearchParams(window.location.search);
     const loadDefault = urlParams.get('load') === 'default';
     const savedState = Shared.loadDashboardState();
 
-    if (savedState && !loadDefault) {
-      state.rows = savedState.rows;
+    if (savedState && savedState.rows && savedState.rows.length > 0 && !loadDefault) {
+      state.rows = savedState.rows.map(row => ({
+        ...row,
+        status: row.status || (row.active ? SCREEN_STATUS.ACTIVE : SCREEN_STATUS.PAUSED)
+      }));
       state.savedKits = savedState.kits || [];
       Object.assign(state.brand, savedState.brand || {});
       document.getElementById('data-status').textContent = 'Datos desde localStorage';
     } else {
       try {
-        console.log('SmartKit Dashboard: Cargando desde screens.json...');
-        const response = await fetch('./screens.json');
-        if (!response.ok) throw new Error('No se pudo cargar screens.json');
+        if (loadDefault) {
+          Shared.showToast('Forzando carga desde screens.json');
+          // En un escenario de API, podrías querer mantener el fallback a JSON para demos.
+        }
+        console.log('SmartKit Dashboard: Cargando desde la API...');
+        const response = await authedFetch('/api/screens'); // Usar fetch autenticado
+        if (!response.ok) throw new Error('No se pudo cargar el inventario desde la API.');
         state.rows = await response.json();
         state.rows.forEach(row => { row.status = row.active ? SCREEN_STATUS.ACTIVE : SCREEN_STATUS.PAUSED; });
-        document.getElementById('data-status').textContent = 'Datos desde screens.json';
-        Shared.showToast('Datos iniciales cargados desde screens.json');
+        document.getElementById('data-status').textContent = 'Datos desde API';
+        Shared.showToast('Datos iniciales cargados desde la API');
       } catch (error) { console.error(error); state.rows = []; }
     }
-    // Corregido: Seleccionar el ID del *primer* elemento del array.
-    state.selectedId = state.rows?.[0]?.id;
+    if (state.rows.length > 0) {
+      state.selectedId = state.rows[0].id;
+    } else {
+      state.selectedId = null;
+    }
   }
 
   function calculateKitMetrics(screens, duration) {
@@ -119,7 +183,6 @@ const DashboardApp = (() => {
         <td>${h(row.imp)}</td>
         <td><strong>${fmt(row.precio)}</strong></td>
         <td><span class="badge ${row.status === SCREEN_STATUS.ACTIVE ? 'active' : 'paused'}">${row.status}</span></td>
-        <td><button class="icon-btn" type="button" aria-label="Editar ${h(row.n)}">Editar</button></td>
       </tr>`).join('');
   }
 
@@ -154,10 +217,11 @@ const DashboardApp = (() => {
   }
 
   function selectRow(id, doRenderTable = true) {
-    state.selectedId = Number(id);
-    // Corregido: Si no se encuentra la fila, usar la primera del array como fallback.
-    // Esto evita que se pase el array completo al editor.
-    const row = state.rows.find(item => item.id === state.selectedId) || state.rows[0];
+    const numericId = Number(id);
+    const row = state.rows.find(item => item.id === numericId);
+    if (!row) return;
+
+    state.selectedId = numericId;
     updateEditor(row);
     if (doRenderTable) renderTable();
   }
@@ -329,15 +393,6 @@ const DashboardApp = (() => {
     archiveWrap.open = archivedKits.length > 0;
     document.getElementById('kit-archive-count').textContent = archivedKits.length;
     document.getElementById('kit-archive').innerHTML = archivedKits.map(k => renderKitRow(k, true)).join('');
-  }
-  document.getElementById('btn-to-step-2').addEventListener('click', () => {
-    if (validateKitStep(2)) setKitStep(2);
-  });
-  document.getElementById('btn-to-step-3').addEventListener('click', () => {
-    if (validateKitStep(3)) setKitStep(3);
-  });
-
-  function renderMetrics() {
     const active = state.rows.filter(row => row.status === SCREEN_STATUS.ACTIVE);
     const totalReach = active.reduce((acc, row) => acc + imp(row), 0);
     const byZone = active.reduce((acc, row) => { acc[row.b] = (acc[row.b] || 0) + imp(row); return acc; }, {});
@@ -383,17 +438,11 @@ const DashboardApp = (() => {
       if (!target) return;
       const action = target.dataset.action;
       const id = target.dataset.id;
+      const step = target.dataset.step;
 
       const actions = {
         'select': () => selectRow(id),
-        'copy-kit': () => {
-          // ... (código existente)
-        },
-        'edit-kit': () => editKit(id),
-        'copy-kit': () => {
-          const kit = state.savedKits.find(k => k.id === id);
-          if (kit) navigator.clipboard?.writeText(new URL(Shared.getMediaKitUrl(kit.id), location.href).href).then(() => Shared.showToast('Link copiado')).catch(() => Shared.showToast('No se pudo copiar'));
-        },
+        'copy-kit': () => { const kit = state.savedKits.find(k => k.id === id); if (kit) navigator.clipboard?.writeText(new URL(Shared.getMediaKitUrl(kit.id), location.href).href).then(() => Shared.showToast('Link copiado')).catch(() => Shared.showToast('No se pudo copiar')); },
         'download-kit': () => {
           const kit = state.savedKits.find(k => k.id === id);
           if (kit) { downloadKitJson(kit); Shared.showToast('JSON descargado'); }
@@ -416,10 +465,11 @@ const DashboardApp = (() => {
           state.savedKits = state.savedKits.map(k => k.id === id ? { ...k, archived: false, restoredAt: new Date().toISOString() } : k);
           renderKitHistory();
           debouncedPersist('Media kit restaurado');
-        }
+        },
+        'edit-kit': () => editKit(id)
       };
-
-      if (actions[action]) actionsaction;
+      if (action === 'set-kit-step') setKitStep(Number(step));
+      if (actions[action]) actions[action]();
     });
 
     document.addEventListener('change', event => {
@@ -431,24 +481,40 @@ const DashboardApp = (() => {
       renderKitPreview();
     });
 
-    document.getElementById('editor-form').addEventListener('submit', event => {
+    document.getElementById('editor-form').addEventListener('submit', async (event) => {
       event.preventDefault();
       const row = state.rows.find(item => item.id === state.selectedId);
       if (!row) return;
-      row.n = document.getElementById('edit-name').value.trim() || row.n;
-      row.b = document.getElementById('edit-zone').value.trim() || row.b;
-      row.aud = document.getElementById('edit-audience').value.trim();
-      row.precio = Number(document.getElementById('edit-price').value) || row.precio;
-      row.note = document.getElementById('edit-note').value.trim();
-      row.status = document.getElementById('edit-status').value;
+
+      // Prepara el objeto con los datos actualizados del formulario
+      const updatedRowData = {
+        ...row, // Mantiene los campos no editables
+        n: document.getElementById('edit-name').value.trim() || row.n,
+        b: document.getElementById('edit-zone').value.trim() || row.b,
+        aud: document.getElementById('edit-audience').value.trim(),
+        precio: Number(document.getElementById('edit-price').value) || row.precio,
+        note: document.getElementById('edit-note').value.trim(),
+        status: document.getElementById('edit-status').value
+      };
+
+      // Actualiza el estado local inmediatamente para una UI fluida (Optimistic Update)
+      Object.assign(row, updatedRowData);
+
       document.getElementById('last-action').textContent = `Actualizada #${row.id}`;
       updateKpis();
       fillFilters();
       selectRow(row.id);
       renderKitBuilder();
-      debouncedPersist('Cambios aplicados al dashboard');
+      
+      // Envía la actualización a la API como única fuente de verdad.
+      // La función updateScreenAPI ya debería existir en tu código.
+      await updateScreenAPI(updatedRowData);
     });
 
+    document.getElementById('login-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      login(document.getElementById('username').value, document.getElementById('password').value);
+    });
     document.getElementById('export-btn').addEventListener('click', exportCsv);
     document.getElementById('kit-save-btn').addEventListener('click', saveKit);
 
@@ -468,14 +534,38 @@ const DashboardApp = (() => {
         Shared.clearAllData();
       }
     });
+
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      if (window.confirm('¿Estás seguro de que quieres cerrar la sesión?')) logout();
+    });
+  }
+  
+  function bindStepperEvents() {
+    document.getElementById('btn-to-step-2').addEventListener('click', () => {
+      if (validateKitStep(2)) setKitStep(2);
+    });
+    document.getElementById('btn-to-step-3').addEventListener('click', () => {
+      if (validateKitStep(3)) setKitStep(3);
+    });
   }
 
   async function init() {
+    // --- Flujo de Autenticación ---
+    const token = localStorage.getItem(AUTH_TOKEN_KEY);
+    if (!token) {
+      document.getElementById('login-view').style.display = 'flex';
+      document.body.style.visibility = 'visible';
+      bindEvents(); // Solo bindeamos el form de login
+      return; // Detenemos la inicialización de la app principal
+    }
+    document.getElementById('app').style.display = 'grid';
+    document.body.style.visibility = 'visible';
     await loadInitialData();
     applyBrand();
     fillFilters();
     updateKpis();
     bindEvents();
+    bindStepperEvents();
 
     document.getElementById('settings-brand').value = state.brand.name;
     document.getElementById('settings-logo').value = state.brand.logo;

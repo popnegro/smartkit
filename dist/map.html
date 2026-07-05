@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartKit – Mapa de Pantallas</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css?v=d63c2d9">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js?v=d63c2d9"></script>
+<link rel="stylesheet" href="map.css?v=d63c2d9">
+</head>
+<body>
+
+<!-- ── TOP BAR ── -->
+<header class="top">
+  <div class="brand">
+    <div class="logo" id="brand-logo">SK</div>
+    <strong id="brand-name">SmartKit</strong>
+  </div>
+  <nav class="nav">
+    <a href="index.html">Brochure</a>
+    <a href="map.html" class="on">Mapa</a>
+    <a href="mediakit.html" id="nav-kit">Media Kit</a>
+    <a href="dashboard.html" class="cta">Dashboard</a>
+  </nav>
+</header>
+
+<!-- ── SEARCH ── -->
+<div class="search-bar">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" id="search" type="search" placeholder="Buscar pantalla…" autocomplete="off">
+  </div>
+</div>
+
+<!-- ── FILTER CHIPS ── -->
+<div class="chips" id="chips">
+  <button class="chip on" data-tipo="Todos">Todos<span class="chip-count" id="cnt-all">0</span></button>
+  <button class="chip" data-tipo="Peatonal">Peatonal<span class="chip-count" id="cnt-peatonal">0</span></button>
+  <button class="chip" data-tipo="Vehicular">Vehicular<span class="chip-count" id="cnt-vehicular">0</span></button>
+  <button class="chip" data-tipo="Mixto">Mixto<span class="chip-count" id="cnt-mixto">0</span></button>
+</div>
+
+<!-- ── MAP ── -->
+<div id="map"></div>
+
+<!-- ── MAP COUNTER ── -->
+<div class="map-counter" id="map-counter">0 pantallas</div>
+
+<!-- ── LEGEND ── -->
+<div class="legend">
+  <div class="legend-item"><div class="dot dot-p"></div>Peatonal</div>
+  <div class="legend-item"><div class="dot dot-v"></div>Vehicular</div>
+  <div class="legend-item"><div class="dot dot-m"></div>Mixto</div>
+</div>
+
+<!-- ── SCREEN PANEL ── -->
+<aside class="sc-panel" id="sc-panel" role="dialog" aria-label="Detalle de pantalla">
+  <div class="sc-panel-head">
+    <h2 id="sc-title">—</h2>
+    <button class="sc-close" id="sc-close" title="Cerrar">✕</button>
+  </div>
+  <div class="sc-hero" id="sc-hero"></div>
+  <div class="sc-body" id="sc-body"></div>
+</aside>
+
+<!-- ── QUOTE PILL ── -->
+<div class="quote-pill" id="quote-pill">
+  <div class="q-pill-dot" id="q-dot">0</div>
+  <div class="q-pill-info">
+    <strong id="q-label">Cotizador vacío</strong>
+    <span id="q-sublabel">Agregá pantallas desde el mapa</span>
+  </div>
+  <div class="q-pill-actions" id="q-actions" style="display:none">
+    <button class="q-pill-btn" id="q-clear">Limpiar</button>
+    <button class="q-pill-btn pri" id="q-go">Ver cotizador →</button>
+  </div>
+</div>
+
+<!-- ── TOAST ── -->
+<div class="toast" id="toast"></div>
+
+<script src="shared.js?v=d63c2d9"></script>
+<script src="map.js?v=d63c2d9"></script>
+</body>
+</html>
