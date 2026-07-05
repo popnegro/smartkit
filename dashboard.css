@@ -114,6 +114,13 @@ tr.selected td:first-child{box-shadow: inset 4px 0 0 var(--primary)}
 .kit-actions .icon-btn{min-width:0;height:32px;border-radius:8px;font-size:12px}
 .chart-list{display:grid;gap:12px;padding:16px}
 .chart-row{display:grid;gap:5px}
+.kit-builder-filters {
+  grid-template-columns: 1fr 1fr;
+  padding: 0;
+  background: transparent;
+  border: 0;
+}
+.editor p.muted { margin-bottom: 12px; }
 .chart-meta{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:13px}
 .bar{height:9px;border-radius:999px;background:#e2e8f0;overflow:hidden}
 .bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--primary-strong),#22d3ee)}
@@ -130,7 +137,7 @@ tr.selected td:first-child{box-shadow: inset 4px 0 0 var(--primary)}
   .actions{justify-content:flex-start}
   .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
   .layout{grid-template-columns:1fr}
-  .drawer{position:static}
+  .drawer{position:static; max-height: none;}
   .filters,.kit-layout,.settings-grid{grid-template-columns:1fr}
   .kit-summary{grid-template-columns:repeat(2,1fr)}
 }

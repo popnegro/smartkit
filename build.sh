@@ -22,7 +22,8 @@ JS_FILES_TO_MINIFY=(
     "screens-data.js"
 )
 CSS_FILES_TO_MINIFY=(
-    "styles.css"
+    "styles.css",
+    "dashboard.css"
 )
 HTML_FILES=("index.html" "dashboard.html" "mediakit.html")
 STATIC_ASSETS=("assets" "data") # Directorios para copiar
@@ -76,6 +77,20 @@ minificar_css() {
     wait # Espera a que todos los procesos en segundo plano terminen
 }
 
+versionar_assets() {
+    echo "Versionando assets con ID de build para invalidar caché..."
+    # Usar el hash corto del último commit como ID de versión.
+    # Esto es más fiable que una fecha si se reconstruye el mismo commit.
+    if command -v git &> /dev/null; then
+        BUILD_ID=$(git rev-parse --short HEAD)
+    else
+        BUILD_ID=$(date +%s) # Fallback a timestamp si git no está disponible
+    fi
+
+    echo "  ID de Build: $BUILD_ID"
+    find "$DEST_DIR" -name "*.html" -exec sed -i.bak "s/\(href\|src\)="\(.*\/.*\.\(css\|js\)\)"/\1=\"\2?v=$BUILD_ID\"/g" {} +
+}
+
 # Función para generar un manifiesto de los archivos de producción.
 # Útil para verificar la integridad del despliegue.
 generar_manifiesto() {
@@ -111,6 +126,7 @@ limpiar
 copiar_archivos
 minificar_js
 minificar_css
+versionar_assets
 generar_manifiesto
 
 ELAPSED_TIME=$(($SECONDS - $START_TIME))
