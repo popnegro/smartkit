@@ -41,6 +41,7 @@ const DashboardApp = (() => {
       state.rows = savedState.rows;
       state.savedKits = savedState.kits || [];
       Object.assign(state.brand, savedState.brand || {});
+      document.getElementById('data-status').textContent = 'Datos desde localStorage';
     } else {
       try {
         console.log('SmartKit Dashboard: Cargando desde screens.json...');
@@ -48,6 +49,7 @@ const DashboardApp = (() => {
         if (!response.ok) throw new Error('No se pudo cargar screens.json');
         state.rows = await response.json();
         state.rows.forEach(row => { row.status = row.active ? SCREEN_STATUS.ACTIVE : SCREEN_STATUS.PAUSED; });
+        document.getElementById('data-status').textContent = 'Datos desde screens.json';
         Shared.showToast('Datos iniciales cargados desde screens.json');
       } catch (error) { console.error(error); state.rows = []; }
     }

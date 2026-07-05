@@ -1,17 +1,11 @@
 const SmartKitShared = (() => {
-  const DURATIONS = [
-    {v:'1s', l:'1 semana', mult:1, days:7},
-    {v:'2s',l:'2 semanas',mult:1.8,days:14},
-    {v:'1m',l:'1 mes',mult:3.2,days:30},
-    {v:'3m',l:'3 meses',mult:8,days:90}
-  ];
   const CONFIG = {
     basePath: '',
     signature: { secret: '', signer: 'SmartKit' }
   };
   const DURATIONS = [
     {v:'1s', l:'1 semana', mult:1, days:7},
-    {v:'2s',l:'2 semanas',mult:1.8,days:14},
+    {v:'2s', l:'2 semanas',mult:1.8,days:14},
     {v:'1m',l:'1 mes',mult:3.2,days:30},
     {v:'3m',l:'3 meses',mult:8,days:90}
   ];
