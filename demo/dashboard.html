@@ -39,6 +39,7 @@ nav.menu{display:grid;gap:4px}
 .topbar p{color:var(--mu);font-size:13px}
 .actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 .badge-warn{background:#fef3c7;border:1px solid #fcd34d;color:#92400e;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px}
+.badge-ok2{background:#dcfce7;border:1px solid #86efac;color:#166534;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px}
 .btn{min-height:36px;border:1px solid var(--ln);border-radius:9px;background:#fff;color:var(--tx);font-weight:600;font-size:13px;padding:0 13px;transition:all .12s;white-space:nowrap}
 .btn:hover{border-color:#94a3b8}
 .btn:disabled{opacity:.45;cursor:not-allowed}
@@ -121,7 +122,6 @@ tr.sel td{background:#eef8ff}
 .kit-list{display:grid;gap:7px;max-height:380px;overflow:auto;padding:12px}
 .kit-row{display:grid;grid-template-columns:auto 1fr auto;gap:9px;align-items:center;border:1px solid var(--ln);border-radius:9px;background:#fff;padding:9px 11px}
 .kit-row input[type=checkbox]{width:16px;height:16px;accent-color:var(--pdk);cursor:pointer}
-.kit-row.screen-paused{opacity:.6}
 .kit-doc{border:1px solid var(--ln);border-radius:11px;overflow:hidden}
 .kit-doc-hero{padding:16px;background:linear-gradient(135deg,var(--pdk),var(--teal));color:#fff}
 .kit-doc-hero h3{font-size:18px;font-weight:800;margin-bottom:3px}
@@ -146,14 +146,12 @@ tr.sel td{background:#eef8ff}
 .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .bulk-bar{display:none;align-items:center;gap:8px;padding:9px 14px;background:#fef3c7;border-bottom:1px solid #fcd34d}
 .bulk-bar.show{display:flex}
-/* Modal */
 .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
 .modal-overlay.open{display:flex}
 .modal{background:#fff;border-radius:16px;max-width:420px;width:100%;padding:24px;box-shadow:0 8px 40px rgba(15,23,42,.18)}
 .modal h3{font-size:17px;font-weight:800;margin-bottom:8px}
 .modal p{font-size:13px;color:var(--mu);margin-bottom:20px;line-height:1.6}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end}
-/* Toast */
 .toast{position:fixed;left:50%;bottom:20px;z-index:9999;transform:translate(-50%,10px);opacity:0;pointer-events:none;background:#0f172a;color:#fff;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:600;box-shadow:var(--sh);transition:all .15s;white-space:nowrap}
 .toast.show{transform:translate(-50%,0);opacity:1}
 .toast.ok{background:var(--ok)}
@@ -196,6 +194,7 @@ tr.sel td{background:#eef8ff}
         <p id="page-desc">Inventario, precios, disponibilidad y propuestas comerciales.</p>
       </div>
       <div class="actions">
+        <span class="badge-ok2" id="sync-ok" title="Todas las pantallas comparten esta misma fuente de datos">🔄 Sincronizado con brochure y mapa</span>
         <button class="btn" id="btn-export">Exportar CSV</button>
         <button class="btn pri" id="btn-save">Guardar cambios</button>
         <span class="badge-warn" id="unsaved" style="display:none">● Cambios sin guardar</span>
@@ -347,7 +346,6 @@ tr.sel td{background:#eef8ff}
   </main>
 </div>
 
-<!-- Confirmation modal -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal">
     <h3 id="modal-title">¿Confirmar acción?</h3>
@@ -361,37 +359,19 @@ tr.sel td{background:#eef8ff}
 
 <div class="toast" id="toast"></div>
 
+<script src="smartkit-core.js"></script>
 <script>
-const BASE_SCREENS=[
-  {id:'sc-01',nombre:'Sarmiento y 9 de Julio',zona:'Centro',tipo:'Peatonal',impactos:14200,precio:95000,status:'Activo',lat:-32.8894,lng:-68.8458,nota:'Esquina comercial de máximo tránsito.'},
-  {id:'sc-02',nombre:'Palmares Open Mall',zona:'Palmares',tipo:'Mixto',impactos:22500,precio:145000,status:'Activo',lat:-32.9121,lng:-68.8306,nota:'Acceso principal al shopping.'},
-  {id:'sc-03',nombre:'Las Heras y Mitre',zona:'Las Heras',tipo:'Peatonal',impactos:8800,precio:68000,status:'Activo',lat:-32.8716,lng:-68.8388,nota:'Zona comercial barrial.'},
-  {id:'sc-04',nombre:'Av. Aristides frente al Parque',zona:'Ciudad',tipo:'Vehicular',impactos:31000,precio:185000,status:'Activo',lat:-32.8908,lng:-68.8762,nota:'Avenida principal. Ideal autos y commuters.'},
-  {id:'sc-05',nombre:'Guaymallén Centro',zona:'Guaymallén',tipo:'Peatonal',impactos:11400,precio:78000,status:'Activo',lat:-32.8955,lng:-68.8212,nota:'Centro comercial de Guaymallén.'},
-  {id:'sc-06',nombre:'Maipú Ruta 7',zona:'Maipú',tipo:'Vehicular',impactos:19600,precio:112000,status:'Activo',lat:-32.9812,lng:-68.7757,nota:'Tránsito hacia bodegas y aeropuerto.'},
-  {id:'sc-07',nombre:'Villanueva Gomensoro',zona:'Las Heras',tipo:'Mixto',impactos:9300,precio:72000,status:'Activo',lat:-32.8658,lng:-68.8415,nota:'Zona residencial-comercial.'},
-  {id:'sc-08',nombre:'Godoy Cruz Belgrano',zona:'Godoy Cruz',tipo:'Vehicular',impactos:25800,precio:155000,status:'Activo',lat:-32.9246,lng:-68.8488,nota:'Corredor vehicular de alto volumen.'},
-  {id:'sc-09',nombre:'Chacras de Coria Acceso',zona:'Luján',tipo:'Vehicular',impactos:16700,precio:125000,status:'Activo',lat:-33.0158,lng:-68.8642,nota:'Ideal turismo y bodegas.'},
-  {id:'sc-10',nombre:'Terminal de Ómnibus',zona:'Centro',tipo:'Peatonal',impactos:18400,precio:118000,status:'Activo',lat:-32.8868,lng:-68.8284,nota:'Alta rotación. Público diverso 24h.'},
-];
-
-const DEFAULT_CFG={brand:'SmartKit',logo:'SK',whatsapp:'5492616000000',terms:'Inicio de campaña sujeto a disponibilidad y aprobación de piezas. Valores en ARS.',heroTitle:'Pantallas DOOH · Mendoza',validityDays:15};
-
 (function(){
 'use strict';
-const K_STATE='sk_v1_dashboard-state', K_KITS='sk_v1_public-kits', K_CFG='sk_v1_config';
+const { Store, fmt, fmtImp, esc, badgeClass, weekLabel } = window.SmartKit;
+const $=id=>document.getElementById(id);
 
+// screens: copia de trabajo (draft) que se persiste al Store recién al "Guardar cambios"
 let screens=[], filtered=[], selected=new Set(), currentEdit=null, dirtyScreens=new Set(), cfg={};
 let sortKey='nombre', sortDir=1, kitSelected=new Set(), currentSection='inventory';
-let pendingConfirm=null;
+let pendingConfirm=null, suppressNextSync=false;
 
-const $=id=>document.getElementById(id);
-const fmt=n=>'$'+Math.round(n).toLocaleString('es-AR');
-const fmtImp=n=>n>=1000?(n/1000).toFixed(1)+'k':String(n);
-const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const badgeClass={Peatonal:'bd-p',Vehicular:'bd-v',Mixto:'bd-m'};
-const lsGet=(k,def)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch{return def;}};
-const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){toast('Error al guardar en storage','err');}};
+const fmtN=n=>Math.round(n||0).toLocaleString('es-AR');
 
 let toastTmr;
 function toast(msg,type=''){
@@ -399,8 +379,7 @@ function toast(msg,type=''){
   clearTimeout(toastTmr);toastTmr=setTimeout(()=>t.classList.remove('show'),2600);
 }
 
-// ── Confirmation Modal ──
-function confirm(title,body,confirmLabel,onConfirm,isDanger=true){
+function confirmModal(title,body,confirmLabel,onConfirm,isDanger=true){
   $('modal-title').textContent=title;
   $('modal-body').textContent=body;
   $('modal-confirm').textContent=confirmLabel;
@@ -419,11 +398,24 @@ function boot(){
   setupExport(); setupSave(); setupSettings();
   setupKitActions();
   switchSection('inventory');
+
+  // ── Sincronización: si algo cambia en otra pestaña (o el usuario navegó desde
+  // el brochure y volvió), refrescamos SIEMPRE que no haya ediciones sin guardar,
+  // para no pisar trabajo en curso. Si hay ediciones pendientes, avisamos.
+  Store.on(key=>{
+    if(suppressNextSync){ suppressNextSync=false; return; }
+    if(key===Store.keys.CONFIG){ loadCfg(); }
+    if(key===Store.keys.OVERLAY){
+      if(dirtyScreens.size){ toast('El inventario cambió en otra pestaña. Guardá o descartá tus cambios para sincronizar.','err'); }
+      else { loadScreens(); }
+    }
+    if(key===Store.keys.KITS){ renderKitHistory(); }
+  });
 }
 
 // ── Config ──
 function loadCfg(){
-  cfg={...DEFAULT_CFG,...lsGet(K_CFG,{})};
+  cfg = Store.getConfig();
   applyBrand(); loadSettingsForm();
 }
 function applyBrand(){
@@ -437,36 +429,36 @@ function loadSettingsForm(){
   const sel=$('cfg-validity');if(sel)sel.value=cfg.validityDays||15;
 }
 function setupSettings(){
-  $('btn-cfg-save')?.addEventListener('click',()=>{
-    const brand=$('cfg-brand')?.value.trim();
-    const logo=$('cfg-logo')?.value.trim();
+  $('btn-cfg-save').addEventListener('click',()=>{
+    const brand=$('cfg-brand').value.trim();
+    const logo=$('cfg-logo').value.trim();
     if(!brand||!logo){toast('Nombre y logo son requeridos','err');return;}
-    cfg={...cfg,brand,logo,whatsapp:$('cfg-wa')?.value.trim()||'',
-      terms:$('cfg-terms')?.value.trim()||'',heroTitle:$('cfg-hero')?.value.trim()||'',
-      validityDays:parseInt($('cfg-validity')?.value)||15};
-    lsSet(K_CFG,cfg); applyBrand(); toast('Configuración guardada','ok');
+    cfg={...cfg,brand,logo,whatsapp:$('cfg-wa').value.trim(),
+      terms:$('cfg-terms').value.trim(),heroTitle:$('cfg-hero').value.trim(),
+      validityDays:parseInt($('cfg-validity').value)||15};
+    Store.setConfig(cfg); applyBrand();
+    toast('Configuración guardada. El brochure y el mapa ya la reflejan.','ok');
   });
 }
 
-// ── Screens ──
+// ── Screens (draft de trabajo) ──
 function loadScreens(){
-  const overlay=lsGet(K_STATE,{});
-  screens=BASE_SCREENS.map(s=>({...s,...(overlay[s.id]||{})}));
+  screens = Store.getScreens();
   filtered=[...screens];
+  dirtyScreens.clear(); $('unsaved').style.display='none';
   buildZoneFilter(); buildKitZoneFilter();
   renderTable(); renderKPIs(); renderMetrics(); renderKitScreenList(); renderKitHistory();
 }
 
 function saveChanges(){
-  const overlay={};
   screens.forEach(s=>{
-    const base=BASE_SCREENS.find(b=>b.id===s.id); if(!base)return;
-    const diff={};
-    ['nombre','zona','precio','status','video','nota'].forEach(k=>{if(s[k]!==base[k])diff[k]=s[k];});
-    if(Object.keys(diff).length)overlay[s.id]=diff;
+    if(!dirtyScreens.has(s.id)) return;
+    Store.patchScreen(s.id,{nombre:s.nombre,zona:s.zona,precio:s.precio,status:s.status,video:s.video||'',nota:s.nota||''});
   });
-  lsSet(K_STATE,overlay); dirtyScreens.clear(); $('unsaved').style.display='none';
-  toast('Cambios guardados. El brochure los refleja al recargar.','ok');
+  suppressNextSync=true; // ya aplicamos localmente, evitamos un refresh redundante
+  dirtyScreens.clear(); $('unsaved').style.display='none';
+  renderTable();
+  toast('Cambios guardados. El brochure y el mapa ya los reflejan.','ok');
 }
 
 // ── Validation ──
@@ -481,7 +473,7 @@ function validateScreen(nombre, zona, precio){
 
 // ── Sidebar ──
 function setupSidebar(){
-  $('sb-toggle')?.addEventListener('click',()=>$('app').classList.toggle('nav-collapsed'));
+  $('sb-toggle').addEventListener('click',()=>$('app').classList.toggle('nav-collapsed'));
 }
 function setupNav(){
   document.querySelectorAll('[data-sec]').forEach(btn=>{
@@ -503,31 +495,32 @@ function switchSection(sec){
   const showBtns=sec==='inventory';
   $('btn-export').style.display=showBtns?'':'none';
   $('btn-save').style.display=showBtns?'':'none';
+  $('sync-ok').style.display=showBtns?'':'none';
   if(sec==='mediakits') renderKitHistory();
 }
 
 // ── Filters ──
 function buildZoneFilter(){
-  const sel=$('f-zone');if(!sel)return;
+  const sel=$('f-zone');
   const zones=['Todos',...new Set(screens.map(s=>s.zona))];
   sel.innerHTML=zones.map(z=>`<option>${z}</option>`).join('');
 }
 function buildKitZoneFilter(){
-  const sel=$('kit-zone');if(!sel)return;
+  const sel=$('kit-zone');
   const zones=['Todas',...new Set(screens.map(s=>s.zona))];
   sel.innerHTML=zones.map(z=>`<option>${z}</option>`).join('');
 }
 function setupFilters(){
   ['f-search','f-zone','f-type','f-status'].forEach(id=>{
-    $(id)?.addEventListener('input',applyFilters);
-    $(id)?.addEventListener('change',applyFilters);
+    $(id).addEventListener('input',applyFilters);
+    $(id).addEventListener('change',applyFilters);
   });
 }
 function applyFilters(){
-  const q=($('f-search')?.value||'').toLowerCase();
-  const zone=$('f-zone')?.value||'Todos';
-  const tipo=$('f-type')?.value||'Todos';
-  const st=$('f-status')?.value||'Todos';
+  const q=($('f-search').value||'').toLowerCase();
+  const zone=$('f-zone').value||'Todos';
+  const tipo=$('f-type').value||'Todos';
+  const st=$('f-status').value||'Todos';
   filtered=screens.filter(s=>{
     if(q&&!((s.nombre||'').toLowerCase().includes(q)||(s.zona||'').toLowerCase().includes(q)))return false;
     if(zone!=='Todos'&&s.zona!==zone)return false;
@@ -547,19 +540,19 @@ function setupTable(){
       th.classList.add('sort-on'); renderTable();
     });
   });
-  $('sel-all')?.addEventListener('change',e=>{
+  $('sel-all').addEventListener('change',e=>{
     if(e.target.checked)filtered.forEach(s=>selected.add(s.id));else selected.clear();
     renderTable(); updateBulk();
   });
 }
 
 function renderTable(){
-  const tbody=$('screen-tbody');if(!tbody)return;
+  const tbody=$('screen-tbody');
   const sorted=[...filtered].sort((a,b)=>{
     const av=a[sortKey]??'',bv=b[sortKey]??'';
     return typeof av==='number'?(av-bv)*sortDir:String(av).localeCompare(String(bv))*sortDir;
   });
-  const rc=$('result-count');if(rc)rc.textContent=`${sorted.length} resultado${sorted.length!==1?'s':''}`;
+  $('result-count').textContent=`${sorted.length} resultado${sorted.length!==1?'s':''}`;
 
   if(!sorted.length){
     tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:36px;color:var(--mu)">
@@ -567,19 +560,18 @@ function renderTable(){
     return;
   }
 
-  const overlay=lsGet(K_STATE,{});
   tbody.innerHTML=sorted.map(s=>{
     const isSel=selected.has(s.id);
     const ini=esc((s.nombre||'').substring(0,2).toUpperCase());
     const iconCls={Vehicular:'v',Mixto:'m'}[s.tipo]||'';
-    const isDirty=dirtyScreens.has(s.id)||!!overlay[s.id];
+    const isDirty=dirtyScreens.has(s.id)||Store.isDirty(s.id);
     return `<tr class="${isSel?'sel':''}" data-id="${esc(s.id)}">
       <td><input type="checkbox" class="row-cb" data-id="${esc(s.id)}" ${isSel?'checked':''}></td>
       <td>
         <div class="sc-cell">
           <div class="sc-icon ${iconCls}">${ini}</div>
           <div>
-            <div class="sc-name">${esc(s.nombre)}${isDirty?'<span class="diff-badge" title="Tiene cambios guardados">✎</span>':''}</div>
+            <div class="sc-name">${esc(s.nombre)}${isDirty?'<span class="diff-badge" title="Tiene cambios sobre el inventario base">✎</span>':''}</div>
             <div class="sc-zone">${esc(s.zona)}</div>
           </div>
         </div>
@@ -611,9 +603,9 @@ function renderTable(){
     btn.addEventListener('click',()=>{
       const s=screens.find(x=>x.id===btn.dataset.id);if(!s)return;
       const next=s.status==='Activo'?'Pausado':'Activo';
-      confirm(
+      confirmModal(
         `${next==='Pausado'?'Pausar':'Publicar'} pantalla`,
-        `"${s.nombre}" quedará ${next==='Pausado'?'oculta del brochure':'visible en el brochure'} inmediatamente al guardar.`,
+        `"${s.nombre}" quedará ${next==='Pausado'?'oculta del brochure y el mapa':'visible en el brochure y el mapa'} al guardar los cambios.`,
         next==='Pausado'?'Pausar':'Publicar',
         ()=>{ s.status=next; dirtyScreens.add(s.id); $('unsaved').style.display='inline-flex'; renderTable(); renderKPIs(); toast(`${s.nombre}: ${s.status}`); },
         next==='Pausado'
@@ -625,7 +617,7 @@ function renderTable(){
 // ── Editor ──
 function openEditor(id){
   const s=screens.find(x=>x.id===id);if(!s)return;
-  const base=BASE_SCREENS.find(b=>b.id===id)||s;
+  const base=Store.seed.find(b=>b.id===id)||s;
   currentEdit=id;
   $('ed-title').textContent=s.nombre;
   const changed=(k)=>s[k]!==base[k];
@@ -677,19 +669,18 @@ function openEditor(id){
     </div>
     <div class="status-line"><span>Pantalla ID</span><strong>${esc(s.id)}</strong></div>`;
 
-  $('btn-apply')?.addEventListener('click',()=>applyEdit(id));
-  $('ed-video')?.addEventListener('input',e=>{
-    const h=$('prev-hero');if(!h)return;
+  $('btn-apply').addEventListener('click',()=>applyEdit(id));
+  $('ed-video').addEventListener('input',e=>{
+    const h=$('prev-hero');
     h.innerHTML=e.target.value?`<video src="${esc(e.target.value)}" autoplay muted loop playsinline></video>`:esc((s.nombre||'').substring(0,2).toUpperCase());
   });
 }
 
 function applyEdit(id){
-  const nombre=$('ed-name')?.value.trim()||'';
-  const zona=$('ed-zone')?.value.trim()||'';
-  const precio=$('ed-price')?.value||'';
+  const nombre=$('ed-name').value.trim();
+  const zona=$('ed-zone').value.trim();
+  const precio=$('ed-price').value;
   const errs=validateScreen(nombre,zona,precio);
-  // Mostrar errores
   ['nombre','zona','precio'].forEach(k=>{
     const errEl=$('err-'+k);const inputEl=$(k==='nombre'?'ed-name':k==='zona'?'ed-zone':'ed-price');
     if(errEl) errEl.textContent=errs[k]||'';
@@ -699,12 +690,12 @@ function applyEdit(id){
 
   const s=screens.find(x=>x.id===id);if(!s)return;
   s.nombre=nombre; s.zona=zona; s.precio=parseFloat(precio);
-  s.status=$('ed-status')?.value||s.status;
-  s.video=$('ed-video')?.value.trim()||'';
-  s.nota=$('ed-note')?.value.trim()||'';
+  s.status=$('ed-status').value||s.status;
+  s.video=$('ed-video').value.trim()||'';
+  s.nota=$('ed-note').value.trim()||'';
   dirtyScreens.add(id); $('unsaved').style.display='inline-flex';
   renderTable(); renderKPIs(); renderMetrics();
-  toast(`${s.nombre} actualizada`);
+  toast(`${s.nombre} actualizada (sin guardar)`);
   $('ed-title').textContent=s.nombre;
   openEditor(id);
 }
@@ -715,7 +706,7 @@ function setupBulk(){
     btn.addEventListener('click',()=>{
       const st=btn.dataset.bulk;
       const n=selected.size;
-      confirm(
+      confirmModal(
         `${st==='Activo'?'Publicar':'Pausar'} ${n} pantalla${n!==1?'s':''}`,
         `Se ${st==='Activo'?'publicarán':'pausarán'} ${n} pantalla${n!==1?'s':''} seleccionadas. Los cambios se aplican al guardar.`,
         st==='Activo'?'Publicar':'Pausar',
@@ -723,24 +714,24 @@ function setupBulk(){
           selected.forEach(id=>{const s=screens.find(x=>x.id===id);if(s){s.status=st;dirtyScreens.add(id);}});
           $('unsaved').style.display='inline-flex';
           selected.clear(); updateBulk(); renderTable(); renderKPIs();
-          toast(`${st==='Activo'?'Publicadas':'Pausadas'} ${n} pantallas`);
+          toast(`${st==='Activo'?'Publicadas':'Pausadas'} ${n} pantallas (sin guardar)`);
         },
         st==='Pausado'
       );
     });
   });
-  $('bulk-clear')?.addEventListener('click',()=>{selected.clear();updateBulk();renderTable();});
+  $('bulk-clear').addEventListener('click',()=>{selected.clear();updateBulk();renderTable();});
 }
 function updateBulk(){
   const bar=$('bulk-bar'),cnt=$('bulk-count');
-  if(bar)bar.classList.toggle('show',selected.size>0);
-  if(cnt)cnt.textContent=selected.size;
-  const sa=$('sel-all');if(sa)sa.checked=filtered.length>0&&filtered.every(s=>selected.has(s.id));
+  bar.classList.toggle('show',selected.size>0);
+  cnt.textContent=selected.size;
+  $('sel-all').checked=filtered.length>0&&filtered.every(s=>selected.has(s.id));
 }
 
 // ── KPIs ──
 function renderKPIs(){
-  const el=$('kpis-row');if(!el)return;
+  const el=$('kpis-row');
   const total=screens.length, active=screens.filter(s=>s.status==='Activo').length;
   const reach=screens.filter(s=>s.status==='Activo').reduce((a,s)=>a+(s.impactos||0),0);
   const rev=screens.filter(s=>s.status==='Activo').reduce((a,s)=>a+(s.precio||0),0);
@@ -756,7 +747,7 @@ function renderKPIs(){
 
 // ── Export ──
 function setupExport(){
-  $('btn-export')?.addEventListener('click',()=>{
+  $('btn-export').addEventListener('click',()=>{
     const rows=[['ID','Nombre','Zona','Tipo','Impactos/día','Precio/sem','Estado']];
     filtered.forEach(s=>rows.push([s.id,s.nombre,s.zona,s.tipo,s.impactos,s.precio,s.status]));
     const csv=rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
@@ -765,7 +756,7 @@ function setupExport(){
     a.download='smartkit-inventario.csv'; a.click(); toast('CSV exportado');
   });
 }
-function setupSave(){ $('btn-save')?.addEventListener('click',saveChanges); }
+function setupSave(){ $('btn-save').addEventListener('click',saveChanges); }
 
 // ── Metrics ──
 function renderMetrics(){
@@ -775,15 +766,13 @@ function renderMetrics(){
     byType[s.tipo]=(byType[s.tipo]||0)+s.impactos;
   });
   const maxZ=Math.max(...Object.values(byZone),1);
-  const cz=$('chart-zones');
-  if(cz) cz.innerHTML=Object.keys(byZone).length?Object.entries(byZone).sort((a,b)=>b[1]-a[1]).map(([z,v])=>`
+  $('chart-zones').innerHTML=Object.keys(byZone).length?Object.entries(byZone).sort((a,b)=>b[1]-a[1]).map(([z,v])=>`
     <div class="chart-row">
       <div class="chart-meta"><span>${esc(z)}</span><span>${fmtImp(v)} imp/día</span></div>
       <div class="bar-track"><div class="bar-fill" style="width:${(v/maxZ*100).toFixed(1)}%"></div></div>
     </div>`).join(''):`<div class="empty-state"><p>Sin pantallas activas.</p></div>`;
   const maxT=Math.max(...Object.values(byType),1);
-  const ct=$('chart-types');
-  if(ct) ct.innerHTML=Object.keys(byType).length?Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([t,v])=>`
+  $('chart-types').innerHTML=Object.keys(byType).length?Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([t,v])=>`
     <div class="chart-row">
       <div class="chart-meta"><span>${esc(t)}</span><span>${fmtImp(v)} imp/día</span></div>
       <div class="bar-track"><div class="bar-fill" style="width:${(v/maxT*100).toFixed(1)}%"></div></div>
@@ -792,11 +781,12 @@ function renderMetrics(){
 
 // ── Media Kit Builder ──
 function renderKitScreenList(){
-  const el=$('kit-screen-list');if(!el)return;
-  const zone=$('kit-zone')?.value||'Todas';
+  const el=$('kit-screen-list');
+  const zone=$('kit-zone').value||'Todas';
   const visible=screens.filter(s=>s.status==='Activo'&&(zone==='Todas'||s.zona===zone));
   if(!visible.length){
     el.innerHTML=`<div class="empty-state"><h3>Sin pantallas activas en esta zona</h3><p>Cambiá el filtro de zona o activá pantallas desde Inventario.</p></div>`;
+    updateKitPreview();
     return;
   }
   el.innerHTML=visible.map(s=>`
@@ -818,35 +808,39 @@ function renderKitScreenList(){
 }
 
 function setupKitActions(){
-  $('kit-zone')?.addEventListener('change',()=>renderKitScreenList());
+  $('kit-zone').addEventListener('change',()=>renderKitScreenList());
   ['kit-client','kit-contact','kit-dur','kit-validity','kit-notes'].forEach(id=>{
-    $(id)?.addEventListener('input',updateKitPreview);
-    $(id)?.addEventListener('change',updateKitPreview);
+    $(id).addEventListener('input',updateKitPreview);
+    $(id).addEventListener('change',updateKitPreview);
   });
-  $('btn-save-kit')?.addEventListener('click',saveKit);
+  $('btn-save-kit').addEventListener('click',saveKit);
+}
+
+function currentKitDraft(){
+  const client=$('kit-client').value||'Cliente';
+  const contact=$('kit-contact').value||'';
+  const weeks=parseInt($('kit-dur').value)||4;
+  const validity=parseInt($('kit-validity').value)||15;
+  const notes=$('kit-notes').value||'';
+  const items=screens.filter(s=>kitSelected.has(s.id));
+  return {client,contact,weeks,validity,notes,items};
 }
 
 function updateKitPreview(){
-  const cnt=$('kit-sel-count');if(cnt)cnt.textContent=`${kitSelected.size} seleccionada${kitSelected.size!==1?'s':''}`;
-  const badge=$('kit-draft-badge');if(badge)badge.textContent=kitSelected.size?'Listo':'Borrador';
-  const el=$('kit-preview');if(!el)return;
-  const client=$('kit-client')?.value||'Cliente';
-  const contact=$('kit-contact')?.value||'';
-  const weeks=parseInt($('kit-dur')?.value)||4;
-  const validity=parseInt($('kit-validity')?.value)||15;
-  const notes=$('kit-notes')?.value||'';
-  const items=screens.filter(s=>kitSelected.has(s.id));
+  $('kit-sel-count').textContent=`${kitSelected.size} seleccionada${kitSelected.size!==1?'s':''}`;
+  $('kit-draft-badge').textContent=kitSelected.size?'Listo':'Borrador';
+  const {client,contact,weeks,validity,notes,items}=currentKitDraft();
+  const el=$('kit-preview');
   const totalInv=items.reduce((a,s)=>a+s.precio*weeks,0);
   const totalImp=items.reduce((a,s)=>a+s.impactos,0)*weeks*7;
   const now=new Date();
   const validUntil=new Date(now.getTime()+validity*86400000);
-  const weekLabel={1:'1 semana',2:'2 semanas',4:'4 semanas',8:'8 semanas',12:'12 semanas'}[weeks]||`${weeks} semanas`;
   el.innerHTML=!items.length
     ?`<div class="empty-state"><h3>Seleccioná pantallas</h3><p>Elegí al menos una pantalla de la lista para ver el preview.</p></div>`
     :`<div class="kit-doc-hero">
-        <h3>${esc(cfg.brand||'SmartKit')} · Propuesta Comercial</h3>
+        <h3>${esc(cfg.brand)} · Propuesta Comercial</h3>
         <div style="font-size:12px;opacity:.8">Para: ${esc(client)}${contact?` (${esc(contact)})`:''} · ${now.toLocaleDateString('es-AR')}</div>
-        <div style="font-size:11px;opacity:.7;margin-top:3px">Duración: ${weekLabel} · Válida hasta ${validUntil.toLocaleDateString('es-AR')}</div>
+        <div style="font-size:11px;opacity:.7;margin-top:3px">Duración: ${esc(weekLabel(weeks))} · Válida hasta ${validUntil.toLocaleDateString('es-AR')}</div>
       </div>
       <div class="kit-doc-body">
         <div class="kit-kpis">
@@ -856,32 +850,27 @@ function updateKitPreview(){
         </div>
         <div>${items.map(s=>`<div class="kit-sc-row"><div><strong>${esc(s.nombre)}</strong><br><span style="color:var(--mu);font-size:11px">${esc(s.zona)} · ${fmtImp(s.impactos)} imp/día</span></div><strong>${fmt(s.precio*weeks)}</strong></div>`).join('')}</div>
         ${notes?`<div class="kit-terms">${esc(notes)}</div>`:''}
-        <div class="kit-terms">${esc(cfg.terms||DEFAULT_CFG.terms)}</div>
+        <div class="kit-terms">${esc(cfg.terms)}</div>
       </div>`;
 }
 
 function renderKitHistory(){
-  const el=$('kit-history');if(!el)return;
-  const all=lsGet(K_KITS,{});
-  const kits=Object.values(all).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+  const el=$('kit-history');
+  const kits=Store.getKitList();
   if(!kits.length){
     el.innerHTML=`<div class="empty-state"><h3>Sin propuestas todavía</h3><p>Creá tu primera propuesta seleccionando pantallas en el constructor de la izquierda.</p></div>`;
     return;
   }
-  // Detect stale screens
   el.innerHTML=kits.map(k=>{
-    const staleIds=(k.screens||[]).filter(ks=>{
-      const live=screens.find(s=>s.id===ks.id);
-      return live&&live.status==='Pausado';
-    }).length;
+    const staleIds=Store.getStaleScreenIds(k);
     const shareUrl=`mediakit.html?id=${encodeURIComponent(k.id)}`;
     return `<div class="kit-hist-row ${k.archived?'arch':''}">
       <div style="flex:1;min-width:0">
         <strong style="font-size:13px">${esc(k.client||k.brand||'Sin cliente')}</strong>
-        ${staleIds?`<span class="badge bd-danger" style="margin-left:6px">⚠ ${staleIds} pantalla${staleIds>1?'s':''} pausada${staleIds>1?'s':''}</span>`:''}
-        <div style="color:var(--mu);font-size:11px">${new Date(k.createdAt).toLocaleDateString('es-AR')} · ${k.weekLabel||''} · ${fmt(k.totals?.investment||0)}</div>
+        ${staleIds.length?`<span class="badge bd-danger" style="margin-left:6px">⚠ ${staleIds.length} pantalla${staleIds.length>1?'s':''} pausada${staleIds.length>1?'s':''}</span>`:''}
+        <div style="color:var(--mu);font-size:11px">${new Date(k.createdAt).toLocaleDateString('es-AR')} · ${esc(k.weekLabel||'')} · ${fmt(k.totals?.investment||0)}</div>
         <div class="kit-share-link">
-          <code title="${shareUrl}">${shareUrl}</code>
+          <code title="${esc(shareUrl)}">${esc(shareUrl)}</code>
           <button class="btn sm ghost" data-action="copy-link" data-url="${esc(shareUrl)}" style="padding:0 7px;min-height:26px">Copiar</button>
           <a href="${esc(shareUrl)}" target="_blank"><button class="btn sm ghost" style="padding:0 7px;min-height:26px">↗</button></a>
         </div>
@@ -902,77 +891,44 @@ function renderKitHistory(){
   });
   el.querySelectorAll('[data-action="load-kit"]').forEach(btn=>btn.addEventListener('click',()=>loadKitIntoBuilder(btn.dataset.id)));
   el.querySelectorAll('[data-action="dl-kit"]').forEach(btn=>btn.addEventListener('click',()=>downloadKit(btn.dataset.id)));
-  el.querySelectorAll('[data-action="arch-kit"]').forEach(btn=>btn.addEventListener('click',()=>archiveKit(btn.dataset.id)));
+  el.querySelectorAll('[data-action="arch-kit"]').forEach(btn=>btn.addEventListener('click',()=>{Store.toggleArchiveKit(btn.dataset.id);renderKitHistory();toast('Estado de la propuesta actualizado');}));
   el.querySelectorAll('[data-action="del-kit"]').forEach(btn=>{
     btn.addEventListener('click',()=>{
-      const all=lsGet(K_KITS,{});
-      const k=all[btn.dataset.id];
-      confirm(
+      const k=Store.getKit(btn.dataset.id);
+      confirmModal(
         'Eliminar propuesta',
         `Se eliminará permanentemente la propuesta${k?.client?' para '+k.client:''}. Esta acción no se puede deshacer.`,
         'Eliminar',
-        ()=>deleteKit(btn.dataset.id)
+        ()=>{Store.deleteKit(btn.dataset.id);renderKitHistory();toast('Propuesta eliminada');}
       );
     });
   });
 }
 
 function saveKit(){
-  const items=screens.filter(s=>kitSelected.has(s.id));
+  const {client,contact,weeks,validity,notes,items}=currentKitDraft();
   if(!items.length){toast('Seleccioná al menos una pantalla','err');return;}
-  const client=$('kit-client')?.value||'';
-  if(!client.trim()){toast('Ingresá el nombre del cliente','err');$('kit-client')?.focus();return;}
-  const contact=$('kit-contact')?.value||'';
-  const weeks=parseInt($('kit-dur')?.value)||4;
-  const validity=parseInt($('kit-validity')?.value)||15;
-  const notes=$('kit-notes')?.value||'';
-  const weekLabel={1:'1 semana',2:'2 semanas',4:'4 semanas',8:'8 semanas',12:'12 semanas'}[weeks]||`${weeks} semanas`;
-  const id='kit-'+Date.now().toString(36);
-  const now=new Date();
-  const totalInv=items.reduce((a,s)=>a+s.precio*weeks,0);
-  const totalImp=items.reduce((a,s)=>a+s.impactos,0);
-  const kit={id,client,contact,createdAt:now.toISOString(),
-    validUntil:new Date(now.getTime()+validity*86400000).toISOString(),
-    brand:cfg.brand||'SmartKit',weeks,weekLabel,notes,
-    screens:items.map(s=>({...s,precioCampana:s.precio*weeks})),
-    totals:{screens:items.length,impactsPerDay:totalImp,impactsTotal:totalImp*weeks*7,investment:totalInv},
-    terms:cfg.terms||DEFAULT_CFG.terms};
-  const all=lsGet(K_KITS,{});
-  all[id]=kit; lsSet(K_KITS,all);
+  if(!client.trim()||client==='Cliente'){toast('Ingresá el nombre del cliente','err');$('kit-client').focus();return;}
+  const kit=Store.buildKit({screens:items,client,contact,weeks,validityDays:validity,notes});
+  Store.saveKit(kit);
   renderKitHistory(); toast(`Propuesta para ${client} archivada`,'ok');
 }
 
 function loadKitIntoBuilder(id){
-  const all=lsGet(K_KITS,{});
-  const kit=all[id];if(!kit)return;
+  const kit=Store.getKit(id);if(!kit)return;
   kitSelected=new Set((kit.screens||[]).map(s=>s.id));
-  if($('kit-client'))$('kit-client').value=kit.client||'';
-  if($('kit-contact'))$('kit-contact').value=kit.contact||'';
-  if($('kit-dur'))$('kit-dur').value=kit.weeks||4;
-  if($('kit-notes'))$('kit-notes').value=kit.notes||'';
+  $('kit-client').value=kit.client||'';
+  $('kit-contact').value=kit.contact||'';
+  $('kit-dur').value=kit.weeks||4;
+  $('kit-notes').value=kit.notes||'';
   renderKitScreenList(); toast('Propuesta cargada en el constructor');
 }
 
 function downloadKit(id){
-  const all=lsGet(K_KITS,{});
-  const kit=all[id];if(!kit)return;
+  const kit=Store.getKit(id);if(!kit)return;
   const a=document.createElement('a');
   a.href='data:application/json,'+encodeURIComponent(JSON.stringify(kit,null,2));
   a.download=id+'.json'; a.click();
-}
-
-function archiveKit(id){
-  const all=lsGet(K_KITS,{});
-  if(!all[id])return;
-  all[id].archived=!all[id].archived;
-  lsSet(K_KITS,all); renderKitHistory();
-  toast(all[id].archived?'Propuesta archivada':'Propuesta restaurada');
-}
-
-function deleteKit(id){
-  const all=lsGet(K_KITS,{});
-  delete all[id]; lsSet(K_KITS,all);
-  renderKitHistory(); toast('Propuesta eliminada');
 }
 
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot):boot();

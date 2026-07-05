@@ -13,19 +13,19 @@ body{background:var(--bg);color:var(--tx);font-family:Inter,-apple-system,BlinkM
 button,input,select,textarea{font:inherit;outline:none;cursor:pointer}
 a{color:inherit;text-decoration:none}
 
-/* ── TOP BAR ── */
 .top{position:sticky;top:0;z-index:200;background:rgba(255,255,255,.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--ln);display:flex;align-items:center;gap:14px;padding:10px 22px;min-height:56px}
 .brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .logo{width:36px;height:36px;border-radius:10px;background:var(--pri-dk);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px;letter-spacing:.5px}
 .brand strong{font-size:15px;font-weight:700}
 .nav{display:flex;gap:4px;margin-left:auto}
-.nav button,.nav a{min-height:34px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--mu);font-weight:600;font-size:13px;padding:0 13px;display:flex;align-items:center;transition:all .15s}
+.nav button,.nav a{min-height:34px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--mu);font-weight:600;font-size:13px;padding:0 13px;display:flex;align-items:center;gap:6px;transition:all .15s}
 .nav button.on,.nav a.on{background:#e0f2fe;color:var(--pri-dk);border-color:#bae6fd}
 .nav button:hover,.nav a:hover{color:var(--pri)}
 .nav-link-kit{background:var(--pri-dk);color:#fff!important;border-color:var(--pri-dk)!important}
 .nav-link-kit:hover{background:var(--pri)!important}
+.cart-count{background:#fff;color:var(--pri-dk);border-radius:999px;font-size:10px;font-weight:800;min-width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;padding:0 4px}
+.nav button:not(.nav-link-kit) .cart-count{background:var(--pri-dk);color:#fff}
 
-/* ── HERO ── */
 .hero{background:linear-gradient(135deg,var(--pri-dk) 0%,var(--teal) 100%);color:#fff;padding:52px 22px;text-align:center}
 .hero h1{font-size:40px;font-weight:900;line-height:1.1;margin-bottom:12px}
 .hero p{font-size:17px;opacity:.85;max-width:540px;margin:0 auto 26px}
@@ -33,23 +33,22 @@ a{color:inherit;text-decoration:none}
 .stat b{display:block;font-size:30px;font-weight:800}
 .stat span{font-size:12px;opacity:.75;text-transform:uppercase;letter-spacing:.05em}
 
-/* ── WRAP ── */
 .wrap{max-width:1260px;margin:0 auto;padding:22px}
 
-/* ── ZONE FILTERS ── */
+.sync-banner{display:none;align-items:center;gap:8px;background:#f0f9ff;border:1px solid #bae6fd;color:var(--pri-dk);border-radius:10px;padding:8px 14px;font-size:12px;font-weight:600;margin-bottom:14px}
+.sync-banner.show{display:flex}
+
 .zone-filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px}
 .chip{min-height:32px;border:1px solid var(--ln);border-radius:999px;background:var(--panel);color:var(--mu);font-size:12px;font-weight:600;padding:0 13px;transition:all .15s}
 .chip.on{background:var(--pri-dk);border-color:var(--pri-dk);color:#fff}
 .chip:hover:not(.on){border-color:var(--pri);color:var(--pri)}
 
-/* ── LAYOUT ── */
 .brochure-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;align-items:start}
 .catalog-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:14px}
 .catalog-head h2{font-size:19px;font-weight:700}
 .eyebrow{display:block;color:var(--mu);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
 .catalog-count{color:var(--mu);font-size:12px}
 
-/* ── CARDS ── */
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(224px,1fr));gap:13px}
 .card{background:var(--panel);border:1.5px solid var(--ln);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;display:flex;flex-direction:column;transition:all .2s}
 .card:hover{transform:translateY(-2px);box-shadow:0 4px 18px rgba(15,23,42,.12)}
@@ -69,13 +68,11 @@ a{color:inherit;text-decoration:none}
 .btn-add:hover:not(.on){background:#e0f2fe}
 .empty{text-align:center;color:var(--mu);padding:40px;font-size:14px}
 
-/* ── BADGES ── */
 .badge{display:inline-flex;align-items:center;height:20px;border-radius:999px;font-size:10px;font-weight:700;padding:0 7px;white-space:nowrap}
 .bd-p{background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe}
 .bd-v{background:#ccfbf1;color:#065f46;border:1px solid #99f6e4}
 .bd-m{background:#ede9fe;color:#5b21b6;border:1px solid #c4b5fd}
 
-/* ── QUOTE PANEL ── */
 .quote-panel{background:var(--panel);border:1px solid var(--ln);border-radius:var(--r);box-shadow:var(--sh);padding:15px;position:sticky;top:70px}
 .qp-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .qp-head h2{font-size:15px;font-weight:700}
@@ -104,11 +101,11 @@ a{color:inherit;text-decoration:none}
 .q-btn.mk:hover:not(:disabled){background:#0c4a6e}
 .q-btn.wa{background:#16a34a;color:#fff}
 .q-btn.wa:hover:not(:disabled){background:#15803d}
+.q-btn.clear{background:transparent;border:1px solid var(--ln);color:var(--mu)}
 .q-btn:disabled{opacity:.4;cursor:not-allowed}
 .q-hint{font-size:11px;color:var(--mu);text-align:center;margin-top:4px}
 .duration-sel{width:100%;min-height:36px;border:1px solid var(--ln);border-radius:8px;padding:0 10px;font-size:12px;background:#fff}
 
-/* ── MAP ── */
 #view-map{height:calc(100vh - 56px);position:relative}
 #map{width:100%;height:100%}
 .legend{position:absolute;bottom:22px;left:14px;z-index:999;background:rgba(255,255,255,.93);border-radius:9px;padding:7px 13px;display:flex;gap:12px;font-size:11px;border:1px solid var(--ln);box-shadow:var(--sh)}
@@ -125,16 +122,12 @@ a{color:inherit;text-decoration:none}
 .scp-stat span{display:block;font-size:10px;color:var(--mu)}
 .scp-stat strong{display:block;font-size:13px;font-weight:700}
 
-/* ── UTILS ── */
 .mu{color:var(--mu)} .sm{font-size:11px}
 .view{display:none} .view.on{display:block}
-.brochure-wrap{display:block}
 
-/* ── TOAST ── */
 .toast{position:fixed;left:50%;bottom:20px;z-index:9999;transform:translate(-50%,12px);opacity:0;pointer-events:none;background:#0f172a;color:#fff;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:600;transition:all .18s}
 .toast.show{transform:translate(-50%,0);opacity:1}
 
-/* ── MEDIA KIT MODAL (simplified) ── */
 .mk-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
 .mk-overlay.open{display:flex}
 .mk-modal{background:#fff;border-radius:16px;max-width:560px;width:100%;max-height:90vh;overflow:auto;padding:28px}
@@ -149,12 +142,13 @@ a{color:inherit;text-decoration:none}
 .mk-kpi b{display:block;font-size:20px;font-weight:800;color:var(--pri-dk)}
 .mk-kpi span{font-size:11px;color:var(--mu)}
 .mk-terms{font-size:11px;color:var(--mu);border:1px solid var(--ln);border-radius:9px;padding:10px;background:var(--soft)}
-.mk-footer{display:flex;gap:9px;margin-top:18px}
+.mk-footer{display:flex;gap:9px;margin-top:18px;flex-wrap:wrap}
+.mk-hist-item{border:1px solid var(--ln);border-radius:10px;padding:12px;margin-bottom:10px;cursor:pointer;transition:all .12s}
+.mk-hist-item:hover{border-color:var(--pri)}
 .btn{min-height:38px;border:1px solid var(--ln);border-radius:9px;background:#fff;font-size:13px;font-weight:600;padding:0 16px;transition:all .15s}
 .btn.pri{background:var(--pri-dk);border-color:var(--pri-dk);color:#fff}
 .btn.wa{background:#16a34a;border-color:#16a34a;color:#fff}
 
-/* ── RESPONSIVE ── */
 @media(max-width:920px){.brochure-grid{grid-template-columns:1fr}.quote-panel{position:static}}
 @media(max-width:580px){.hero h1{font-size:26px}.cards{grid-template-columns:1fr}.stats{gap:18px}.top{padding:9px 14px}.wrap{padding:14px}}
 </style>
@@ -169,17 +163,20 @@ a{color:inherit;text-decoration:none}
   <nav class="nav">
     <button class="on" data-view="brochure">Brochure</button>
     <button data-view="map">Mapa</button>
-    <button class="nav-link-kit" data-action="open-kit">Media Kit</button>
+    <a href="map.html">Mapa completo</a>
+    <a href="dashboard.html">Dashboard</a>
+    <button class="nav-link-kit" data-action="open-kit">Media Kit <span class="cart-count" id="nav-cart-count" style="display:none">0</span></button>
   </nav>
 </header>
 
-<div id="view-brochure" class="view on brochure-wrap">
+<div id="view-brochure" class="view on">
   <div class="hero">
     <h1 id="hero-title">SmartKit</h1>
     <p id="hero-copy">Planificá campañas DOOH, seleccioná ubicaciones digitales y generá una propuesta comercial en minutos.</p>
     <div class="stats" id="hero-stats"></div>
   </div>
   <div class="wrap">
+    <div class="sync-banner" id="sync-banner">🔄 <span>El inventario o la configuración cambiaron desde el dashboard — esta vista ya está actualizada.</span></div>
     <div class="zone-filters" id="zone-filters"></div>
     <div class="brochure-grid">
       <section>
@@ -220,6 +217,7 @@ a{color:inherit;text-decoration:none}
         <div class="q-actions">
           <button class="q-btn mk" id="btn-mk" disabled>Generar media kit</button>
           <button class="q-btn wa" id="btn-wa" disabled>Contactar por WhatsApp</button>
+          <button class="q-btn clear" id="btn-clear-cart" disabled>Vaciar cotizador</button>
           <p class="q-hint" id="q-hint">Agregá pantallas al cotizador para continuar.</p>
         </div>
       </aside>
@@ -244,7 +242,6 @@ a{color:inherit;text-decoration:none}
 
 <div class="toast" id="toast"></div>
 
-<!-- Media Kit Modal -->
 <div class="mk-overlay" id="mk-overlay">
   <div class="mk-modal" id="mk-modal">
     <button class="btn" style="margin-bottom:16px" id="mk-close">← Volver</button>
@@ -252,119 +249,96 @@ a{color:inherit;text-decoration:none}
   </div>
 </div>
 
+<script src="smartkit-core.js"></script>
 <script>
-/* ══════════════════════════════════════════════
-   screens-data.js — Inventario DOOH Mendoza
-═══════════════════════════════════════════════ */
-const SCREENS = [
-  {id:'sc-01',nombre:'Sarmiento y 9 de Julio',zona:'Centro',tipo:'Peatonal',impactos:14200,precio:95000,status:'Activo',lat:-32.8894,lng:-68.8458,nota:'Esquina comercial de máximo tránsito peatonal.'},
-  {id:'sc-02',nombre:'Palmares Open Mall',zona:'Palmares',tipo:'Mixto',impactos:22500,precio:145000,status:'Activo',lat:-32.9121,lng:-68.8306,nota:'Acceso principal al shopping. Vehicular y peatonal.'},
-  {id:'sc-03',nombre:'Las Heras y Mitre',zona:'Las Heras',tipo:'Peatonal',impactos:8800,precio:68000,status:'Activo',lat:-32.8716,lng:-68.8388,nota:'Zona comercial barrial. Alto tráfico local.'},
-  {id:'sc-04',nombre:'Av. Aristides frente al Parque',zona:'Ciudad',tipo:'Vehicular',impactos:31000,precio:185000,status:'Activo',lat:-32.8908,lng:-68.8762,nota:'Avenida principal. Ideal autos y commuters.'},
-  {id:'sc-05',nombre:'Guaymallén Centro',zona:'Guaymallén',tipo:'Peatonal',impactos:11400,precio:78000,status:'Activo',lat:-32.8955,lng:-68.8212,nota:'Centro comercial de Guaymallén.'},
-  {id:'sc-06',nombre:'Maipú Ruta 7',zona:'Maipú',tipo:'Vehicular',impactos:19600,precio:112000,status:'Activo',lat:-32.9812,lng:-68.7757,nota:'Tránsito hacia bodegas y aeropuerto.'},
-  {id:'sc-07',nombre:'Villanueva Gomensoro',zona:'Las Heras',tipo:'Mixto',impactos:9300,precio:72000,status:'Activo',lat:-32.8658,lng:-68.8415,nota:'Zona residencial-comercial en crecimiento.'},
-  {id:'sc-08',nombre:'Godoy Cruz Belgrano',zona:'Godoy Cruz',tipo:'Vehicular',impactos:25800,precio:155000,status:'Activo',lat:-32.9246,lng:-68.8488,nota:'Corredor vehicular de alto volumen.'},
-  {id:'sc-09',nombre:'Chacras de Coria Acceso',zona:'Luján',tipo:'Vehicular',impactos:16700,precio:125000,status:'Activo',lat:-33.0158,lng:-68.8642,nota:'Acceso a Chacras. Ideal turismo y bodegas.'},
-  {id:'sc-10',nombre:'Terminal Buses Mendoza',zona:'Centro',tipo:'Peatonal',impactos:18400,precio:118000,status:'Activo',lat:-32.8868,lng:-68.8284,nota:'Alta rotación. Público diverso 24h.'},
-];
-
-/* ══════════════════════════════════════════════
-   config.js
-═══════════════════════════════════════════════ */
-const CONFIG = {
-  brand: 'SmartKit',
-  logo: 'SK',
-  whatsapp: '5492616000000',
-  heroTitle: 'Pantallas DOOH · Mendoza',
-  heroCopy: 'Planificá campañas digitales outdoor. Seleccioná ubicaciones, estimá alcance e inversión, y generá tu propuesta en minutos.',
-  terms: 'Inicio de campaña sujeto a disponibilidad y aprobación de piezas creativas. Valores expresados en ARS. Propuesta válida por 15 días.',
-};
-
-/* ══════════════════════════════════════════════
-   app.js
-═══════════════════════════════════════════════ */
 (function(){
   'use strict';
-
-  // ── State ──
-  const state = {
-    screens: [],
-    filtered: [],
-    quote: new Map(),
-    weeks: 4,
-    activeZone: 'Todos',
-  };
-
-  // ── Helpers ──
+  const { Store, fmt, fmtImp, esc, badgeClass, dotColor, weekLabel } = window.SmartKit;
   const $ = id => document.getElementById(id);
-  const fmt = n => '$' + Math.round(n).toLocaleString('es-AR');
-  const fmtImp = n => n >= 1000 ? (n/1000).toFixed(1)+'k' : String(n);
-  const esc = s => String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  const badgeClass = {Peatonal:'bd-p',Vehicular:'bd-v',Mixto:'bd-m'};
-  const dotClass = {Peatonal:'#0369a1',Vehicular:'#0f766e',Mixto:'#7c3aed'};
+
+  const state = { filtered: [], weeks: 4, activeZone: 'Todos' };
+  let lMap = null, mapInited = false, mapMarkers = {};
 
   function toast(msg, duration=1800){
     const t=$('toast'); t.textContent=msg; t.classList.add('show');
     setTimeout(()=>t.classList.remove('show'), duration);
   }
 
-  // ── Boot ──
-  function boot(){
-    // Merge localStorage edits from dashboard
-    let overlay={};
-    try{ overlay=JSON.parse(localStorage.getItem('sk_v1_dashboard-state')||'{}'); }catch(_){}
-    state.screens=(window.SCREENS||[]).map(s=>({...s,...(overlay[s.id]||{})})).filter(s=>s.status==='Activo');
-    state.filtered=[...state.screens];
+  function flashSync(){
+    const b=$('sync-banner'); b.classList.add('show');
+    clearTimeout(flashSync._t); flashSync._t=setTimeout(()=>b.classList.remove('show'),3000);
+  }
 
+  function boot(){
     applyConfig();
+    renderAll();
+    setupNav();
+    setupDuration();
+    setupActions();
+
+    // ── Sincronización reactiva: cambios del dashboard (u otra pestaña) ──
+    Store.on(key=>{
+      if(key===Store.keys.CONFIG){ applyConfig(); }
+      if(key===Store.keys.OVERLAY){ buildZoneFilters(); renderCards(); renderMapMarkers(); renderHeroStats(); }
+      if(key===Store.keys.CART){ renderCards(); renderQuote(); renderNavCartCount(); }
+      if(key!==Store.keys.CART) flashSync();
+    });
+  }
+
+  function applyConfig(){
+    const c = Store.getConfig();
+    $('brand-logo').textContent = c.logo;
+    $('brand-name').textContent = c.brand;
+    $('hero-title').textContent = c.heroTitle;
+    $('hero-copy').textContent = c.heroCopy;
+    document.title = `${c.brand} – Brochure DOOH`;
+  }
+
+  function renderAll(){
     renderHeroStats();
     buildZoneFilters();
     renderCards();
     renderQuote();
-    setupNav();
-    setupDuration();
-    setupActions();
-  }
-
-  function applyConfig(){
-    const c=window.CONFIG||{};
-    ['brand-logo','brand-name'].forEach(id=>{const el=$(id); if(el) el.textContent=id.includes('logo')?c.logo:c.brand;});
-    if(c.heroTitle){ const el=$('hero-title'); if(el) el.textContent=c.heroTitle; }
-    if(c.heroCopy){  const el=$('hero-copy');  if(el) el.textContent=c.heroCopy;  }
+    renderNavCartCount();
   }
 
   function renderHeroStats(){
-    const el=$('hero-stats'); if(!el) return;
-    const total=state.screens.length;
-    const imp=state.screens.reduce((a,s)=>a+(s.impactos||0),0);
-    const zones=[...new Set(state.screens.map(s=>s.zona))].length;
-    el.innerHTML=`
-      <div class="stat"><b>${total}</b><span>Pantallas</span></div>
+    const screens = Store.getActiveScreens();
+    const imp = screens.reduce((a,s)=>a+(s.impactos||0),0);
+    const zones = new Set(screens.map(s=>s.zona)).size;
+    $('hero-stats').innerHTML = `
+      <div class="stat"><b>${screens.length}</b><span>Pantallas</span></div>
       <div class="stat"><b>${fmtImp(imp)}</b><span>Impactos/día</span></div>
       <div class="stat"><b>${zones}</b><span>Zonas</span></div>`;
   }
 
   function buildZoneFilters(){
-    const el=$('zone-filters'); if(!el) return;
-    const zones=['Todos',...new Set(state.screens.map(s=>s.zona))];
-    el.innerHTML=zones.map(z=>`<button class="chip${z===state.activeZone?' on':''}" data-zone="${esc(z)}">${esc(z)}</button>`).join('');
-    el.addEventListener('click',e=>{
+    const screens = Store.getActiveScreens();
+    const el = $('zone-filters');
+    const zones = ['Todos', ...new Set(screens.map(s=>s.zona))];
+    if(!zones.includes(state.activeZone)) state.activeZone='Todos';
+    el.innerHTML = zones.map(z=>`<button class="chip${z===state.activeZone?' on':''}" data-zone="${esc(z)}">${esc(z)}</button>`).join('');
+    el.onclick = e=>{
       const btn=e.target.closest('[data-zone]'); if(!btn) return;
-      state.activeZone=btn.dataset.zone;
+      state.activeZone = btn.dataset.zone;
       el.querySelectorAll('.chip').forEach(b=>b.classList.toggle('on',b.dataset.zone===state.activeZone));
-      state.filtered=state.activeZone==='Todos'?[...state.screens]:state.screens.filter(s=>s.zona===state.activeZone);
       renderCards();
-    });
+    };
+  }
+
+  function currentFiltered(){
+    const screens = Store.getActiveScreens();
+    return state.activeZone==='Todos' ? screens : screens.filter(s=>s.zona===state.activeZone);
   }
 
   function renderCards(){
-    const el=$('cards'); if(!el) return;
-    const cc=$('cat-count'); if(cc) cc.textContent=`${state.filtered.length} pantalla${state.filtered.length!==1?'s':''}`;
-    if(!state.filtered.length){ el.innerHTML='<p class="empty">No hay pantallas disponibles en esta zona.</p>'; return; }
-    el.innerHTML=state.filtered.map(s=>{
-      const inQ=state.quote.has(s.id);
-      const initials=esc((s.nombre||'').substring(0,2).toUpperCase());
+    const list = currentFiltered();
+    const cc = $('cat-count'); cc.textContent = `${list.length} pantalla${list.length!==1?'s':''}`;
+    const el = $('cards');
+    if(!list.length){ el.innerHTML='<p class="empty">No hay pantallas disponibles en esta zona.</p>'; return; }
+    el.innerHTML = list.map(s=>{
+      const inQ = Store.isInCart(s.id);
+      const initials = esc((s.nombre||'').substring(0,2).toUpperCase());
       return `<article class="card${inQ?' in-quote':''}" data-id="${esc(s.id)}">
         <div class="card-hero">${s.video?`<video src="${esc(s.video)}" autoplay muted loop playsinline></video>`:initials}</div>
         <div class="card-body">
@@ -385,84 +359,90 @@ const CONFIG = {
   }
 
   function toggleQuote(id){
-    const s=state.screens.find(x=>x.id===id); if(!s) return;
-    state.quote.has(id)?state.quote.delete(id):state.quote.set(id,s);
-    renderCards(); renderQuote();
-    toast(state.quote.has(id)?`${s.nombre} agregada al cotizador`:`${s.nombre} quitada`);
+    const s = Store.getScreen(id); if(!s) return;
+    const nowIn = Store.toggleCart(id);
+    renderCards(); renderQuote(); renderNavCartCount(); renderMapMarkers();
+    toast(nowIn?`${s.nombre} agregada al cotizador`:`${s.nombre} quitada`);
+  }
+
+  function renderNavCartCount(){
+    const n = Store.getCart().length;
+    const el = $('nav-cart-count');
+    el.style.display = n? 'inline-flex':'none';
+    el.textContent = n;
   }
 
   function renderQuote(){
-    const items=[...state.quote.values()];
-    const w=state.weeks;
-    const totalInv=items.reduce((a,s)=>a+s.precio*w,0);
-    const totalImp=items.reduce((a,s)=>a+s.impactos,0)*w*7;
-    const hasItems=items.length>0;
+    const items = Store.getCartScreens();
+    const w = state.weeks;
+    const totalInv = items.reduce((a,s)=>a+s.precio*w,0);
+    const totalImp = items.reduce((a,s)=>a+s.impactos,0)*w*7;
+    const hasItems = items.length>0;
 
-    const st=$('q-status'); if(st){ st.textContent=hasItems?'Listo':'Vacío'; st.className='q-status'+(hasItems?' ready':''); }
-    const sc=$('q-sum-count'); if(sc) sc.textContent=hasItems?`${items.length} pantalla${items.length!==1?'s':''}`:' 0 pantallas · Sin plan armado';
-    const sd=$('q-sum-detail'); if(sd) sd.textContent=hasItems?`${fmtImp(totalImp)} impactos totales estimados`:'Agregá pantallas para estimar inversión';
+    const st=$('q-status'); st.textContent=hasItems?'Listo':'Vacío'; st.className='q-status'+(hasItems?' ready':'');
+    $('q-sum-count').textContent = hasItems? `${items.length} pantalla${items.length!==1?'s':''}` : '0 pantallas · Sin plan armado';
+    $('q-sum-detail').textContent = hasItems? `${fmtImp(totalImp)} impactos totales estimados` : 'Agregá pantallas para estimar inversión';
 
-    const ql=$('q-list'); if(ql){
-      ql.innerHTML=items.map(s=>`
-        <div class="q-item">
-          <div class="q-item-info"><strong>${esc(s.nombre)}</strong><span>${esc(s.zona)} · ${esc(s.tipo)}</span></div>
-          <div class="q-item-right"><span class="q-price">${fmt(s.precio*w)}</span><button class="q-rm" data-id="${esc(s.id)}" title="Quitar">✕</button></div>
-        </div>`).join('')||`<p class="mu sm" style="padding:8px 0">Sin pantallas agregadas.</p>`;
-      ql.querySelectorAll('.q-rm').forEach(b=>b.addEventListener('click',()=>{state.quote.delete(b.dataset.id);renderCards();renderQuote();}));
-    }
+    const ql=$('q-list');
+    ql.innerHTML = items.map(s=>`
+      <div class="q-item">
+        <div class="q-item-info"><strong>${esc(s.nombre)}</strong><span>${esc(s.zona)} · ${esc(s.tipo)}</span></div>
+        <div class="q-item-right"><span class="q-price">${fmt(s.precio*w)}</span><button class="q-rm" data-id="${esc(s.id)}" title="Quitar">✕</button></div>
+      </div>`).join('') || `<p class="mu sm" style="padding:8px 0">Sin pantallas agregadas.</p>`;
+    ql.querySelectorAll('.q-rm').forEach(b=>b.addEventListener('click',()=>toggleQuote(b.dataset.id)));
 
-    const el=(id,val)=>{const e=$(id);if(e)e.textContent=val;};
-    el('q-count',items.length);
-    el('q-impacts',fmtImp(totalImp));
-    el('q-total',fmt(totalInv));
+    $('q-count').textContent = items.length;
+    $('q-impacts').textContent = fmtImp(totalImp);
+    $('q-total').textContent = fmt(totalInv);
 
-    const mkBtn=$('btn-mk'), waBtn=$('btn-wa'), hint=$('q-hint');
-    if(mkBtn){mkBtn.disabled=!hasItems;}
-    if(waBtn){waBtn.disabled=!hasItems;}
-    if(hint){hint.style.display=hasItems?'none':'block';}
+    $('btn-mk').disabled = !hasItems;
+    $('btn-wa').disabled = !hasItems;
+    $('btn-clear-cart').disabled = !hasItems;
+    $('q-hint').style.display = hasItems? 'none':'block';
   }
 
   function setupDuration(){
-    const sel=$('dur-select'); if(!sel) return;
-    state.weeks=parseInt(sel.value)||4;
-    sel.addEventListener('change',()=>{state.weeks=parseInt(sel.value)||1;renderQuote();});
+    const sel=$('dur-select');
+    state.weeks = parseInt(sel.value)||4;
+    sel.addEventListener('change',()=>{ state.weeks=parseInt(sel.value)||1; renderQuote(); });
   }
 
-  // ── Nav ──
-  let mapInited=false;
+  // ── Nav entre vistas ──
   function setupNav(){
     document.querySelectorAll('[data-view]').forEach(btn=>{
       btn.addEventListener('click',()=>switchView(btn.dataset.view));
     });
   }
-
   function switchView(view){
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
     document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===view));
-    const el=$('view-'+view); if(el) el.classList.add('on');
-    if(view==='map'&&!mapInited){initMap();mapInited=true;}
+    $('view-'+view).classList.add('on');
+    if(view==='map'){ if(!mapInited){ initMap(); mapInited=true; } else { renderMapMarkers(); lMap.invalidateSize(); } }
   }
 
-  // ── Map ──
+  // ── Mapa embebido (vista rápida; el mapa completo vive en map.html) ──
   function initMap(){
     if(!window.L) return;
-    const mapEl=$('map'); if(!mapEl) return;
-    const center=[-32.903,-68.839];
-    const lMap=L.map('map').setView(center,12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-      attribution:'© OpenStreetMap contributors',maxZoom:19,
-    }).addTo(lMap);
-    state.screens.forEach(s=>{
-      if(!s.lat||!s.lng) return;
-      const m=L.circleMarker([s.lat,s.lng],{radius:9,fillColor:dotClass[s.tipo]||'#64748b',color:'#fff',weight:2,fillOpacity:.9}).addTo(lMap);
-      m.on('click',()=>showPanel(s));
-    });
-    $('scp-close')?.addEventListener('click',()=>$('sc-panel').classList.remove('open'));
+    lMap = L.map('map').setView([-32.903,-68.839],12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:19}).addTo(lMap);
+    renderMapMarkers();
+    $('scp-close').addEventListener('click',()=>$('sc-panel').classList.remove('open'));
   }
-
+  function renderMapMarkers(){
+    if(!lMap) return;
+    Object.values(mapMarkers).forEach(m=>lMap.removeLayer(m));
+    mapMarkers={};
+    Store.getActiveScreens().forEach(s=>{
+      if(!s.lat||!s.lng) return;
+      const inQ = Store.isInCart(s.id);
+      const m=L.circleMarker([s.lat,s.lng],{radius:9,fillColor:dotColor[s.tipo]||'#64748b',color:inQ?'#fbbf24':'#fff',weight:inQ?3:2,fillOpacity:.9}).addTo(lMap);
+      m.on('click',()=>showPanel(s));
+      mapMarkers[s.id]=m;
+    });
+  }
   function showPanel(s){
-    const panel=$('sc-panel'); if(!panel) return;
-    const inQ=state.quote.has(s.id);
+    const panel=$('sc-panel');
+    const inQ = Store.isInCart(s.id);
     $('scp-content').innerHTML=`
       <div class="scp-hero">${s.video?`<video src="${esc(s.video)}" autoplay muted loop playsinline></video>`:esc((s.nombre||'').substring(0,2).toUpperCase())}</div>
       <strong>${esc(s.nombre)}</strong>
@@ -472,52 +452,35 @@ const CONFIG = {
         <div class="scp-stat"><span>Precio/semana</span><strong>${fmt(s.precio)}</strong></div>
       </div>
       ${s.nota?`<p class="mu sm" style="margin-bottom:10px">${esc(s.nota)}</p>`:''}
-      <button class="btn-add${inQ?' on':''}" style="width:100%;min-height:34px" data-map-toggle="${esc(s.id)}">${inQ?'✓ En cotizador':'+ Agregar al cotizador'}</button>`;
+      <button class="btn-add${inQ?' on':''}" style="width:100%;min-height:34px" id="scp-toggle">${inQ?'✓ En cotizador':'+ Agregar al cotizador'}</button>`;
     panel.classList.add('open');
-    $('scp-content').querySelector('[data-map-toggle]')?.addEventListener('click', function(){
-      toggleQuote(s.id);
-      this.textContent=state.quote.has(s.id)?'✓ En cotizador':'+ Agregar al cotizador';
-      this.classList.toggle('on',state.quote.has(s.id));
-    });
+    $('scp-toggle').addEventListener('click',()=>{ toggleQuote(s.id); showPanel(Store.getScreen(s.id)); });
   }
 
-  // ── Actions ──
+  // ── Acciones (kit / whatsapp / historial) ──
   function setupActions(){
-    $('btn-mk')?.addEventListener('click', generateKit);
-    $('btn-wa')?.addEventListener('click', sendWhatsApp);
-    document.querySelector('[data-action="open-kit"]')?.addEventListener('click',()=>showKitHistory());
-    $('mk-close')?.addEventListener('click',()=>$('mk-overlay').classList.remove('open'));
-    $('mk-overlay')?.addEventListener('click',e=>{ if(e.target===$('mk-overlay')) $('mk-overlay').classList.remove('open'); });
+    $('btn-mk').addEventListener('click', generateKit);
+    $('btn-wa').addEventListener('click', sendWhatsApp);
+    $('btn-clear-cart').addEventListener('click', ()=>{ Store.clearCart(); renderCards(); renderQuote(); renderNavCartCount(); renderMapMarkers(); toast('Cotizador vaciado'); });
+    document.querySelector('[data-action="open-kit"]').addEventListener('click', showKitHistory);
+    $('mk-close').addEventListener('click',()=>$('mk-overlay').classList.remove('open'));
+    $('mk-overlay').addEventListener('click',e=>{ if(e.target===$('mk-overlay')) $('mk-overlay').classList.remove('open'); });
   }
 
   function generateKit(){
-    const items=[...state.quote.values()]; if(!items.length) return;
-    const c=window.CONFIG||{};
-    const w=state.weeks;
-    const totalInv=items.reduce((a,s)=>a+s.precio*w,0);
-    const totalImp=items.reduce((a,s)=>a+s.impactos,0);
-    const id='kit-'+Date.now().toString(36);
-    const now=new Date();
-    const exp=new Date(now.getTime()+15*86400000);
-    const weekLabel={1:'1 semana',2:'2 semanas',4:'4 semanas (1 mes)',8:'8 semanas',12:'12 semanas'}[w]||`${w} semanas`;
-    const kit={id,createdAt:now.toISOString(),validUntil:exp.toISOString(),brand:c.brand||'SmartKit',weeks:w,weekLabel,
-      screens:items.map(s=>({...s,precioCampana:s.precio*w})),
-      totals:{screens:items.length,impactsPerDay:totalImp,impactsTotal:totalImp*w*7,investment:totalInv},
-      terms:c.terms||'',};
-    const all=(() =>{try{return JSON.parse(localStorage.getItem('sk_v1_public-kits')||'{}');}catch{return{};}})();
-    all[id]=kit; localStorage.setItem('sk_v1_public-kits',JSON.stringify(all));
+    const items = Store.getCartScreens(); if(!items.length) return;
+    const kit = Store.buildKit({ screens: items, weeks: state.weeks });
+    Store.saveKit(kit);
     renderKitModal(kit);
     toast('✓ Media kit generado',2000);
   }
 
   function renderKitModal(kit){
-    const overlay=$('mk-overlay'), content=$('mk-content'); if(!overlay||!content) return;
-    const now=new Date();
-    const validStr=new Date(kit.validUntil).toLocaleDateString('es-AR');
-    content.innerHTML=`
+    const validStr = new Date(kit.validUntil).toLocaleDateString('es-AR');
+    $('mk-content').innerHTML = `
       <div class="mk-hero">
         <h2>${esc(kit.brand)} · Propuesta Comercial</h2>
-        <p class="mk-meta">Generado: ${now.toLocaleDateString('es-AR')} · Duración: ${esc(kit.weekLabel)} · Válida hasta: ${validStr}</p>
+        <p class="mk-meta">Generado: ${new Date(kit.createdAt).toLocaleDateString('es-AR')} · Duración: ${esc(kit.weekLabel)} · Válida hasta: ${validStr}</p>
       </div>
       <div class="mk-kpis">
         <div class="mk-kpi"><b>${kit.totals.screens}</b><span>Pantallas</span></div>
@@ -533,66 +496,60 @@ const CONFIG = {
         <div class="mk-terms">${esc(kit.terms)}</div>
       </div>
       <div class="mk-footer">
-        <button class="btn" onclick="printKit()">Imprimir / PDF</button>
-        <button class="btn wa" onclick="sendKitWhatsApp()">Enviar por WhatsApp</button>
-        <button class="btn" onclick="downloadKit('${esc(kit.id)}')">Descargar JSON</button>
+        <a href="mediakit.html?id=${encodeURIComponent(kit.id)}" target="_blank"><button class="btn pri">Abrir página pública →</button></a>
+        <button class="btn wa" id="mk-send-wa">Enviar por WhatsApp</button>
+        <button class="btn" id="mk-download">Descargar JSON</button>
       </div>`;
-    overlay.classList.add('open');
-    window._currentKit=kit;
+    $('mk-overlay').classList.add('open');
+    $('mk-send-wa').addEventListener('click',()=>sendKitWhatsApp(kit));
+    $('mk-download').addEventListener('click',()=>downloadKit(kit.id));
   }
 
-  window.printKit=()=>{ window.print(); };
-  window.sendKitWhatsApp=()=>{
-    const kit=window._currentKit; if(!kit) return;
-    const c=window.CONFIG||{};
-    const wa=c.whatsapp||''; if(!wa){alert('Configurá el WhatsApp en config.js');return;}
-    const lines=[`Hola! Te comparto la propuesta comercial SmartKit:`,``,`Duración: ${kit.weekLabel}`,
+  function sendKitWhatsApp(kit){
+    const cfg = Store.getConfig();
+    if(!cfg.whatsapp){ toast('Configurá el WhatsApp en el dashboard'); return; }
+    const lines=[`Hola! Te comparto la propuesta comercial ${cfg.brand}:`,``,`Duración: ${kit.weekLabel}`,
       ...kit.screens.map(s=>`• ${s.nombre} (${s.zona}) — ${fmt(s.precioCampana)}`),``,
-      `Inversión total: ${fmt(kit.totals.investment)}`,`Válida hasta: ${new Date(kit.validUntil).toLocaleDateString('es-AR')}`,];
-    window.open(`https://wa.me/${wa.replace(/\D/g,'')}?text=${encodeURIComponent(lines.join('\n'))}`, '_blank');
-  };
-  window.downloadKit=id=>{
-    const all=(() =>{try{return JSON.parse(localStorage.getItem('sk_v1_public-kits')||'{}');}catch{return{};}})();
-    const kit=all[id]; if(!kit) return;
+      `Inversión total: ${fmt(kit.totals.investment)}`,`Válida hasta: ${new Date(kit.validUntil).toLocaleDateString('es-AR')}`];
+    window.open(`https://wa.me/${cfg.whatsapp.replace(/\D/g,'')}?text=${encodeURIComponent(lines.join('\n'))}`,'_blank');
+  }
+
+  function downloadKit(id){
+    const kit = Store.getKit(id); if(!kit) return;
     const a=document.createElement('a');
     a.href='data:application/json,'+encodeURIComponent(JSON.stringify(kit,null,2));
     a.download=id+'.json'; a.click();
-  };
+  }
 
   function showKitHistory(){
-    const all=(() =>{try{return JSON.parse(localStorage.getItem('sk_v1_public-kits')||'{}');}catch{return{};}})();
-    const kits=Object.values(all).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
-    const content=$('mk-content'); if(!content) return;
+    const kits = Store.getKitList();
     if(!kits.length){
-      content.innerHTML='<p class="mu" style="text-align:center;padding:32px">No hay kits generados todavía.<br>Armá una cotización para crear tu primer media kit.</p>';
+      $('mk-content').innerHTML='<p class="mu" style="text-align:center;padding:32px">No hay kits generados todavía.<br>Armá una cotización para crear tu primer media kit.</p>';
     } else {
-      content.innerHTML=`<h3 style="margin-bottom:14px;font-size:16px;font-weight:700">Kits generados (${kits.length})</h3>`+
-        kits.map(k=>`<div style="border:1px solid var(--ln);border-radius:10px;padding:12px;margin-bottom:10px;cursor:pointer" onclick="loadKit('${esc(k.id)}')">
-          <strong>${esc(k.brand)}</strong> · ${k.totals.screens} pantallas<br>
-          <span class="mu sm">${new Date(k.createdAt).toLocaleDateString('es-AR')} · ${k.weekLabel} · ${fmt(k.totals.investment)}</span>
+      $('mk-content').innerHTML = `<h3 style="margin-bottom:14px;font-size:16px;font-weight:700">Kits generados (${kits.length})</h3>` +
+        kits.map(k=>`<div class="mk-hist-item" data-id="${esc(k.id)}">
+          <strong>${esc(k.client||k.brand)}</strong> · ${k.totals.screens} pantallas<br>
+          <span class="mu sm">${new Date(k.createdAt).toLocaleDateString('es-AR')} · ${k.weekLabel} · ${fmt(k.totals.investment)}${k.archived?' · <em>archivada</em>':''}</span>
         </div>`).join('');
+      $('mk-content').querySelectorAll('.mk-hist-item').forEach(el=>{
+        el.addEventListener('click',()=>{ const k=Store.getKit(el.dataset.id); if(k) renderKitModal(k); });
+      });
     }
     $('mk-overlay').classList.add('open');
-    window._currentKit=null;
   }
-  window.loadKit=id=>{
-    const all=(() =>{try{return JSON.parse(localStorage.getItem('sk_v1_public-kits')||'{}');}catch{return{};}})();
-    const kit=all[id]; if(kit) renderKitModal(kit);
-  };
 
   function sendWhatsApp(){
-    const c=window.CONFIG||{};
-    const wa=c.whatsapp||''; if(!wa){alert('Configurá el WhatsApp en config.js');return;}
-    const items=[...state.quote.values()];
-    const w=state.weeks;
-    const total=items.reduce((a,s)=>a+s.precio*w,0);
-    const lines=[`Hola! Me interesa cotizar las siguientes pantallas SmartKit:`,``,
+    const cfg = Store.getConfig();
+    if(!cfg.whatsapp){ toast('Configurá el WhatsApp en el dashboard'); return; }
+    const items = Store.getCartScreens();
+    const w = state.weeks;
+    const total = items.reduce((a,s)=>a+s.precio*w,0);
+    const lines=[`Hola! Me interesa cotizar las siguientes pantallas ${cfg.brand}:`,``,
       ...items.map(s=>`• ${s.nombre} (${s.zona}) — ${fmt(s.precio*w)}`),``,
-      `Duración: ${w} semana${w!==1?'s':''}`,`Inversión estimada: ${fmt(total)}`,];
-    window.open(`https://wa.me/${wa.replace(/\D/g,'')}?text=${encodeURIComponent(lines.join('\n'))}`, '_blank');
+      `Duración: ${w} semana${w!==1?'s':''}`,`Inversión estimada: ${fmt(total)}`];
+    window.open(`https://wa.me/${cfg.whatsapp.replace(/\D/g,'')}?text=${encodeURIComponent(lines.join('\n'))}`,'_blank');
   }
 
-  // ── Init ──
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot):boot();
 })();
 </script>
