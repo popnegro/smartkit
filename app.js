@@ -649,16 +649,25 @@ function bindEvents(){
   const urlParams = new URLSearchParams(window.location.search);
   const loadDefault = urlParams.get('load') === 'default';
   const savedState = Shared.loadDashboardState();
-  
-  try {
-    console.log('SmartKit: Cargando desde /screens.json...');
-    const response = await fetch('/screens.json'); 
-    if (!response.ok) throw new Error('No se pudo cargar el inventario.');
-    state.sourceScreens = await response.json();
-  } catch (error) {
-    console.error('Error al cargar datos de pantallas:', error);
-    document.getElementById('cards').innerHTML = `<div class="empty-state"><h3>Error al cargar el inventario</h3><p>Por favor, intenta recargar la página.</p></div>`;
-    state.sourceScreens = [];
+
+  if (savedState && savedState.rows?.length && !loadDefault) {
+      console.log(`SmartKit: Cargando ${savedState.rows.length} pantallas desde localStorage.`);
+      state.sourceScreens = savedState.rows;
+    if (savedState.brand) Object.assign(state.brand, savedState.brand);
+  } else {
+    // Modificado: Cargar desde la API externa en lugar de screens.json.
+    try {
+      console.log('SmartKit: Cargando desde la API de inventario...');
+      // La URL del endpoint de tu API. Puede estar en una variable de configuración.
+      const response = await fetch('/api/screens'); 
+      if (!response.ok) throw new Error('No se pudo cargar el inventario desde la API.');
+      state.sourceScreens = await response.json();
+    } catch (error) {
+      console.error('Error al cargar datos de pantallas:', error);
+      // Mejora: Mostrar un error en la UI si la carga falla.
+      document.getElementById('cards').innerHTML = `<div class="empty-state">Error al cargar el inventario. Por favor, intenta recargar la página.</div>`;
+      state.sourceScreens = [];
+    }
   }
 
     // Corregido: Unificar el criterio para pantallas activas.

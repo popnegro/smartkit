@@ -12,11 +12,11 @@ const DashboardApp = (() => {
     selectedId: null,
     currentSection: 'inventory',
     kitSelected: new Set(),
-    bulkSelected: new Set(),
     filters: {
       zone: 'Todas',
       status: 'Todos'
     },
+    bulkSelected: new Set(),
     savedKits: [],
     brand: { name: 'SmartKit', logo: 'SK', terms: '', validity: '15 dias', whatsapp: '' }
   };
@@ -136,6 +136,29 @@ const DashboardApp = (() => {
     ).join('');
   }
 
+  function loadFiltersFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    const zone = params.get('zone');
+    const status = params.get('status');
+    if (zone) state.filters.zone = zone;
+    if (status) state.filters.status = status;
+  }
+
+  function updateURLWithFilters() {
+    const params = new URLSearchParams();
+    if (state.filters.zone && state.filters.zone !== 'Todas') {
+      params.set('zone', state.filters.zone);
+    }
+    if (state.filters.status && state.filters.status !== 'Todos') {
+      params.set('status', state.filters.status);
+    }
+
+    const queryString = params.toString();
+    const newUrl = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
+    // Usamos replaceState para no contaminar el historial del navegador con cada clic en un filtro.
+    window.history.replaceState({ path: newUrl }, '', newUrl);
+  }
+
   function updateFilterChips() {
     document.querySelectorAll('[data-filter]').forEach(chip => {
       const filterType = chip.dataset.filter;
@@ -152,6 +175,7 @@ const DashboardApp = (() => {
     state.filters.status = 'Todos';
     renderTable();
     updateFilterChips();
+    updateURLWithFilters();
   }
 
   function filteredRows() {
@@ -438,27 +462,7 @@ const DashboardApp = (() => {
       document.getElementById('app').classList.toggle('nav-collapsed');
     });
 
-    document.getElementById('btn-new-screen').addEventListener('click', showNewScreenForm);
-
-    document.addEventListener('click', (event) => {
-      const filterChip = event.target.closest('[data-filter]');
-      if (filterChip) {
-        state.filters[filterChip.dataset.filter] = filterChip.dataset.value;
-        renderTable();
-        updateFilterChips();
-      }
-      const row = event.target.closest('[data-row-id]');
-      if (row && !event.target.matches('input[type="checkbox"]')) {
-        selectRow(row.dataset.rowId);
-      }
-    });
-
     document.getElementById('btn-clear-filters').addEventListener('click', clearFilters);
-
-
-    ['search', 'zone-filter', 'type-filter'].forEach(id => {
-      document.getElementById(id).addEventListener('input', renderTable);
-    });
 
     ['kit-client', 'kit-contact', 'settings-terms'].forEach(id => {
       document.getElementById(id).addEventListener('input', renderKitPreview);
@@ -470,14 +474,27 @@ const DashboardApp = (() => {
     document.getElementById('kit-search').addEventListener('input', renderKitBuilder);
 
     document.addEventListener('click', event => {
-      const target = event.target.closest('[data-action]');
-      if (!target) return;
-      const action = target.dataset.action;
-      const id = target.dataset.id;
-      const step = target.dataset.step;
+      // Listener unificado para todas las acciones de clic
 
-      const actions = {
-        'copy-kit': () => { const kit = state.savedKits.find(k => k.id === id); if (kit) navigator.clipboard?.writeText(new URL(Shared.getMediaKitUrl(kit.id), location.href).href).then(() => Shared.showToast('Link copiado')).catch(() => Shared.showToast('No se pudo copiar')); },
+      // 1. Filtros
+      const filterChip = event.target.closest('[data-filter]');
+      if (filterChip) {
+        state.filters[filterChip.dataset.filter] = filterChip.dataset.value;
+        renderTable();
+        updateFilterChips();
+        updateURLWithFilters();
+        return;
+      }
+
+      // 2. Acciones de Media Kit
+      const target = event.target.closest('[data-action]');
+      if (target) {
+        const action = target.dataset.action;
+        const id = target.dataset.id;
+        const step = target.dataset.step;
+
+        const actions = {
+          'copy-kit': () => { const kit = state.savedKits.find(k => k.id === id); if (kit) navigator.clipboard?.writeText(new URL(Shared.getMediaKitUrl(kit.id), location.href).href).then(() => Shared.showToast('Link copiado')).catch(() => Shared.showToast('No se pudo copiar')); },
         'download-kit': () => {
           const kit = state.savedKits.find(k => k.id === id);
           if (kit) { downloadKitJson(kit); Shared.showToast('JSON descargado'); }
@@ -503,8 +520,16 @@ const DashboardApp = (() => {
         },
         'edit-kit': () => editKit(id)
       };
-      if (action === 'set-kit-step') setKitStep(Number(step));
-      if (actions[action]) actionsaction;
+        if (action === 'set-kit-step') setKitStep(Number(step));
+        if (actions[action]) actions[action]();
+        return;
+      }
+
+      // 3. Selección de fila en la tabla
+      const row = event.target.closest('[data-row-id]');
+      if (row && !event.target.matches('input[type="checkbox"]')) {
+        selectRow(row.dataset.rowId);
+      }
     });
 
     document.addEventListener('change', event => {
@@ -601,11 +626,14 @@ const DashboardApp = (() => {
 
     document.getElementById('app').style.display = 'grid';
     document.body.style.visibility = 'visible';
+
     await loadInitialData();
+    bindEvents();
+
+    loadFiltersFromURL();
     applyBrand();
     fillFilters();
     updateKpis();
-    bindEvents();
     bindStepperEvents();
 
     document.getElementById('settings-brand').value = state.brand.name;
