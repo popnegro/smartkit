@@ -188,16 +188,20 @@ const DashboardApp = (() => {
     if (section === SECTIONS.METRICS) renderMetrics();
   }
 
-  function setKitStep(n) {
-    if (n > 1 && !document.getElementById('kit-client').value.trim()) {
+  function validateKitStep(targetStep) {
+    if (targetStep > 1 && !document.getElementById('kit-client').value.trim()) {
       Shared.showToast('Por favor, indica el nombre del cliente');
       document.getElementById('kit-client').focus();
-      return;
+      return false;
     }
-    if (n === 3 && state.kitSelected.size === 0) {
+    if (targetStep === 3 && state.kitSelected.size === 0) {
       Shared.showToast('Selecciona al menos una pantalla para continuar');
-      return;
+      return false;
     }
+    return true;
+  }
+
+  function setKitStep(n) {
     document.querySelectorAll('[data-step-nav]').forEach(el => {
       el.classList.toggle('active', Number(el.dataset.stepNav) === n);
       el.classList.toggle('completed', Number(el.dataset.stepNav) < n);
@@ -324,6 +328,12 @@ const DashboardApp = (() => {
     document.getElementById('kit-archive-count').textContent = archivedKits.length;
     document.getElementById('kit-archive').innerHTML = archivedKits.map(k => renderKitRow(k, true)).join('');
   }
+  document.getElementById('btn-to-step-2').addEventListener('click', () => {
+    if (validateKitStep(2)) setKitStep(2);
+  });
+  document.getElementById('btn-to-step-3').addEventListener('click', () => {
+    if (validateKitStep(3)) setKitStep(3);
+  });
 
   function renderMetrics() {
     const active = state.rows.filter(row => row.status === SCREEN_STATUS.ACTIVE);

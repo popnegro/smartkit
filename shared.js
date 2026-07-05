@@ -1,21 +1,22 @@
 const SmartKitShared = (() => {
-  const CONFIG = {
-    basePath: '',
-    signature: { secret: '', signer: 'SmartKit' }
-  };
+  // ==========================================================================
+  // 1. Constants & Configuration
+  // ==========================================================================
+
   const DURATIONS = [
     {v:'1s', l:'1 semana', mult:1, days:7},
-    {v:'2s', l:'2 semanas',mult:1.8,days:14},
+    {v:'2s', l:'2 semanas', mult:1.8, days:14},
     {v:'1m',l:'1 mes',mult:3.2,days:30},
     {v:'3m',l:'3 meses',mult:8,days:90}
   ];
+
   const DASHBOARD_STORAGE_KEY = 'smartkit-dashboard-state'; // Usado en dashboard.js
   const PUBLIC_KITS_STORAGE_KEY = 'smartkit-public-kits';
 
   const DEFAULT_BRAND = {
     name: 'SmartKit',
     logo: 'SK',
-    whatsapp: '5492613871088',
+    whatsapp: '',
     heroCopy: 'Planifica campañas DOOH, selecciona ubicaciones digitales y genera una reserva comercial en minutos.',
     terms: 'Inicio de campaña sujeto a disponibilidad y aprobación de piezas. Valores expresados en ARS.',
     validity: '15 días'
@@ -28,6 +29,10 @@ const SmartKitShared = (() => {
     Indoor: '#16a34a'
   };
 
+  // ==========================================================================
+  // 2. Core Utility Functions
+  // ==========================================================================
+
   function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>"']/g, char => ({
       '&': '&amp;',
@@ -36,20 +41,6 @@ const SmartKitShared = (() => {
       '"': '&quot;',
       "'": '&#39;'
     }[char]));
-  }
-
-  function getMediaKitUrl(kitId) {
-    // Use root-relative path to avoid issues in nested routes.
-    return `/mediakit.html?id=${encodeURIComponent(kitId)}`;
-  }
-
-  function showToast(message) {
-    const toast = document.getElementById('toast') || document.createElement('div');
-    if (!toast.id) { toast.id = 'toast'; document.body.appendChild(toast); }
-    toast.textContent = message;
-    toast.classList.add('show');
-    clearTimeout(toast.timer);
-    toast.timer = setTimeout(() => toast.classList.remove('show'), 1800);
   }
 
   function debounce(func, wait) {
@@ -72,13 +63,6 @@ const SmartKitShared = (() => {
     return '$' + Math.round(Number(value) || 0).toLocaleString('es-AR');
   }
 
-  function applyBrandHeader(brand = DEFAULT_BRAND) {
-    const logo = document.getElementById('brand-logo');
-    const name = document.getElementById('brand-name');
-    if (logo) logo.textContent = brand.logo || DEFAULT_BRAND.logo;
-    if (name) name.textContent = brand.name || DEFAULT_BRAND.name;
-  }
-
   function kitSlug(value){
     return String(value || 'media-kit').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
   }
@@ -92,6 +76,10 @@ const SmartKitShared = (() => {
     const bg = String(value || '');
     return bg.startsWith('linear-gradient(') ? bg : '';
   }
+
+  // ==========================================================================
+  // 3. Business Logic: Media Kits
+  // ==========================================================================
 
   function screenSnapshot(screen, duration = { mult: 1 }) {
     return {
@@ -111,6 +99,10 @@ const SmartKitShared = (() => {
     };
   }
 
+  /**
+   * Recursively sorts object keys to create a canonical string representation
+   * for consistent hashing, excluding the digitalSignature field itself.
+   */
   function canonicalize(value) {
     if (Array.isArray(value)) return value.map(canonicalize);
     if (value && typeof value === 'object') {
@@ -121,6 +113,8 @@ const SmartKitShared = (() => {
     }
     return value;
   }
+
+  // --- Cryptography Helpers for Digital Signature ---
 
   async function sha256Hex(message) {
     const subtle = globalThis.crypto?.subtle;
@@ -146,7 +140,7 @@ const SmartKitShared = (() => {
 
   async function signMediaKit(kit, options = {}) {
     if (!globalThis.crypto?.subtle) return null;
-    const signer = options.signer || kit.brand?.name || DEFAULT_BRAND.name;
+    const signer = options.signer || window.CONFIG?.signature?.signer || kit.brand?.name || DEFAULT_BRAND.name;
     const payload = JSON.stringify(canonicalize(kit));
     const secret = options.secret || signer;
     return {
@@ -161,7 +155,7 @@ const SmartKitShared = (() => {
   async function verifyMediaKitSignature(kit, options = {}) {
     const signature = kit?.digitalSignature;
     if (!signature?.value || !globalThis.crypto?.subtle) return { state: 'unsigned' };
-    const signer = signature.signer || options.signer || kit.brand?.name || DEFAULT_BRAND.name;
+    const signer = signature.signer || options.signer || window.CONFIG?.signature?.signer || kit.brand?.name || DEFAULT_BRAND.name;
     const payload = JSON.stringify(canonicalize(kit));
     const secret = options.secret || signer;
     const hash = await sha256Hex(payload);
@@ -174,18 +168,6 @@ const SmartKitShared = (() => {
     };
   }
 
-  function mediaHtml(screen, className = 'media', options = {}) {
-    const h = escapeHtml;
-    const videoUrl = safeAssetUrl(screen.video);
-    const background = safeBackground(screen.gradient || screen.g) || 'linear-gradient(135deg,#075985,#0f766e)';
-    const initials = screen.initials || screen.e || '';
-    const label = screen.name || screen.n || 'pantalla';
-    const video = videoUrl
-      ? `<video src="${h(videoUrl)}" autoplay muted loop playsinline preload="${options.preload || 'metadata'}" aria-label="Video de ${h(label)}" onerror="this.hidden=true"></video>`
-      : '';
-    return `<div class="${h(className)} video-head" style="background:${h(background)}"><span class="media-fallback" aria-hidden="true">${h(initials)}</span>${video}</div>`;
-  }
-
   async function buildMediaKit(quote, brand, config, status = 'Borrador') {
     if (!quote || !quote.screens.length) return null;
 
@@ -193,6 +175,7 @@ const SmartKitShared = (() => {
     const validityDays = parseInt(brand.validity) || 15;
     const validUntil = new Date(createdAt);
     validUntil.setDate(validUntil.getDate() + validityDays);
+    const signatureConfig = config.signature || {};
 
     const client = `Propuesta ${brand.name}`;
     const kit = {
@@ -217,10 +200,42 @@ const SmartKitShared = (() => {
     };
 
     kit.digitalSignature = await signMediaKit(kit, {
-      signer: CONFIG.signature?.signer || brand.name,
-      secret: CONFIG.signature?.secret || ''
+      signer: signatureConfig.signer || brand.name,
+      secret: signatureConfig.secret || ''
     });
     return kit;
+  }
+
+  // ==========================================================================
+  // 4. UI & DOM Helpers
+  // ==========================================================================
+
+  function showToast(message) {
+    const toast = document.getElementById('toast') || document.createElement('div');
+    if (!toast.id) { toast.id = 'toast'; document.body.appendChild(toast); }
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+
+  function applyBrandHeader(brand = DEFAULT_BRAND) {
+    const logo = document.getElementById('brand-logo');
+    const name = document.getElementById('brand-name');
+    if (logo) logo.textContent = brand.logo || DEFAULT_BRAND.logo;
+    if (name) name.textContent = brand.name || DEFAULT_BRAND.name;
+  }
+
+  function mediaHtml(screen, className = 'media', options = {}) {
+    const h = escapeHtml;
+    const videoUrl = safeAssetUrl(screen.video);
+    const background = safeBackground(screen.gradient || screen.g) || 'linear-gradient(135deg,#075985,#0f766e)';
+    const initials = screen.initials || screen.e || '';
+    const label = screen.name || screen.n || 'pantalla';
+    const video = videoUrl
+      ? `<video src="${h(videoUrl)}" autoplay muted loop playsinline preload="${options.preload || 'metadata'}" aria-label="Video de ${h(label)}" onerror="this.hidden=true"></video>`
+      : '';
+    return `<div class="${h(className)} video-head" style="background:${h(background)}"><span class="media-fallback" aria-hidden="true">${h(initials)}</span>${video}</div>`;
   }
 
   async function renderMediaKitPage(kit) {
@@ -230,7 +245,7 @@ const SmartKitShared = (() => {
     const h = escapeHtml;
     const fmt = formatMoney;
     const brand = kit.brand || DEFAULT_BRAND;
-    const signature = await verifyMediaKitSignature(kit, CONFIG.signature);
+    const signature = await verifyMediaKitSignature(kit, window.CONFIG?.signature);
 
     document.title = `${brand.name} - Propuesta para ${kit.client}`;
     applyBrandHeader(brand);
@@ -295,6 +310,10 @@ const SmartKitShared = (() => {
       </div>`;
   }
 
+  // ==========================================================================
+  // 5. Data & State Management
+  // ==========================================================================
+
   async function clearAllData() {
     // 1. Eliminar LocalStorage relacionado con la app
     localStorage.removeItem(PUBLIC_KITS_STORAGE_KEY);
@@ -352,6 +371,11 @@ const SmartKitShared = (() => {
     catch { return []; }
   }
 
+  function getMediaKitUrl(kitId) {
+    // Use root-relative path to avoid issues in nested routes.
+    return `/mediakit.html?id=${encodeURIComponent(kitId)}`;
+  }
+
   function latestMediaKitId(currentId = '') {
     const kits = storedPublicKits().filter(kit => !kit.archived);
     return currentId || kits[0]?.id || '';
@@ -363,6 +387,10 @@ const SmartKitShared = (() => {
       link.setAttribute('href', href);
     });
   }
+
+  // ==========================================================================
+  // 6. Public API
+  // ==========================================================================
 
   return {
     DEFAULT_BRAND,

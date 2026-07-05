@@ -29,8 +29,6 @@ const BrochureApp = (() => {
     activeMetrics: { totalReach: 0 }
   };
 
-  const prefersReducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-
 function whatsappButtonContent(label, icon = ICONS.WHATSAPP) {
   return `${icon}<span>${h(label)}</span>`;
 }
@@ -251,8 +249,8 @@ function renderBrochureCard(s, eagerVideo=false){
         <p class="muted small card-spec">${h(s.dim)} · ${h(s.res)} · ${h(s.imp)} imp/día</p>
         <div class="price card-price">${fmt(s.precio)}<span class="muted small"> / semana</span></div>
         <div class="card-actions button-group" role="group" aria-label="Acciones para ${h(s.n)}">
-          <md-filled-button class="quote-add ${selected?'selected':''}" aria-pressed="${selected?'true':'false'}" aria-label="${selected?'Quitar':'Agregar'} ${h(s.n)} del plan" data-action="toggle-quote" data-screen-id="${s.id}">${selected?'Agregado':'Agregar'}</md-filled-button>
-          <md-outlined-button class="map-btn" data-action="show-map" data-screen-id="${s.id}">Ubicar</md-outlined-button>
+          <button class="btn primary quote-add ${selected?'selected':''}" aria-pressed="${selected?'true':'false'}" aria-label="${selected?'Quitar':'Agregar'} ${h(s.n)} del plan" data-action="toggle-quote" data-screen-id="${s.id}">${selected?'Agregado':'Agregar'}</button>
+          <button class="btn map-btn" data-action="show-map" data-screen-id="${s.id}">Ubicar</button>
         </div>
       </div>
     </article>`;
@@ -315,8 +313,8 @@ function renderScreenCard(s){
           <div class="quote-list">${selectedList}</div>
         </details>
         <div class="quote-actions">
-          <md-filled-button class="quote-btn quote-mediakit reserve-btn" data-action="generate-mediakit" data-screen-id="${s.id}">${whatsappButtonContent('Generar media kit', ICONS.DOCUMENT)}</md-filled-button>
-          <md-filled-button class="quote-btn quote-whatsapp reserve-btn" data-action="toggle-quote" data-screen-id="${s.id}">${whatsappButtonContent(selected ? 'Quitar del plan' : 'Agregar al plan', ICONS.PLUS)}</md-filled-button>
+          <button class="btn primary quote-btn quote-mediakit reserve-btn" data-action="generate-mediakit" data-screen-id="${s.id}">${whatsappButtonContent('Generar Propuesta', ICONS.DOCUMENT)}</button>
+          <button class="btn success quote-btn quote-whatsapp reserve-btn" data-action="toggle-quote" data-screen-id="${s.id}">${whatsappButtonContent(selected ? 'Quitar del plan' : 'Agregar al plan', ICONS.PLUS)}</button>
         </div>
       </div>
     </div>`;
@@ -324,7 +322,7 @@ function renderScreenCard(s){
 
 function initMap(){
   state.map = L.map('map', { center: [-32.9, -68.83], zoom: 11, zoomControl: false });
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© OSM © CartoDB',subdomains:'abcd'}).addTo(map);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© OSM © CartoDB',subdomains:'abcd'}).addTo(state.map);
   L.control.zoom({ position: 'bottomright' }).addTo(state.map);
   state.activeScreens.forEach(s => {
     state.markers[s.id] = L.marker([s.lat, s.lng], {
@@ -467,7 +465,6 @@ function renderQuote(){
     if(mediakit){
       mediakit.disabled=!hasScreens;
       mediakit.classList.toggle('is-empty', !hasScreens);
-      mediakit.innerHTML = whatsappButtonContent('Generar media kit', ICONS.DOCUMENT);
     }
     if(status)status.textContent=hasScreens?'Listo':'Vacío';
     if(hint)hint.textContent=hasScreens?'Genera una propuesta con snapshot, inversión, impactos y condiciones; luego puedes guardarla como PDF o contactar por WhatsApp.':'Agrega una pantalla al cotizador para generar una propuesta compartible.';
