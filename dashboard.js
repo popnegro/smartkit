@@ -13,6 +13,10 @@ const DashboardApp = (() => {
     currentSection: 'inventory',
     kitSelected: new Set(),
     bulkSelected: new Set(),
+    filters: {
+      zone: 'Todas',
+      status: 'Todos'
+    },
     savedKits: [],
     brand: { name: 'SmartKit', logo: 'SK', terms: '', validity: '15 dias', whatsapp: '' }
   };
@@ -58,14 +62,14 @@ const DashboardApp = (() => {
 
   async function loadInitialData() {
     try {
-      console.log('SmartKit Dashboard: Cargando desde la API...');
-      const response = await authedFetch('/api/screens');
-      if (!response.ok) throw new Error('No se pudo cargar el inventario desde la API.');
+      console.log('SmartKit Dashboard: Cargando desde /screens.json...');
+      const response = await fetch('/screens.json');
+      if (!response.ok) throw new Error('No se pudo cargar el inventario.');
       
       const data = await response.json();
       state.rows = data.map(row => ({ ...row, status: row.active ? SCREEN_STATUS.ACTIVE : SCREEN_STATUS.PAUSED }));
-      document.getElementById('data-status').textContent = 'Datos desde API';
-      Shared.showToast('Inventario cargado desde la API');
+      document.getElementById('data-status').textContent = 'Datos locales';
+      Shared.showToast('Inventario cargado');
     } catch (error) {
       console.error('Error fatal al cargar el inventario:', error);
       document.getElementById('data-status').textContent = 'Error de carga';
@@ -143,6 +147,13 @@ const DashboardApp = (() => {
     document.getElementById('btn-clear-filters').style.display = hasFilters ? 'flex' : 'none';
   }
 
+  function clearFilters() {
+    state.filters.zone = 'Todas';
+    state.filters.status = 'Todos';
+    renderTable();
+    updateFilterChips();
+  }
+
   function filteredRows() {
     const query = document.getElementById('search').value.trim().toLowerCase();
     const zone = state.filters.zone;
@@ -151,8 +162,8 @@ const DashboardApp = (() => {
     return state.rows.filter(row => {
       const matchesQuery = !query || [row.n, row.dir, row.b, row.tipo].some(v => String(v).toLowerCase().includes(query));
       const matchesZone = zone === 'Todos' || row.b === zone;
-      const matchesType = type === 'Todos' || row.tipo === type;
-      return matchesQuery && matchesZone && matchesType;
+      const matchesStatus = status === 'Todos' || row.status === status;
+      return matchesQuery && matchesZone && matchesStatus;
     });
   }
 
