@@ -698,17 +698,7 @@ function bindEvents(){
   const loadDefault = urlParams.get('load') === 'default';
   const savedState = Shared.loadDashboardState();
 
-  if (MODE === 'api') {
-    try {
-        console.log('SmartKit: Modo API, cargando desde /inventory...');
-      const response = await fetch('/inventory');
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        state.sourceScreens = await response.json();
-    } catch (err) {
-        console.error('Fallo al cargar las pantallas desde la API', err);
-        state.sourceScreens = [];
-    }
-  } else if (savedState && savedState.rows?.length && !loadDefault) {
+  if (savedState && savedState.rows?.length && !loadDefault) {
       console.log(`SmartKit: Cargando ${savedState.rows.length} pantallas desde localStorage.`);
       state.sourceScreens = savedState.rows;
     if (savedState.brand) Object.assign(state.brand, savedState.brand);
