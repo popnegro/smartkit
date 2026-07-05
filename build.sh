@@ -22,7 +22,7 @@ JS_FILES_TO_MINIFY=(
 )
 CSS_FILES_TO_MINIFY=(
     "styles.css"
-    "dashboard.css"
+    "dashboard.css",
 )
 HTML_FILES=("index.html" "dashboard.html" "mediakit.html" "screens.json")
 STATIC_ASSETS=("assets" "data") # Directorios para copiar
