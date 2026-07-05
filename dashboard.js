@@ -157,13 +157,16 @@ const DashboardApp = (() => {
       selectRow(list[0].id, false); // Evitar bucle de renderizado
     }
     document.getElementById('result-count').textContent = `${list.length} ${list.length === 1 ? 'resultado' : 'resultados'}`;
-    document.getElementById('screen-table').innerHTML = list.map(row => `
+    document.getElementById('screen-tbody').innerHTML = list.map(row => `
       <tr class="${row.id === state.selectedId ? 'selected' : ''}" data-action="select" data-id="${row.id}">
         <td><div class="screen-cell"><span class="screen-icon">${h(row.e)}</span><div><strong>${h(row.n)}</strong><span>${h(row.dir)} · ${h(row.b)}</span></div></div></td>
         <td><span class="badge">${h(row.tipo)}</span></td>
         <td>${h(row.imp)}</td>
         <td><strong>${fmt(row.precio)}</strong></td>
         <td><span class="badge ${row.status === SCREEN_STATUS.ACTIVE ? 'active' : 'paused'}">${row.status}</span></td>
+        <td>
+          <div class="row-acts"><button class="icon-btn" data-action="select" data-id="${row.id}" title="Editar">✏️</button></div>
+        </td>
       </tr>`).join('');
   }
 
@@ -197,31 +200,6 @@ const DashboardApp = (() => {
     document.getElementById('edit-note').value = row.note || '';
     document.getElementById('edit-status').value = row.status || SCREEN_STATUS.ACTIVE;
     renderPreview(row);
-  }
-
-  /**
-   * Envía los datos de una pantalla actualizada a la API.
-   * @param {object} screenData - El objeto completo de la pantalla a actualizar.
-   */
-  async function updateScreenAPI(screenData) {
-    if (!screenData || !screenData.id) {
-      console.error('Error: Faltan datos o ID para actualizar la pantalla.');
-      Shared.showToast('Error: No se pudo guardar la pantalla.', 'err');
-      return;
-    }
-    try {
-      // En un futuro, esto llamaría a un endpoint PUT o PATCH.
-      // const response = await authedFetch(`/api/screens/${screenData.id}`, {
-      //   method: 'PUT',
-      //   body: JSON.stringify(screenData),
-      // });
-      // if (!response.ok) throw new Error('La API rechazó la actualización.');
-      console.log(`Simulando guardado en API para pantalla #${screenData.id}`, screenData);
-      Shared.showToast(`Pantalla #${screenData.id} guardada.`);
-    } catch (error) {
-      console.error('Error al actualizar la pantalla vía API:', error);
-      Shared.showToast(`Error al guardar: ${error.message}`, 'err');
-    }
   }
 
   function selectRow(id, doRenderTable = true) {
@@ -410,31 +388,6 @@ const DashboardApp = (() => {
 
     const renderChart = (containerId, data, total, useGradient = false) => {
       const max = Math.max(...Object.values(data), 1);
-      document.getElementById(containerId).innerHTML = Object.entries(data).sort((a, b) => b[1] - a[1]).map(([label, value], i) => {
-        const width = (value / max * 100).toFixed(1);
-        const percentage = ((value / (total || 1)) * 100).toFixed(1);
-        const bg = useGradient ? `linear-gradient(90deg, ${colors[i % colors.length]}90, ${colors[i % colors.length]})` : colors[i % colors.length];
-        return `
-          <div class="chart-row">
-            <div class="chart-meta"><strong>${label}</strong><span><b>${value.toLocaleString('es-AR')}</b> <small class="muted">(${percentage}%)</small></span></div>
-            <div class="bar"><div class="bar-fill" style="width:${width}%; background:${bg}"></div></div>
-          </div>`;
-      }).join('');
-    };
-
-    renderChart('zone-chart', byZone, totalReach, true);
-    renderChart('type-chart', byType, active.length);
-  }
-
-  function renderMetrics() {
-    const active = state.rows.filter(row => row.status === SCREEN_STATUS.ACTIVE);
-    const totalReach = active.reduce((acc, row) => acc + imp(row), 0);
-    const byZone = active.reduce((acc, row) => { acc[row.b] = (acc[row.b] || 0) + imp(row); return acc; }, {});
-    const byType = active.reduce((acc, row) => { acc[row.tipo] = (acc[row.tipo] || 0) + 1; return acc; }, {});
-    const colors = ['#0ea5e9', '#2dd4bf', '#a78bfa', '#e879f9', '#fb923c', '#fb7185'];
-
-    const renderChart = (containerId, data, total, useGradient = false) => {
-      const max = Math.max(...Object.values(data), 1);
       document.getElementById(containerId).innerHTML = Object.entries(data).sort((a, b) => b - a).map(([label, value], i) => {
         const width = (value / max * 100).toFixed(1);
         const percentage = ((value / (total || 1)) * 100).toFixed(1);
@@ -452,7 +405,7 @@ const DashboardApp = (() => {
   }
 
   function bindEvents() {
-    document.querySelectorAll('[data-sec]').forEach(btn => btn.addEventListener('click', () => setSection(btn.dataset.sec)));
+    document.querySelectorAll('[data-section]').forEach(btn => btn.addEventListener('click', () => setSection(btn.dataset.section)));
 
     ['search', 'zone-filter', 'type-filter'].forEach(id => {
       document.getElementById(id).addEventListener('input', renderTable);

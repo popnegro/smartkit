@@ -30,9 +30,9 @@ let toastTmr;
 function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTmr); toastTmr=setTimeout(()=>t.classList.remove('show'),2200); }
 
 // ── Boot ──
-function boot(){
+async function boot(){
   loadConfig();
-  loadScreens();
+  await loadScreens();
   initMap();
   setupSearch();
   setupChips();
@@ -54,12 +54,17 @@ function loadConfig(){
   if(latest) $('nav-kit').href = `mediakit.html?id=${encodeURIComponent(latest.id)}`;
 }
 
-function loadScreens(){
-  let overlay = {};
-  try{ overlay = JSON.parse(localStorage.getItem(K_STATE)||'{}'); }catch(_){}
-  screens = (window.BASE_SCREENS || [])
-    .map(s => ({...s, ...(overlay[s.id]||{})}))
-    .filter(s => s.status === 'Activo' && s.lat && s.lng);
+async function loadScreens(){
+  try {
+    const response = await fetch('/api/screens');
+    if (!response.ok) throw new Error('No se pudo cargar el inventario desde la API.');
+    const allScreens = await response.json();
+    screens = allScreens.filter(s => (s.status === 'Activo' || s.active) && s.lat && s.lng);
+  } catch (error) {
+    console.error('Error al cargar pantallas en el mapa:', error);
+    screens = [];
+    $('map-counter').textContent = 'Error al cargar datos';
+  }
   updateCounts();
 }
 
