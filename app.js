@@ -14,7 +14,6 @@ const BrochureApp = (() => {
     brand: { ...Shared.DEFAULT_BRAND },
     map: null,
     activeZone: 'Todos',
-    activeSort: 'recommended',
     markers: {},
     selectedScreens: [],
     quoteDuration: '1s',
@@ -47,12 +46,6 @@ function screenUseCase(s){
   if(s.tipo==='Peatonal')return 'Ideal para cercanía, retail y activaciones urbanas';
   if(s.tipo==='Vehicular')return 'Ideal para cobertura, recordación y accesos rápidos';
   return 'Ideal para campañas masivas y audiencias mixtas';
-}
-
-function setZone(zone){
-  state.activeZone = zone;
-  renderBrochure();
-  updateMapMarkers();
 }
 
 function setSort(sort){
@@ -114,19 +107,12 @@ function showGeneratedFeedback(kit){
 }
 
 function sortedScreens(list){
-  const typeRank={Peatonal:0,Mixto:1,Vehicular:2};
-  const recommendedScore = s => (state.selectedScreens.includes(s.id) ? 100000000 : 0) + (impNum(s) * 10) - s.precio;
   return [...list].sort((a,b)=>{
     if (state.activeSort === 'impact') return impNum(b) - impNum(a);
     if (state.activeSort === 'price') return a.precio - b.precio;
     if (state.activeSort === 'type') return (typeRank[a.tipo] ?? 9) - (typeRank[b.tipo] ?? 9) || impNum(b) - impNum(a);
     return recommendedScore(b)-recommendedScore(a);
   });
-}
-
-function isRecommended(s){
-  const byScore = sortedScreens(state.activeScreens).slice(0, 3).some(x => x.id === s.id);
-  return state.activeSort === 'recommended' && byScore;
 }
 
 function loadLazyVideos(root=document){
@@ -167,10 +153,6 @@ function screenVideoHtml(s, eager=false){
     <video ${sourceAttr} ${autoplay} muted loop playsinline preload="${preload}" aria-label="Video de ${h(s.n)}" onerror="this.hidden=true"></video>`;
 }
 
-function markerHtml(s){
-  return `<div class="marker ${impNum(s) >= 50000 ? 'hot' : ''}" style="color:${Shared.TIPO_COL[s.tipo]}">${s.e}</div>`;
-}
-
 function screenHead(s, className, overlay='', eager=className==='media'){
   const background=Shared.safeBackground(s.g);
   return `<div class="${className} video-head" style="background:${background}">${screenVideoHtml(s, eager)}${overlay}</div>`;
@@ -178,10 +160,9 @@ function screenHead(s, className, overlay='', eager=className==='media'){
 
 function renderBrochureCard(s, eagerVideo=false){
   const selected=state.selectedScreens.includes(s.id);
-  const recommended=isRecommended(s);
   const availability=screenAvailability(s);
-  const badgeText=selected?'Seleccionada':recommended?'Recomendada':h(s.tipo);
-  const badgeClass=selected?'badge-selected':recommended?'badge-recommended':'';
+  const badgeText=selected?'Seleccionada':h(s.tipo);
+  const badgeClass=selected?'badge-selected':'';
   return `
     <article class="card video-card ${selected?'selected':''}">
       ${screenHead(s, 'thumb', `<span class="badge media-badge ${badgeClass}" style="background:${Shared.TIPO_COL[s.tipo]}22;color:${Shared.TIPO_COL[s.tipo]}">${badgeText}</span>`, eagerVideo)}
@@ -270,40 +251,6 @@ function renderScreenCard(s){
     </div>`;
 }
 
-function initMap(){
-  state.map = L.map('map', { center: [-32.9, -68.83], zoom: 11, zoomControl: false });
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© OSM © CartoDB',subdomains:'abcd'}).addTo(state.map);
-  L.control.zoom({ position: 'bottomright' }).addTo(state.map);
-  state.activeScreens.forEach(s => {
-    state.markers[s.id] = L.marker([s.lat, s.lng], {
-      icon:L.divIcon({className:'',iconSize:[30,30],iconAnchor:[15,15],html:markerHtml(s)}),
-      keyboard:true,
-      title:s.n,
-      alt:`Pantalla ${s.n}, ${s.b}`
-    }).addTo(state.map).on('click', event => openScreen(s.id, event.originalEvent?.target));
-    const setMarkerAccessibility=()=>{
-      const element = state.markers[s.id].getElement();
-      if(!element)return;
-      element.setAttribute('role','button');
-      element.setAttribute('aria-label',`Ver detalle de ${s.n}, ${s.b}`);
-    };
-    setMarkerAccessibility();
-    state.markers[s.id].on('add', setMarkerAccessibility);
-  });
-  updateMapMarkers();
-}
-
-function openScreen(id, trigger=document.activeElement){
-  const s = state.activeScreens.find(x => x.id === id);
-  if(!s)return;
-  if (trigger instanceof HTMLElement) state.lastScreenTrigger = trigger;
-  state.activeScreenId = id;
-  document.getElementById('screen-panel').className='side on';
-  document.getElementById('screen-panel').innerHTML=renderScreenCard(s);
-  loadLazyVideos(document.getElementById('screen-panel'));
-  requestAnimationFrame(()=>document.querySelector('#screen-panel .close')?.focus({preventScroll:true}));
-}
-
 function closeScreen(){
   state.activeScreenId = null;
   document.getElementById('screen-panel').className='side';
@@ -347,26 +294,6 @@ function renderBrochure(){
     : `<div class="empty-state">No hay pantallas activas en ${state.activeZone}.<br><button type="button" data-action="set-zone" data-zone="Todos">Ver todas</button></div>`;
   updateMapMarkers();
   renderQuote();
-  loadLazyVideos(document.getElementById('cards'));
-}
-
-function mapScreens(){
-  return state.activeZone === 'Todos' ? state.activeScreens : state.activeScreens.filter(s => s.b === state.activeZone);
-}
-
-function updateMapMarkers(){
-  if (!state.map) return;
-  const visibleIds=new Set(mapScreens().map(s=>s.id));
-  state.activeScreens.forEach(s => {
-    const marker = state.markers[s.id];
-    if(!marker)return;
-    if(visibleIds.has(s.id)){
-      if (!state.map.hasLayer(marker)) marker.addTo(state.map);
-    } else if (state.map.hasLayer(marker)) {
-      state.map.removeLayer(marker);
-    }
-  });
-  if (state.activeScreenId && !visibleIds.has(state.activeScreenId)) closeScreen();
 }
 
 function fitMapToActiveZone(){
@@ -579,13 +506,6 @@ function applyBrand(){
 
 function bindEvents(){
   document.addEventListener('click',event=>{
-    const actionTarget=event.target.closest('[data-action]');
-    if(!actionTarget){
-      if (state.mobileNavOpen && !event.target.closest('.top')) setMobileNav(false);
-      if (state.mobileFiltersOpen && !event.target.closest('#zone-filters')) setMobileFilters(false);
-      return;
-    }
-    const id=Number(actionTarget.dataset.screenId);
     const action=actionTarget.dataset.action;
     if(action==='generate-mediakit')generateMediaKit(id);
     if(action==='whatsapp-quote')requestWhatsappQuote(id, actionTarget);

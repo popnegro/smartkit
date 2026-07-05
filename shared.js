@@ -387,6 +387,24 @@ const SmartKitShared = (() => {
     });
   }
 
+  /**
+   * Carga el inventario de pantallas desde la fuente de datos estática.
+   * @returns {Promise<Array>} Una promesa que se resuelve con el array de pantallas.
+   * @throws {Error} Si la carga o el parseo del JSON falla.
+   */
+  async function loadInventory() {
+    try {
+      // En un entorno de producción real, esta URL podría ser un endpoint de API.
+      const response = await fetch('/screens.json');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error al cargar el inventario:', error);
+      throw new Error('No se pudo cargar el inventario de pantallas.');
+    }
+  }
   // ==========================================================================
   // 6. Public API
   // ==========================================================================
@@ -407,6 +425,7 @@ const SmartKitShared = (() => {
     kitSlug,
     latestMediaKitId,
     loadDashboardState,
+    loadInventory,
     mediaHtml,
     renderMediaKitPage,
     persistDashboardState,

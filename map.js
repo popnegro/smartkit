@@ -5,7 +5,6 @@
 'use strict';
 
 // ── Keys ──
-const K_STATE = 'sk_v1_dashboard-state';
 const K_KITS  = 'sk_v1_public-kits';
 const K_CFG   = 'sk_v1_config';
 
@@ -18,6 +17,7 @@ let quote = new Map();   // id → screen
 let lMap = null;
 let searchQ = '';
 
+const Shared = window.SmartKitShared;
 // ── Helpers ──
 const $ = id => document.getElementById(id);
 const fmt = n => '$' + Math.round(n).toLocaleString('es-AR');
@@ -56,11 +56,8 @@ function loadConfig(){
 
 async function loadScreens(){
   try {
-    console.log('SmartKit Map: Cargando desde /screens.json...');
-    const response = await fetch('/screens.json');
-    if (!response.ok) throw new Error('No se pudo cargar el inventario.');
-    const data = await response.json();
-    screens = data.filter(s => (s.status === 'Activo' || s.active) && s.lat && s.lng);
+    const allScreens = await Shared.loadInventory();
+    screens = allScreens.filter(s => (s.status === 'Activo' || s.active) && s.lat && s.lng);
   } catch (error) {
     console.error('Error al cargar pantallas en el mapa:', error);
     screens = [];
