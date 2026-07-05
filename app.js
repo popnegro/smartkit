@@ -82,29 +82,6 @@ function setZone(zone){
   updateMapMarkers();
 }
 
-function zoneSelectHtml(id){
-  return `
-    <label class="filter-select control-panel" for="${id}">
-      <span>Lugar</span>
-      <select id="${id}" data-zone-select>
-        ${state.zones.map(z => `<option value="${h(z)}" ${z === state.activeZone ? 'selected' : ''}>${h(z)}</option>`).join('')}
-      </select>
-    </label>`;
-}
-
-function sortSelectHtml(id){
-  return `
-    <label class="filter-select control-panel" for="${id}">
-      <span>Orden</span>
-      <select id="${id}" data-sort-select>
-        <option value="recommended" ${state.activeSort === 'recommended' ? 'selected' : ''}>Recomendadas</option>
-        <option value="impact" ${state.activeSort === 'impact' ? 'selected' : ''}>Mayor impacto</option>
-        <option value="price" ${state.activeSort === 'price' ? 'selected' : ''}>Menor precio</option>
-        <option value="type" ${state.activeSort === 'type' ? 'selected' : ''}>Tipo de tránsito</option>
-      </select>
-    </label>`;
-}
-
 function setSort(sort){
   state.activeSort = sort;
   renderBrochure();
@@ -369,7 +346,18 @@ function renderBrochure(){
     <div class="stat"><b>${Number.isFinite(minPrice) ? fmt(minPrice) : '$0'}</b><span>Desde / semana</span></div>
     <div class="stat"><b>${state.zones.length - 1}</b><span>Zonas</span></div>`;
 
-  document.getElementById('zone-filters').innerHTML=zoneSelectHtml('brochure-zone-select')+sortSelectHtml('brochure-sort-select');
+  document.getElementById('zone-filters').innerHTML = state.zones.map(z =>
+    `<button class="chip ${z === state.activeZone ? 'on' : ''}" data-action="set-zone" data-zone="${h(z)}">${h(z)}</button>`
+  ).join('');
+
+  const sortOptions = [
+    { key: 'recommended', label: 'Recomendadas' }, { key: 'impact', label: 'Mayor impacto' },
+    { key: 'price', label: 'Menor precio' }, { key: 'type', label: 'Tipo de tránsito' }
+  ];
+  document.getElementById('sort-filters').innerHTML = sortOptions.map(opt =>
+    `<button class="chip ${opt.key === state.activeSort ? 'on' : ''}" data-action="set-sort" data-sort="${h(opt.key)}">${h(opt.label)}</button>`
+  ).join('');
+
   const list = sortedScreens(state.activeZone === 'Todos' ? state.activeScreens : state.activeScreens.filter(s => s.b === state.activeZone));
   const catalogCount=document.getElementById('catalog-count');
   if (catalogCount) catalogCount.textContent = `${list.length} ${list.length === 1 ? 'pantalla' : 'pantallas'}${state.activeZone === 'Todos' ? '' : ' · ' + state.activeZone}`;
@@ -637,6 +625,7 @@ function bindEvents(){
     if(action==='show-map')showOnMap(id, actionTarget);
     if(action==='close-screen')closeScreen();
     if(action==='set-zone')setZone(actionTarget.dataset.zone);
+    if(action==='set-sort')setSort(actionTarget.dataset.sort);
     if(action==='clear-filters'){
       state.activeZone = 'Todos';
       state.activeSort = 'recommended';
@@ -657,17 +646,6 @@ function bindEvents(){
       renderQuote();
       renderBrochure();
       return;
-    }
-    if(event.target.matches('[data-screen-duration-select]')){
-      state.quoteDuration = event.target.value;
-      renderQuote();
-      openScreen(Number(event.target.dataset.screenId));
-      renderBrochure();
-      return;
-    }
-    if(event.target.matches('[data-zone-select]')){
-      setZone(event.target.value);
-      setMobileFilters(false);
     }
     if(event.target.matches('[data-sort-select]')){
       setSort(event.target.value);

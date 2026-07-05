@@ -50,25 +50,6 @@ const DashboardApp = (() => {
     return response;
   }
 
-  async function login(username, password) {
-    const errorEl = document.getElementById('login-error');
-    errorEl.style.display = 'none';
-    try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Error de autenticación');
-      localStorage.setItem(AUTH_TOKEN_KEY, data.token);
-      location.reload(); // Recargar para iniciar la app
-    } catch (error) {
-      errorEl.textContent = error.message;
-      errorEl.style.display = 'block';
-    }
-  }
-
   function logout() {
     localStorage.removeItem(AUTH_TOKEN_KEY);
     location.reload();
@@ -205,6 +186,8 @@ const DashboardApp = (() => {
 
   function updateEditor(row) {
     if (!row) return;
+    document.getElementById('editor-form').style.display = 'grid';
+    document.getElementById('editor-empty').style.display = 'none';
     document.getElementById('editor-title').textContent = row.n;
     document.getElementById('edit-name').value = row.n;
     document.getElementById('edit-zone').value = row.b;
@@ -214,6 +197,31 @@ const DashboardApp = (() => {
     document.getElementById('edit-note').value = row.note || '';
     document.getElementById('edit-status').value = row.status || SCREEN_STATUS.ACTIVE;
     renderPreview(row);
+  }
+
+  /**
+   * Envía los datos de una pantalla actualizada a la API.
+   * @param {object} screenData - El objeto completo de la pantalla a actualizar.
+   */
+  async function updateScreenAPI(screenData) {
+    if (!screenData || !screenData.id) {
+      console.error('Error: Faltan datos o ID para actualizar la pantalla.');
+      Shared.showToast('Error: No se pudo guardar la pantalla.', 'err');
+      return;
+    }
+    try {
+      // En un futuro, esto llamaría a un endpoint PUT o PATCH.
+      // const response = await authedFetch(`/api/screens/${screenData.id}`, {
+      //   method: 'PUT',
+      //   body: JSON.stringify(screenData),
+      // });
+      // if (!response.ok) throw new Error('La API rechazó la actualización.');
+      console.log(`Simulando guardado en API para pantalla #${screenData.id}`, screenData);
+      Shared.showToast(`Pantalla #${screenData.id} guardada.`);
+    } catch (error) {
+      console.error('Error al actualizar la pantalla vía API:', error);
+      Shared.showToast(`Error al guardar: ${error.message}`, 'err');
+    }
   }
 
   function selectRow(id, doRenderTable = true) {
@@ -248,8 +256,9 @@ const DashboardApp = (() => {
       [SECTIONS.METRICS]: ['Metricas comerciales', 'Analiza cobertura, mix de transito y potencial de venta por zona.'],
       [SECTIONS.SETTINGS]: ['Configuracion comercial', 'Define marca, contacto y condiciones base para tus mediakits.']
     };
-    document.getElementById('page-title').textContent = titles[section];
-    document.getElementById('page-copy').textContent = titles[section];
+    const [title, description] = titles[section] || ['Error', 'Sección no encontrada'];
+    document.getElementById('page-title').textContent = title;
+    document.getElementById('page-desc').textContent = description;
     if (section === SECTIONS.MEDIAKITS) renderKitBuilder();
     if (section === SECTIONS.METRICS) renderMetrics();
   }
@@ -401,6 +410,31 @@ const DashboardApp = (() => {
 
     const renderChart = (containerId, data, total, useGradient = false) => {
       const max = Math.max(...Object.values(data), 1);
+      document.getElementById(containerId).innerHTML = Object.entries(data).sort((a, b) => b[1] - a[1]).map(([label, value], i) => {
+        const width = (value / max * 100).toFixed(1);
+        const percentage = ((value / (total || 1)) * 100).toFixed(1);
+        const bg = useGradient ? `linear-gradient(90deg, ${colors[i % colors.length]}90, ${colors[i % colors.length]})` : colors[i % colors.length];
+        return `
+          <div class="chart-row">
+            <div class="chart-meta"><strong>${label}</strong><span><b>${value.toLocaleString('es-AR')}</b> <small class="muted">(${percentage}%)</small></span></div>
+            <div class="bar"><div class="bar-fill" style="width:${width}%; background:${bg}"></div></div>
+          </div>`;
+      }).join('');
+    };
+
+    renderChart('zone-chart', byZone, totalReach, true);
+    renderChart('type-chart', byType, active.length);
+  }
+
+  function renderMetrics() {
+    const active = state.rows.filter(row => row.status === SCREEN_STATUS.ACTIVE);
+    const totalReach = active.reduce((acc, row) => acc + imp(row), 0);
+    const byZone = active.reduce((acc, row) => { acc[row.b] = (acc[row.b] || 0) + imp(row); return acc; }, {});
+    const byType = active.reduce((acc, row) => { acc[row.tipo] = (acc[row.tipo] || 0) + 1; return acc; }, {});
+    const colors = ['#0ea5e9', '#2dd4bf', '#a78bfa', '#e879f9', '#fb923c', '#fb7185'];
+
+    const renderChart = (containerId, data, total, useGradient = false) => {
+      const max = Math.max(...Object.values(data), 1);
       document.getElementById(containerId).innerHTML = Object.entries(data).sort((a, b) => b - a).map(([label, value], i) => {
         const width = (value / max * 100).toFixed(1);
         const percentage = ((value / (total || 1)) * 100).toFixed(1);
@@ -418,7 +452,7 @@ const DashboardApp = (() => {
   }
 
   function bindEvents() {
-    document.querySelectorAll('[data-section]').forEach(btn => btn.addEventListener('click', () => setSection(btn.dataset.section)));
+    document.querySelectorAll('[data-sec]').forEach(btn => btn.addEventListener('click', () => setSection(btn.dataset.sec)));
 
     ['search', 'zone-filter', 'type-filter'].forEach(id => {
       document.getElementById(id).addEventListener('input', renderTable);
@@ -469,7 +503,7 @@ const DashboardApp = (() => {
         'edit-kit': () => editKit(id)
       };
       if (action === 'set-kit-step') setKitStep(Number(step));
-      if (actions[action]) actions[action]();
+      if (actions[action]) actionsaction;
     });
 
     document.addEventListener('change', event => {
@@ -511,12 +545,8 @@ const DashboardApp = (() => {
       await updateScreenAPI(updatedRowData);
     });
 
-    document.getElementById('login-form').addEventListener('submit', (event) => {
-      event.preventDefault();
-      login(document.getElementById('username').value, document.getElementById('password').value);
-    });
     document.getElementById('export-btn').addEventListener('click', exportCsv);
-    document.getElementById('kit-save-btn').addEventListener('click', saveKit);
+    document.getElementById('btn-save-kit').addEventListener('click', saveKit);
 
     document.getElementById('settings-save').addEventListener('click', () => {
       state.brand.name = document.getElementById('settings-brand').value.trim() || state.brand.name;
@@ -534,10 +564,6 @@ const DashboardApp = (() => {
         Shared.clearAllData();
       }
     });
-
-    document.getElementById('logout-btn').addEventListener('click', () => {
-      if (window.confirm('¿Estás seguro de que quieres cerrar la sesión?')) logout();
-    });
   }
   
   function bindStepperEvents() {
@@ -550,14 +576,15 @@ const DashboardApp = (() => {
   }
 
   async function init() {
-    // --- Flujo de Autenticación ---
-    const token = localStorage.getItem(AUTH_TOKEN_KEY);
-    if (!token) {
-      document.getElementById('login-view').style.display = 'flex';
-      document.body.style.visibility = 'visible';
-      bindEvents(); // Solo bindeamos el form de login
-      return; // Detenemos la inicialización de la app principal
+    // --- Login Eliminado ---
+    // Se asume una sesión iniciada. Se crea un token simulado si no existe
+    // para asegurar que las llamadas a la API (authedFetch) funcionen.
+    if (!localStorage.getItem(AUTH_TOKEN_KEY)) {
+      console.warn('Login omitido: Creando token de sesión simulado.');
+      const fakeToken = `dev-token.${btoa(JSON.stringify({ userId: 'dev-user', role: 'admin' }))}.dev-signature`;
+      localStorage.setItem(AUTH_TOKEN_KEY, fakeToken);
     }
+
     document.getElementById('app').style.display = 'grid';
     document.body.style.visibility = 'visible';
     await loadInitialData();

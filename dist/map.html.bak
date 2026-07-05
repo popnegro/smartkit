@@ -4,25 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SmartKit – Mapa de Pantallas</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css?v=d63c2d9">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css?v=83ea698">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<link rel="stylesheet" href="map.css?v=d63c2d9">
+<link rel="stylesheet" href="styles.css?v=83ea698">
 </head>
 <body>
 
 <!-- ── TOP BAR ── -->
-<header class="top">
-  <div class="brand">
-    <div class="logo" id="brand-logo">SK</div>
-    <strong id="brand-name">SmartKit</strong>
-  </div>
-  <nav class="nav">
-    <a href="index.html">Brochure</a>
-    <a href="map.html" class="on">Mapa</a>
-    <a href="mediakit.html" id="nav-kit">Media Kit</a>
-    <a href="dashboard.html" class="cta">Dashboard</a>
-  </nav>
-</header>
+<header class="top"></header>
 
 <!-- ── SEARCH ── -->
 <div class="search-bar">
@@ -79,7 +68,6 @@
 <!-- ── TOAST ── -->
 <div class="toast" id="toast"></div>
 
-<script src="shared.js"></script>
-<script src="map.js"></script>
+<script src="public.js"></script>
 </body>
 </html>

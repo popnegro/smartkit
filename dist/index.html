@@ -4,23 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SmartKit – Brochure DOOH</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css?v=d63c2d9">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js?v=d63c2d9"></script>
-<link rel="stylesheet" href="styles.css?v=d63c2d9">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css?v=83ea698">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js?v=83ea698"></script>
+<link rel="stylesheet" href="styles.css?v=83ea698">
 </head>
 <body>
 
-<header class="top">
-  <div class="brand">
-    <div class="logo" id="brand-logo">SK</div>
-    <strong id="brand-name">SmartKit</strong>
-  </div>
-  <nav class="nav">
-    <button class="on" data-view="brochure">Brochure</button>
-    <button data-view="map">Mapa</button>
-    <button class="nav-link-kit" data-action="open-kit">Media Kit</button>
-  </nav>
-</header>
+<header class="top"></header>
 
 <div id="view-brochure" class="view on brochure-wrap">
   <div class="hero">
@@ -29,27 +19,30 @@
     <div class="stats" id="hero-stats"></div>
   </div>
   <div class="wrap">
-    <div class="zone-filters" id="zone-filters"></div>
+    <div class="filters-bar">
+      <div class="zone-filters" id="zone-filters"></div>
+      <div class="sort-filters" id="sort-filters"></div>
+    </div>
     <div class="brochure-grid">
       <section>
         <div class="catalog-head">
           <div><span class="eyebrow">Inventario disponible</span><h2>Pantallas</h2></div>
-          <span class="catalog-count" id="cat-count">0 pantallas</span>
+          <span class="catalog-count" id="catalog-count">0 pantallas</span>
         </div>
         <div class="cards" id="cards"></div>
       </section>
       <aside class="quote-panel">
         <div class="qp-head">
           <div><span class="eyebrow">Plan de campaña</span><h2>Cotizador</h2></div>
-          <span class="q-status" id="q-status">Vacío</span>
+          <span class="q-status" id="quote-status">Vacío</span>
         </div>
         <div class="q-summary">
-          <strong id="q-sum-count">0 pantallas · Sin plan armado</strong>
-          <span id="q-sum-detail">Agregá pantallas para estimar inversión</span>
+          <strong id="quote-summary-count">0 pantallas · Sin plan armado</strong>
+          <span id="quote-summary-detail">Agregá pantallas para estimar inversión</span>
         </div>
         <div class="q-field">
           <label>Duración</label>
-          <select class="duration-sel" id="dur-select">
+          <select class="duration-sel" id="duration-select" data-duration-select>
             <option value="1">1 semana</option>
             <option value="2">2 semanas</option>
             <option value="4" selected>4 semanas (1 mes)</option>
@@ -57,19 +50,19 @@
             <option value="12">12 semanas (1 trimestre)</option>
           </select>
         </div>
-        <div class="q-list" id="q-list"></div>
+        <div class="q-list" id="quote-list"></div>
         <div class="q-total">
-          <div class="q-meta"><span>Pantallas</span><strong id="q-count">0</strong></div>
-          <div class="q-meta"><span>Impactos estimados</span><strong id="q-impacts">0</strong></div>
+          <div class="q-meta"><span>Pantallas</span><strong id="quote-count">0</strong></div>
+          <div class="q-meta"><span>Impactos estimados</span><strong id="quote-impacts">0</strong></div>
           <div style="margin-top:4px">
             <span class="mu sm">Inversión estimada</span>
-            <div class="q-investment" id="q-total">$0</div>
+            <div class="q-investment" id="quote-total">$0</div>
           </div>
         </div>
         <div class="q-actions">
-          <button class="q-btn mk" id="btn-mk" disabled>Generar media kit</button>
-          <button class="q-btn wa" id="btn-wa" disabled>Contactar por WhatsApp</button>
-          <p class="q-hint" id="q-hint">Agregá pantallas al cotizador para continuar.</p>
+          <button class="q-btn mk" id="quote-mediakit" data-action="generate-mediakit" disabled>Generar media kit</button>
+          <button class="q-btn wa" id="quote-whatsapp" data-action="whatsapp-quote" disabled>Contactar por WhatsApp</button>
+          <p class="q-hint" id="quote-action-hint">Agregá pantallas al cotizador para continuar.</p>
         </div>
       </aside>
     </div>
@@ -101,7 +94,6 @@
   </div>
 </div>
 
-<script src="shared.js?v=d63c2d9"></script>
-<script src="app.js?v=d63c2d9"></script>
+<script src="public.js?v=83ea698"></script>
 </body>
 </html>

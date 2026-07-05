@@ -1,0 +1,14 @@
+/* /nav.css - Estilos para el menú de navegación compartido */
+
+.top {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(255, 255, 255, .95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--ln);
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 24px;
+  min-height: 56px;
+}
+.nav { display: flex; gap: 6px; margin-left: auto; }
+.nav a.cta { background: var(--pdk); border-color: var(--pdk); color: #fff; }
+.nav a.cta:hover { background: var(--pri); }

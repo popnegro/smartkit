@@ -14,18 +14,8 @@ set -o pipefail # Salir si un comando en una tubería falla
 MODE=${1:-static}
 DEST_DIR="dist"
 
-# Archivos a minificar. `app.js` y `dashboard.js` se manejan por separado.
-JS_FILES_TO_MINIFY=(
-    "shared.js"
-    "mediakit.js"
-    "map.js"
-    "config.js"
-)
-CSS_FILES_TO_MINIFY=(
-    "styles.css"
-    "dashboard.css"
-    "map.css"
-)
+# Archivos y directorios a procesar
+CSS_FILE="styles.css"
 HTML_FILES=("index.html" "dashboard.html" "mediakit.html" "map.html" "screens.json")
 STATIC_ASSETS=("assets" "data") # Directorios para copiar
 
@@ -51,25 +41,22 @@ copiar_archivos() {
 
 minificar_js() {
     echo "Minificando JavaScript con Terser..."
-    echo "  Minificando app.js y dashboard.js..."
-    (./node_modules/.bin/terser -c -m -- "app.js" > "$DEST_DIR/app.js" && echo "  ✅ Minificado: app.js") &
-    (./node_modules/.bin/terser -c -m -- "dashboard.js" > "$DEST_DIR/dashboard.js" && echo "  ✅ Minificado: dashboard.js") &
-
-    # Ejecuta la minificación en paralelo para acelerar el proceso
-    for file in "${JS_FILES_TO_MINIFY[@]}"; do
-        # El `&` al final ejecuta el comando en segundo plano
-        (./node_modules/.bin/terser -c -m -- "$file" > "$DEST_DIR/$file" && echo "  ✅ Minificado: $file") &
-    done
-    wait # Espera a que todos los procesos en segundo plano terminen
+    
+    # Bundle para páginas públicas
+    echo "  Creando public.js..."
+    cat shared.js nav.js footer.js app.js map.js mediakit.js | ./node_modules/.bin/terser -c -m > "$DEST_DIR/public.js"
+    echo "  ✅ Minificado: public.js"
+    
+    # Bundle para el dashboard
+    echo "  Creando admin.js..."
+    cat shared.js dashboard.js | ./node_modules/.bin/terser -c -m > "$DEST_DIR/admin.js"
+    echo "  ✅ Minificado: admin.js"
 }
 
 minificar_css() {
     echo "Minificando CSS con postcss y cssnano..."
-    # Ejecuta la minificación en paralelo
-    for file in "${CSS_FILES_TO_MINIFY[@]}"; do
-        (./node_modules/.bin/postcss "$file" --use cssnano -o "$DEST_DIR/$file" && echo "  ✅ Minificado: $file") &
-    done
-    wait # Espera a que todos los procesos en segundo plano terminen
+    ./node_modules/.bin/postcss "$CSS_FILE" --use cssnano -o "$DEST_DIR/$CSS_FILE"
+    echo "  ✅ Minificado: $CSS_FILE"
 }
 
 versionar_assets() {
