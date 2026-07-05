@@ -59,19 +59,19 @@
               <span class="eyebrow">Inventario</span>
               <h2>Pantallas</h2>
             </div>
-            <button class="btn pri" id="btn-new-screen">+ Nueva Pantalla</button>
+            <button class="btn pri" data-action="new-screen">+ Nueva Pantalla</button>
           </div>
           <div class="bulk-bar" id="bulk-bar">
             <span class="badge bd-warn"><span id="bulk-count">0</span> seleccionadas</span>
             <button class="btn sm ok" data-bulk="Activo">Publicar</button>
             <button class="btn sm" data-bulk="Pausado">Pausar</button>
-            <button class="btn sm ghost" id="bulk-clear">Limpiar</button>
+            <button class="btn sm ghost" data-action="clear-bulk">Limpiar</button>
           </div>
           <div class="filters">
             <div class="field grow" style="position:relative"><span class="search-icon">🔍</span><input type="search" id="search" placeholder="Buscar por nombre, zona o tipo…" style="padding-left:30px"></div>
             <div class="filter-chips" id="zone-filter-chips"></div>
             <div class="filter-chips" id="status-filter-chips"></div>
-            <button class="btn ghost sm" id="btn-clear-filters" style="display:none">Limpiar filtros</button>
+            <button class="btn ghost sm" data-action="clear-filters" style="display:none">Limpiar filtros</button>
           </div>
           <div class="table-wrap">
             <table>
@@ -99,6 +99,7 @@
             <p class="empty-sel" id="editor-empty">Hacé clic en ✏️ para editar una pantalla.</p>
             <form id="editor-form" class="editor-form" style="display: none;">
               <div class="field"><label for="edit-name">Nombre</label><input id="edit-name" type="text" required></div>
+              <div id="preview" class="editor-preview"></div>
               <div class="field"><label for="edit-zone">Zona</label><input id="edit-zone" type="text" required></div>
               <div class="field"><label for="edit-price">Precio/semana</label><input id="edit-price" type="number" required></div>
               <div class="field"><label for="edit-audience">Audiencia</label><input id="edit-audience" type="text"></div>
@@ -127,13 +128,14 @@
             <div class="field"><label>Contacto</label><input id="kit-contact" placeholder="Nombre (opcional)"></div>
             <div class="field"><label>Validez</label><select id="kit-validity"><option value="7">7 días</option><option value="15" selected>15 días</option><option value="30">30 días</option></select></div>
           </div>
-          <div class="filters" style="border-top:0">
-            <div class="filter-chips" id="kit-duration-chips"></div>
+          <div class="filters" style="border-top:0; flex-wrap: wrap;">
+            <div class="filter-chips" id="kit-zone-chips"></div>
+            <div class="filter-chips" id="kit-duration-chips" style="padding-left: 0;"></div>
           </div>
           <div class="panel-head">
             <div><span class="eyebrow">Selección</span><h2>Pantallas del kit</h2></div>
             <div class="field" style="min-width:180px">
-              <label>Buscar para agregar</label>
+              <label for="kit-search">Buscar para agregar</label>
               <input type="search" id="kit-search" placeholder="Filtrar pantallas…">
             </div>
           </div>
@@ -144,7 +146,7 @@
           <div class="panel" style="margin-bottom:14px">
             <div class="panel-head">
               <div><span class="eyebrow">Preview</span><h2>Documento</h2></div>
-              <button class="btn ok" id="btn-save-kit">Guardar propuesta</button>
+              <button class="btn ok" id="kit-save-btn">Guardar propuesta</button>
             </div>
             <div class="kit-doc" id="kit-preview"></div>
           </div>
@@ -211,6 +213,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="admin.js"></script>
+<script src="shared.js"></script>
+<script src="dashboard.js"></script>
 </body>
 </html>

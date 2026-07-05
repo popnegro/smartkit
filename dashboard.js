@@ -12,62 +12,41 @@ const DashboardApp = (() => {
     selectedId: null,
     currentSection: 'inventory',
     kitSelected: new Set(),
+    bulkSelected: new Set(),
+    filters: {
+      zone: 'Todos',
+      status: 'Todos'
+    },
     savedKits: [],
     brand: { name: 'SmartKit', logo: 'SK', terms: '', validity: '15 dias', whatsapp: '' }
   };
 
-  // Modificado: debouncedPersist ahora solo guarda datos específicos del cliente (kits, marca).
-  // El inventario (state.rows) se gestiona exclusivamente a través de la API.
   const debouncedPersist = Shared.debounce((message) => {
-    const persistableState = { kits: state.savedKits, brand: state.brand };
+    // Ahora persistimos todo el estado relevante del dashboard, incluido el inventario modificado.
+    const persistableState = { rows: state.rows, kits: state.savedKits, brand: state.brand };
     Shared.persistDashboardState(persistableState, message || 'Cambios guardados automáticamente');
   }, 1500);
 
-  // Esta función debería ser tu única vía para actualizar el inventario.
-
-  /**
-   * Un fetch wrapper que añade el token de autenticación y maneja errores 401.
-   */
-  async function authedFetch(url, options = {}) {
-    const token = localStorage.getItem(AUTH_TOKEN_KEY);
-    const headers = {
-      ...options.headers,
-      'Content-Type': 'application/json',
-    };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(url, { ...options, headers });
-
-    if (response.status === 401) {
-      // Token inválido o expirado
-      logout();
-      throw new Error('Sesión expirada. Por favor, ingresa de nuevo.');
-    }
-
-    return response;
-  }
-
-  function logout() {
-    localStorage.removeItem(AUTH_TOKEN_KEY);
-    location.reload();
-  }
-
-  /**
-   * Loads the initial inventory data from the centralized source.
-   * This function is now consistent with how public pages (brochure, map) load data.
-   */
   async function loadInitialData() {
     try {
-      console.log('SmartKit Dashboard: Loading inventory...');
-      const inventoryData = await Shared.loadInventory();
-      state.rows = inventoryData.map(row => ({ ...row, status: row.active ? SCREEN_STATUS.ACTIVE : SCREEN_STATUS.PAUSED }));
-      document.getElementById('data-status').textContent = 'Datos locales';
+      console.log('SmartKit Dashboard: Cargando inventario...');
+      state.rows = await Shared.loadInventory();
+      // La lógica de estado (active/paused) ya se maneja en `loadInventory` si hay datos guardados.
+      // Se asegura consistencia.
+      state.rows.forEach(row => {
+        if (!row.status) row.status = row.active ? SCREEN_STATUS.ACTIVE : SCREEN_STATUS.PAUSED;
+      });
+      
+      const savedState = Shared.loadDashboardState();
+      if (savedState) {
+        state.savedKits = savedState.kits || [];
+        Object.assign(state.brand, savedState.brand || {});
+      }
+
+      document.getElementById('data-status').textContent = 'Datos cargados';
       Shared.showToast('Inventario cargado');
     } catch (error) {
-      console.error('Fatal error loading inventory:', error);
+      console.error('Error fatal al cargar el inventario:', error);
       document.getElementById('data-status').textContent = 'Error de carga';
       state.rows = [];
     }
@@ -115,38 +94,72 @@ const DashboardApp = (() => {
   }
 
   function fillFilters() {
-    const zones = ['Todos', ...new Set(state.rows.map(row => row.b))];
-    const types = ['Todos', ...new Set(state.rows.map(row => row.tipo))];
-    const zoneOptions = zones.map(zone => `<option value="${h(zone)}">${h(zone)}</option>`).join('');
-    const typeOptions = types.map(type => `<option value="${h(type)}">${h(type)}</option>`).join('');
+    const zones = ['Todos', ...new Set(state.rows.map(row => row.b).filter(Boolean).sort())];
+    const statuses = ['Todos', 'Activo', 'Pausado'];
 
-    document.getElementById('zone-filter').innerHTML = zoneOptions;
-    document.getElementById('type-filter').innerHTML = typeOptions;
-    document.getElementById('kit-zone').innerHTML = zoneOptions;
-    document.getElementById('kit-duration').innerHTML = Shared.DURATIONS.map(d => `<option value="${d.v}">${d.l}</option>`).join('');
+    const zoneChips = zones.map(zone => `<button class="chip" data-filter="zone" data-value="${h(zone)}">${h(zone)}</button>`).join('');
+    const statusChips = statuses.map(status => `<button class="chip" data-filter="status" data-value="${h(status)}">${h(status)}</button>`).join('');
+
+    document.getElementById('zone-filter-chips').innerHTML = `<span class="filter-label">Zona:</span> ${zoneChips}`;
+
+    // Rellenar filtros del constructor de kits
+    const kitZoneChips = zones.map(zone => `<button class="chip" data-filter="kit-zone" data-value="${h(zone)}">${h(zone)}</button>`).join('');
+    document.getElementById('kit-zone-chips').innerHTML = `<span class="filter-label">Zona:</span> ${kitZoneChips}`;
+
+    document.getElementById('status-filter-chips').innerHTML = `<span class="filter-label">Estado:</span> ${statusChips}`;
+
+    updateFilterChips();
+
+    document.getElementById('kit-duration-chips').innerHTML = `<span class="filter-label">Duración:</span>` + Shared.DURATIONS.map(d => 
+      `<button class="chip" data-filter="kit-duration" data-value="${d.v}">${h(d.l)}</button>`
+    ).join('');
+  }
+
+  function updateFilterChips() {
+    document.querySelectorAll('[data-filter]').forEach(chip => {
+      const filterType = chip.dataset.filter;
+      const value = chip.dataset.value;
+      let filterState = state.filters;
+      // Apuntar al estado de filtros del kit si corresponde
+      if (filterType.startsWith('kit-')) {
+        filterState = state.kitFilters; // Asumiendo que se añade `kitFilters` al estado
+      }
+
+      const isActive = filterState[filterType] === value;
+      chip.classList.toggle('on', isActive);
+    });
+    const hasFilters = state.filters.zone !== 'Todos' || state.filters.status !== 'Todos';
+    const clearButton = document.querySelector('[data-action="clear-filters"]');
+    if(clearButton) clearButton.style.display = hasFilters ? 'flex' : 'none';
+  }
+
+  function clearFilters() {
+    state.filters.zone = 'Todos';
+    state.filters.status = 'Todos';
+    document.getElementById('search').value = '';
+    renderTable();
+    updateFilterChips();
   }
 
   function filteredRows() {
     const query = document.getElementById('search').value.trim().toLowerCase();
-    const zone = document.getElementById('zone-filter').value;
-    const type = document.getElementById('type-filter').value;
+    const { zone, status } = state.filters;
     return state.rows.filter(row => {
       const matchesQuery = !query || [row.n, row.dir, row.b, row.tipo].some(v => String(v).toLowerCase().includes(query));
       const matchesZone = zone === 'Todos' || row.b === zone;
-      const matchesType = type === 'Todos' || row.tipo === type;
-      return matchesQuery && matchesZone && matchesType;
+      const matchesStatus = status === 'Todos' || row.status === status;
+      return matchesQuery && matchesZone && matchesStatus;
     });
   }
 
   function renderTable() {
     const list = filteredRows();
-    // Corregido: Si el ID seleccionado no está en la lista filtrada, seleccionar el primero de la lista.
     if (list.length && !list.some(row => row.id === state.selectedId)) {
-      selectRow(list[0].id, false); // Evitar bucle de renderizado
+      selectRow(list[0].id, false);
     }
-    document.getElementById('result-count').textContent = `${list.length} ${list.length === 1 ? 'resultado' : 'resultados'}`;
     document.getElementById('screen-tbody').innerHTML = list.map(row => `
-      <tr class="${row.id === state.selectedId ? 'selected' : ''}" data-action="select" data-id="${row.id}">
+      <tr class="${row.id === state.selectedId ? 'selected' : ''} ${state.bulkSelected.has(row.id) ? 'bulk-selected' : ''}" data-row-id="${row.id}">
+        <td><input type="checkbox" data-action="bulk-select" data-id="${row.id}" ${state.bulkSelected.has(row.id) ? 'checked' : ''}></td>
         <td><div class="screen-cell"><span class="screen-icon">${h(row.e)}</span><div><strong>${h(row.n)}</strong><span>${h(row.dir)} · ${h(row.b)}</span></div></div></td>
         <td><span class="badge">${h(row.tipo)}</span></td>
         <td>${h(row.imp)}</td>
@@ -156,6 +169,10 @@ const DashboardApp = (() => {
           <div class="row-acts"><button class="icon-btn" data-action="select" data-id="${row.id}" title="Editar">✏️</button></div>
         </td>
       </tr>`).join('');
+    
+    const allVisibleChecked = list.length > 0 && list.every(row => state.bulkSelected.has(row.id));
+    document.getElementById('sel-all').checked = allVisibleChecked;
+    updateBulkBar();
   }
 
   function renderPreview(row) {
@@ -176,10 +193,16 @@ const DashboardApp = (() => {
   }
 
   function updateEditor(row) {
-    if (!row) return;
+    document.getElementById('editor-form').reset();
+    if (!row) {
+      document.getElementById('editor-form').style.display = 'none';
+      document.getElementById('editor-empty').style.display = 'block';
+      document.getElementById('ed-title').textContent = 'Seleccioná una pantalla';
+      return;
+    };
     document.getElementById('editor-form').style.display = 'grid';
     document.getElementById('editor-empty').style.display = 'none';
-    document.getElementById('editor-title').textContent = row.n;
+    document.getElementById('ed-title').textContent = row.n;
     document.getElementById('edit-name').value = row.n;
     document.getElementById('edit-zone').value = row.b;
     document.getElementById('edit-price').value = row.precio;
@@ -188,6 +211,20 @@ const DashboardApp = (() => {
     document.getElementById('edit-note').value = row.note || '';
     document.getElementById('edit-status').value = row.status || SCREEN_STATUS.ACTIVE;
     renderPreview(row);
+  }
+
+  function showNewScreenForm() {
+    state.selectedId = null; // Deseleccionar cualquier fila
+    renderTable();
+    document.getElementById('editor-form').reset();
+    document.getElementById('editor-form').style.display = 'grid';
+    document.getElementById('editor-empty').style.display = 'none';
+    document.getElementById('ed-title').textContent = 'Nueva Pantalla';
+    document.getElementById('edit-name').value = '';
+    document.getElementById('edit-zone').value = '';
+    document.getElementById('edit-price').value = '';
+    document.getElementById('edit-status').value = SCREEN_STATUS.ACTIVE;
+    document.getElementById('edit-name').focus();
   }
 
   function selectRow(id, doRenderTable = true) {
@@ -223,8 +260,8 @@ const DashboardApp = (() => {
       [SECTIONS.SETTINGS]: ['Configuracion comercial', 'Define marca, contacto y condiciones base para tus mediakits.']
     };
     const [title, description] = titles[section] || ['Error', 'Sección no encontrada'];
-    document.getElementById('page-title').textContent = title;
-    document.getElementById('page-desc').textContent = description;
+    document.getElementById('page-title').textContent = title || '';
+    document.getElementById('page-desc').textContent = description || '';
     if (section === SECTIONS.MEDIAKITS) renderKitBuilder();
     if (section === SECTIONS.METRICS) renderMetrics();
   }
@@ -347,8 +384,11 @@ const DashboardApp = (() => {
     const archivedKits = state.savedKits.filter(kit => kit.archived);
 
     const renderKitRow = (kit, isArchived = false) => `
-      <div class="kit-row">
-        <span><strong>${h(kit.client)}</strong><br><small>${Number(kit.screens) || 0} pantallas · ${h(isArchived ? KIT_STATUS.ARCHIVED : (kit.status || KIT_STATUS.DRAFT))}</small></span>
+      <div class="kit-history-row">
+        <span>
+          <strong>${h(kit.client)}</strong><br>
+          <small>${Number(kit.screens) || 0} pantallas · <span class="badge ${kit.status === 'Archivado' ? 'bd-mu' : 'bd-ok'}">${h(isArchived ? KIT_STATUS.ARCHIVED : (kit.status || KIT_STATUS.DRAFT))}</span></small>
+        </span>
         <span class="kit-actions">
           <strong>${fmt(kit.total)}</strong>
           <a class="kit-link" href="${Shared.getMediaKitUrl(kit.id)}" target="_blank" rel="noopener">Ver público</a>
@@ -362,12 +402,15 @@ const DashboardApp = (() => {
         </span>
       </div>`;
 
-    document.getElementById('kit-history').innerHTML = activeKits.map(k => renderKitRow(k, false)).join('') || '<div class="kit-row"><span>No hay kits guardados.</span></div>';
+    document.getElementById('kit-history').innerHTML = activeKits.map(k => renderKitRow(k, false)).join('') || '<div class="kit-history-row"><span>No hay kits guardados.</span></div>';
     const archiveWrap = document.getElementById('kit-archive-wrap');
-    archiveWrap.hidden = archivedKits.length === 0;
-    archiveWrap.open = archivedKits.length > 0;
-    document.getElementById('kit-archive-count').textContent = archivedKits.length;
-    document.getElementById('kit-archive').innerHTML = archivedKits.map(k => renderKitRow(k, true)).join('');
+    if (archiveWrap) {
+      archiveWrap.hidden = archivedKits.length === 0;
+      archiveWrap.open = archivedKits.length > 0;
+      document.getElementById('kit-archive-count').textContent = archivedKits.length;
+      document.getElementById('kit-archive').innerHTML = archivedKits.map(k => renderKitRow(k, true)).join('');
+    }
+
     const active = state.rows.filter(row => row.status === SCREEN_STATUS.ACTIVE);
     const totalReach = active.reduce((acc, row) => acc + imp(row), 0);
     const byZone = active.reduce((acc, row) => { acc[row.b] = (acc[row.b] || 0) + imp(row); return acc; }, {});
@@ -376,7 +419,7 @@ const DashboardApp = (() => {
 
     const renderChart = (containerId, data, total, useGradient = false) => {
       const max = Math.max(...Object.values(data), 1);
-      document.getElementById(containerId).innerHTML = Object.entries(data).sort((a, b) => b - a).map(([label, value], i) => {
+      document.getElementById(containerId).innerHTML = Object.entries(data).sort((a, b) => b[1] - a[1]).map(([label, value], i) => {
         const width = (value / max * 100).toFixed(1);
         const percentage = ((value / (total || 1)) * 100).toFixed(1);
         const bg = useGradient ? `linear-gradient(90deg, ${colors[i % colors.length]}90, ${colors[i % colors.length]})` : colors[i % colors.length];
@@ -392,31 +435,69 @@ const DashboardApp = (() => {
     renderChart('type-chart', byType, active.length);
   }
 
+  function updateBulkBar() {
+    const count = state.bulkSelected.size;
+    const bulkBar = document.getElementById('bulk-bar');
+    if (!bulkBar) return;
+    bulkBar.style.display = count > 0 ? 'flex' : 'none';
+    document.getElementById('bulk-count').textContent = count;
+  }
+
   function bindEvents() {
     document.querySelectorAll('[data-section]').forEach(btn => btn.addEventListener('click', () => setSection(btn.dataset.section)));
 
-    ['search', 'zone-filter', 'type-filter'].forEach(id => {
-      document.getElementById(id).addEventListener('input', renderTable);
-    });
+    const debouncedRender = Shared.debounce(renderTable, 250);
+    document.getElementById('search').addEventListener('input', debouncedRender);
 
-    ['kit-client', 'kit-contact', 'settings-terms'].forEach(id => {
-      document.getElementById(id).addEventListener('input', renderKitPreview);
+    document.getElementById('sel-all').addEventListener('change', event => {
+      const isChecked = event.target.checked;
+      const visibleIds = new Set(filteredRows().map(r => r.id));
+      state.bulkSelected = isChecked
+        ? new Set([...state.bulkSelected, ...visibleIds])
+        : new Set([...state.bulkSelected].filter(id => !visibleIds.has(id)));
+      renderTable();
     });
-
     ['kit-duration', 'kit-zone'].forEach(id => {
       document.getElementById(id).addEventListener('change', renderKitBuilder);
     });
     document.getElementById('kit-search').addEventListener('input', renderKitBuilder);
 
     document.addEventListener('click', event => {
+      const rowEl = event.target.closest('[data-row-id]');
+      if (rowEl && !event.target.matches('input, button, a')) {
+        selectRow(rowEl.dataset.rowId);
+      }
+
+      const filterChip = event.target.closest('[data-filter]');
+      if (filterChip) {
+        state.filters[filterChip.dataset.filter] = filterChip.dataset.value;
+        renderTable();
+        updateFilterChips();
+        return;
+      }
+
       const target = event.target.closest('[data-action]');
-      if (!target) return;
+      if (!target) {
+        // Manejar acciones masivas que no usan data-action
+        const bulkAction = event.target.closest('[data-bulk]');
+        if (bulkAction) {
+          const newStatus = bulkAction.dataset.bulk;
+          state.rows.forEach(row => {
+            if (state.bulkSelected.has(row.id)) {
+              row.status = newStatus;
+            }
+          });
+          state.bulkSelected.clear();
+          renderTable();
+          debouncedPersist(`Se actualizaron ${state.bulkSelected.size} pantallas a ${newStatus}`);
+        }
+        return;
+      }
       const action = target.dataset.action;
       const id = target.dataset.id;
       const step = target.dataset.step;
 
       const actions = {
-        'select': () => selectRow(id),
         'copy-kit': () => { const kit = state.savedKits.find(k => k.id === id); if (kit) navigator.clipboard?.writeText(new URL(Shared.getMediaKitUrl(kit.id), location.href).href).then(() => Shared.showToast('Link copiado')).catch(() => Shared.showToast('No se pudo copiar')); },
         'download-kit': () => {
           const kit = state.savedKits.find(k => k.id === id);
@@ -445,6 +526,18 @@ const DashboardApp = (() => {
       };
       if (action === 'set-kit-step') setKitStep(Number(step));
       if (actions[action]) actionsaction;
+      if (action === 'new-screen') showNewScreenForm();
+      if (action === 'select') selectRow(id);
+      if (action === 'clear-filters') clearFilters();
+      if (action === 'clear-bulk') {
+        state.bulkSelected.clear();
+        renderTable();
+      }
+      if (action === 'bulk-select') {
+        if (event.target.checked) state.bulkSelected.add(Number(id));
+        else state.bulkSelected.delete(Number(id));
+        updateBulkBar();
+      }
     });
 
     document.addEventListener('change', event => {
@@ -458,36 +551,50 @@ const DashboardApp = (() => {
 
     document.getElementById('editor-form').addEventListener('submit', async (event) => {
       event.preventDefault();
-      const row = state.rows.find(item => item.id === state.selectedId);
-      if (!row) return;
+      const isNew = state.selectedId === null;
+      const row = isNew ? {} : state.rows.find(item => item.id === state.selectedId);
+      if (!isNew && !row) return;
 
-      // Prepara el objeto con los datos actualizados del formulario
+      const submitButton = event.target.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+      submitButton.textContent = 'Guardando...';
+
       const updatedRowData = {
-        ...row, // Mantiene los campos no editables
+        ...row,
         n: document.getElementById('edit-name').value.trim() || row.n,
         b: document.getElementById('edit-zone').value.trim() || row.b,
         aud: document.getElementById('edit-audience').value.trim(),
         precio: Number(document.getElementById('edit-price').value) || row.precio,
         note: document.getElementById('edit-note').value.trim(),
-        status: document.getElementById('edit-status').value
+        status: document.getElementById('edit-status').value,
+        id: isNew ? Date.now() : row.id, // Asigna un nuevo ID si es nuevo
+        e: (document.getElementById('edit-name').value.trim() || 'NN').substring(0, 2).toUpperCase()
       };
 
-      // Actualiza el estado local inmediatamente para una UI fluida (Optimistic Update)
-      Object.assign(row, updatedRowData);
+      if (isNew) {
+        state.rows.unshift(updatedRowData);
+      } else {
+        Object.assign(row, updatedRowData);
+      }
 
-      document.getElementById('last-action').textContent = `Actualizada #${row.id}`;
+      // Persistir el estado completo del dashboard, incluyendo los cambios en el inventario.
+      debouncedPersist(isNew ? 'Pantalla creada' : 'Pantalla actualizada');
+
+      submitButton.disabled = false;
+      submitButton.textContent = 'Guardado ✓';
+      setTimeout(() => {
+        submitButton.textContent = 'Guardar Pantalla';
+      }, 2000);
+
+      document.getElementById('last-action').textContent = isNew ? `Creada #${updatedRowData.id}` : `Actualizada #${updatedRowData.id}`;
       updateKpis();
       fillFilters();
-      selectRow(row.id);
+      selectRow(updatedRowData.id);
       renderKitBuilder();
-      
-      // Envía la actualización a la API como única fuente de verdad.
-      // La función updateScreenAPI ya debería existir en tu código.
-      await updateScreenAPI(updatedRowData);
     });
 
     document.getElementById('export-btn').addEventListener('click', exportCsv);
-    document.getElementById('btn-save-kit').addEventListener('click', saveKit);
+    document.getElementById('kit-save-btn').addEventListener('click', saveKit);
 
     document.getElementById('settings-save').addEventListener('click', () => {
       state.brand.name = document.getElementById('settings-brand').value.trim() || state.brand.name;
@@ -500,11 +607,12 @@ const DashboardApp = (() => {
       debouncedPersist('Configuración guardada');
     });
 
-    document.getElementById('reset-data-btn').addEventListener('click', () => {
-      if (window.confirm('¿Estás seguro? Esta acción no se puede deshacer.')) {
-        Shared.clearAllData();
-      }
-    });
+    // El botón de reset no está en el HTML, se elimina el listener.
+    // document.getElementById('reset-data-btn').addEventListener('click', () => {
+    //   if (window.confirm('¿Estás seguro? Esta acción no se puede deshacer.')) {
+    //     Shared.clearAllData();
+    //   }
+    // });
   }
   
   function bindStepperEvents() {
@@ -519,17 +627,12 @@ const DashboardApp = (() => {
   async function init() {
     // --- Login Eliminado ---
     // Se asume una sesión iniciada. Se crea un token simulado si no existe
-    // para asegurar que las llamadas a la API (authedFetch) funcionen.
-    if (!localStorage.getItem(AUTH_TOKEN_KEY)) {
-      console.warn('Login omitido: Creando token de sesión simulado.');
-      const fakeToken = `dev-token.${btoa(JSON.stringify({ userId: 'dev-user', role: 'admin' }))}.dev-signature`;
-      localStorage.setItem(AUTH_TOKEN_KEY, fakeToken);
-    }
 
     document.getElementById('app').style.display = 'grid';
     document.body.style.visibility = 'visible';
     await loadInitialData();
     applyBrand();
+    renderTable();
     fillFilters();
     updateKpis();
     bindEvents();

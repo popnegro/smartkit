@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartKit – Mapa de Pantallas</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+:root{--pri:#0369a1;--pdk:#075985;--teal:#0f766e;--bg:#f6f8fb;--panel:#fff;--soft:#f8fafc;--tx:#0f172a;--mu:#475569;--ln:#d9e2ec;--r:12px;--sh:0 2px 12px rgba(15,23,42,.12)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;line-height:1.5;overflow:hidden;height:100vh}
+button,input,select{font:inherit;outline:none;cursor:pointer}
+a{color:inherit;text-decoration:none}
+
+/* ── TOP BAR ── */
+.top{position:fixed;top:0;left:0;right:0;z-index:500;background:rgba(255,255,255,.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--ln);display:flex;align-items:center;gap:12px;padding:0 18px;height:52px}
+.brand{display:flex;align-items:center;gap:9px;flex-shrink:0}
+.logo{width:32px;height:32px;border-radius:8px;background:var(--pdk);color:#fff;display:grid;place-items:center;font-weight:800;font-size:12px}
+.brand strong{font-size:14px;font-weight:700}
+.nav{display:flex;gap:4px;margin-left:auto}
+.nav a{min-height:30px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--mu);font-weight:600;font-size:12px;padding:0 10px;display:flex;align-items:center;transition:all .15s}
+.nav a.on{background:#e0f2fe;color:var(--pdk);border-color:#bae6fd}
+.nav a:hover:not(.on){color:var(--pri)}
+.nav a.cta{background:var(--pdk);color:#fff;border-color:var(--pdk)}
+.nav a.cta:hover{background:var(--pri)}
+
+/* ── SEARCH BAR ── */
+.search-bar{position:fixed;top:64px;left:18px;z-index:400;display:flex;gap:8px;align-items:center}
+.search-input{height:36px;width:220px;border:1px solid var(--ln);border-radius:9px;background:#fff;box-shadow:var(--sh);padding:0 10px 0 32px;font-size:13px;color:var(--tx);transition:width .2s}
+.search-input:focus{width:280px;outline:2px solid var(--pdk);outline-offset:1px}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--mu);pointer-events:none;font-size:14px}
+.search-wrap{position:relative}
+
+/* ── FILTER CHIPS ── */
+.chips{position:fixed;top:64px;left:270px;right:340px;z-index:400;display:flex;gap:6px;align-items:center;overflow-x:auto;padding:0 4px}
+.chips::-webkit-scrollbar{display:none}
+.chip{min-height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--ln);background:#fff;font-size:12px;font-weight:600;color:var(--mu);white-space:nowrap;transition:all .15s;box-shadow:0 1px 4px rgba(15,23,42,.08)}
+.chip.on{color:#fff;border-color:transparent}
+.chip[data-tipo="Peatonal"].on{background:#0369a1}
+.chip[data-tipo="Vehicular"].on{background:#0f766e}
+.chip[data-tipo="Mixto"].on{background:#7c3aed}
+.chip[data-tipo="Todos"].on{background:var(--pdk)}
+.chip:hover:not(.on){border-color:var(--pri);color:var(--pri)}
+.chip-count{background:#e0f2fe;color:var(--pdk);border-radius:999px;font-size:10px;font-weight:700;padding:1px 6px;margin-left:4px}
+
+/* ── MAP ── */
+#map{position:fixed;top:52px;left:0;right:0;bottom:0;z-index:1}
+
+/* ── SCREEN PANEL ── */
+.sc-panel{position:fixed;top:52px;right:0;bottom:0;width:320px;z-index:300;background:#fff;border-left:1px solid var(--ln);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);box-shadow:-4px 0 24px rgba(15,23,42,.08)}
+.sc-panel.open{transform:translateX(0)}
+.sc-panel-head{padding:14px 16px 12px;border-bottom:1px solid var(--ln);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.sc-panel-head h2{font-size:15px;font-weight:700;line-height:1.3}
+.sc-close{width:28px;height:28px;border:1px solid var(--ln);border-radius:7px;background:var(--soft);color:var(--mu);font-size:13px;display:grid;place-items:center;flex-shrink:0}
+.sc-close:hover{background:var(--ln)}
+.sc-hero{height:140px;background:linear-gradient(135deg,var(--pdk),var(--teal));display:grid;place-items:center;color:#fff;font-size:40px;font-weight:800;position:relative;overflow:hidden;flex-shrink:0}
+.sc-hero video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.sc-body{padding:16px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.sc-zone-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;height:22px;border-radius:999px;font-size:11px;font-weight:700;padding:0 8px;border:1px solid transparent;white-space:nowrap}
+.bd-p{background:#dbeafe;color:#1e40af;border-color:#bfdbfe}
+.bd-v{background:#ccfbf1;color:#065f46;border-color:#99f6e4}
+.bd-m{background:#ede9fe;color:#5b21b6;border-color:#c4b5fd}
+.bd-ok{background:#dcfce7;border-color:#86efac;color:#166534}
+.bd-mu{background:#f1f5f9;border-color:#cbd5e1;color:#475569}
+.sc-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sc-stat{background:var(--soft);border:1px solid var(--ln);border-radius:9px;padding:10px}
+.sc-stat span{display:block;font-size:10px;color:var(--mu);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+.sc-stat strong{display:block;font-size:16px;font-weight:800}
+.sc-note{font-size:12px;color:var(--mu);font-style:italic;background:var(--soft);border:1px solid var(--ln);border-radius:8px;padding:9px 10px}
+.btn-add{width:100%;min-height:40px;border-radius:9px;border:1.5px solid var(--pdk);background:transparent;color:var(--pdk);font-weight:700;font-size:13px;transition:all .15s;margin-top:auto}
+.btn-add:hover{background:#e0f2fe}
+.btn-add.in{background:var(--pdk);color:#fff;border-color:var(--pdk)}
+.btn-add.in:hover{background:var(--pri)}
+
+/* ── QUOTE PILL ── */
+.quote-pill{position:fixed;bottom:22px;right:22px;z-index:400;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--ln);border-radius:999px;padding:8px 16px 8px 12px;box-shadow:0 4px 20px rgba(15,23,42,.15);transition:all .2s}
+.quote-pill.has-items{border-color:#bae6fd;background:#f0f9ff}
+.q-pill-dot{width:32px;height:32px;border-radius:50%;background:var(--pdk);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px;flex-shrink:0}
+.q-pill-info strong{display:block;font-size:13px;font-weight:700}
+.q-pill-info span{display:block;font-size:11px;color:var(--mu)}
+.q-pill-actions{display:flex;gap:6px;margin-left:4px}
+.q-pill-btn{min-height:32px;border:1px solid var(--ln);border-radius:8px;background:#fff;font-size:12px;font-weight:600;padding:0 10px;transition:all .12s}
+.q-pill-btn.pri{background:var(--pdk);border-color:var(--pdk);color:#fff}
+.q-pill-btn.pri:hover{background:var(--pri)}
+.q-pill-btn:hover{border-color:#94a3b8}
+
+/* ── LEGEND ── */
+.legend{position:fixed;bottom:22px;left:18px;z-index:400;background:rgba(255,255,255,.95);backdrop-filter:blur(4px);border:1px solid var(--ln);border-radius:10px;padding:9px 14px;display:flex;gap:14px;font-size:11px;font-weight:600;box-shadow:var(--sh)}
+.legend-item{display:flex;align-items:center;gap:5px}
+.dot{width:10px;height:10px;border-radius:50%;border:1.5px solid rgba(255,255,255,.8)}
+.dot-p{background:#0369a1}.dot-v{background:#0f766e}.dot-m{background:#7c3aed}
+
+/* ── COUNTER ── */
+.map-counter{position:fixed;top:112px;left:18px;z-index:400;background:rgba(255,255,255,.95);backdrop-filter:blur(4px);border:1px solid var(--ln);border-radius:8px;padding:5px 11px;font-size:11px;font-weight:600;color:var(--mu);box-shadow:var(--sh)}
+
+/* ── TOAST ── */
+.toast{position:fixed;left:50%;bottom:80px;z-index:9999;transform:translate(-50%,12px);opacity:0;pointer-events:none;background:#0f172a;color:#fff;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:600;transition:all .18s;white-space:nowrap}
+.toast.show{transform:translate(-50%,0);opacity:1}
+
+/* ── RESPONSIVE ── */
+@media(max-width:640px){
+  .sc-panel{width:100%;top:auto;bottom:0;right:0;left:0;height:78vh;transform:translateY(100%);border-left:0;border-top:1px solid var(--ln);border-radius:14px 14px 0 0}
+  .sc-panel.open{transform:translateY(0)}
+  .chips{left:18px;right:18px;top:108px}
+  .search-bar{top:108px;left:auto;right:18px}
+  .search-input,.search-input:focus{width:42px;padding:0 10px}
+  .search-input:focus{width:220px;padding:0 10px 0 32px}
+  .map-counter{top:160px}
+}
+</style>
+</head>
+<body>
+
+<!-- ── TOP BAR ── -->
+<header class="top">
+  <div class="brand">
+    <div class="logo" id="brand-logo">SK</div>
+    <strong id="brand-name">SmartKit</strong>
+  </div>
+  <nav class="nav">
+    <a href="index.html">Brochure</a>
+    <a href="map.html" class="on">Mapa</a>
+    <a href="mediakit.html" id="nav-kit">Media Kit</a>
+    <a href="dashboard.html" class="cta">Dashboard</a>
+  </nav>
+</header>
+
+<!-- ── SEARCH ── -->
+<div class="search-bar">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" id="search" type="search" placeholder="Buscar pantalla…" autocomplete="off">
+  </div>
+</div>
+
+<!-- ── FILTER CHIPS ── -->
+<div class="chips" id="chips">
+  <button class="chip on" data-tipo="Todos">Todos<span class="chip-count" id="cnt-all">0</span></button>
+  <button class="chip" data-tipo="Peatonal">Peatonal<span class="chip-count" id="cnt-peatonal">0</span></button>
+  <button class="chip" data-tipo="Vehicular">Vehicular<span class="chip-count" id="cnt-vehicular">0</span></button>
+  <button class="chip" data-tipo="Mixto">Mixto<span class="chip-count" id="cnt-mixto">0</span></button>
+</div>
+
+<!-- ── MAP ── -->
+<div id="map"></div>
+
+<!-- ── MAP COUNTER ── -->
+<div class="map-counter" id="map-counter">0 pantallas</div>
+
+<!-- ── LEGEND ── -->
+<div class="legend">
+  <div class="legend-item"><div class="dot dot-p"></div>Peatonal</div>
+  <div class="legend-item"><div class="dot dot-v"></div>Vehicular</div>
+  <div class="legend-item"><div class="dot dot-m"></div>Mixto</div>
+</div>
+
+<!-- ── SCREEN PANEL ── -->
+<aside class="sc-panel" id="sc-panel" role="dialog" aria-label="Detalle de pantalla">
+  <div class="sc-panel-head">
+    <h2 id="sc-title">—</h2>
+    <button class="sc-close" id="sc-close" title="Cerrar">✕</button>
+  </div>
+  <div class="sc-hero" id="sc-hero"></div>
+  <div class="sc-body" id="sc-body"></div>
+</aside>
+
+<!-- ── QUOTE PILL ── -->
+<div class="quote-pill" id="quote-pill">
+  <div class="q-pill-dot" id="q-dot">0</div>
+  <div class="q-pill-info">
+    <strong id="q-label">Cotizador vacío</strong>
+    <span id="q-sublabel">Agregá pantallas desde el mapa</span>
+  </div>
+  <div class="q-pill-actions" id="q-actions" style="display:none">
+    <button class="q-pill-btn" id="q-clear">Limpiar</button>
+    <button class="q-pill-btn pri" id="q-go">Ver cotizador →</button>
+  </div>
+</div>
+
+<!-- ── TOAST ── -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════
+   SCREENS DATA — inventario base
+══════════════════════════════════════════ */
+const BASE_SCREENS = [
+  {id:'sc-01',nombre:'Sarmiento y 9 de Julio',zona:'Centro',tipo:'Peatonal',impactos:14200,precio:95000,status:'Activo',lat:-32.8894,lng:-68.8458,nota:'Esquina comercial de máximo tránsito peatonal.'},
+  {id:'sc-02',nombre:'Palmares Open Mall',zona:'Palmares',tipo:'Mixto',impactos:22500,precio:145000,status:'Activo',lat:-32.9121,lng:-68.8306,nota:'Acceso principal al shopping. Vehicular y peatonal.'},
+  {id:'sc-03',nombre:'Las Heras y Mitre',zona:'Las Heras',tipo:'Peatonal',impactos:8800,precio:68000,status:'Activo',lat:-32.8716,lng:-68.8388,nota:'Zona comercial barrial. Alto tráfico local.'},
+  {id:'sc-04',nombre:'Av. Aristides frente al Parque',zona:'Ciudad',tipo:'Vehicular',impactos:31000,precio:185000,status:'Activo',lat:-32.8908,lng:-68.8762,nota:'Avenida principal. Ideal autos y commuters.'},
+  {id:'sc-05',nombre:'Guaymallén Centro',zona:'Guaymallén',tipo:'Peatonal',impactos:11400,precio:78000,status:'Activo',lat:-32.8955,lng:-68.8212,nota:'Centro comercial de Guaymallén.'},
+  {id:'sc-06',nombre:'Maipú Ruta 7',zona:'Maipú',tipo:'Vehicular',impactos:19600,precio:112000,status:'Activo',lat:-32.9812,lng:-68.7757,nota:'Tránsito hacia bodegas y aeropuerto.'},
+  {id:'sc-07',nombre:'Villanueva Gomensoro',zona:'Las Heras',tipo:'Mixto',impactos:9300,precio:72000,status:'Activo',lat:-32.8658,lng:-68.8415,nota:'Zona residencial-comercial en crecimiento.'},
+  {id:'sc-08',nombre:'Godoy Cruz Belgrano',zona:'Godoy Cruz',tipo:'Vehicular',impactos:25800,precio:155000,status:'Activo',lat:-32.9246,lng:-68.8488,nota:'Corredor vehicular de alto volumen.'},
+  {id:'sc-09',nombre:'Chacras de Coria Acceso',zona:'Luján',tipo:'Vehicular',impactos:16700,precio:125000,status:'Activo',lat:-33.0158,lng:-68.8642,nota:'Acceso a Chacras. Ideal turismo y bodegas.'},
+  {id:'sc-10',nombre:'Terminal de Ómnibus',zona:'Centro',tipo:'Peatonal',impactos:18400,precio:118000,status:'Activo',lat:-32.8868,lng:-68.8284,nota:'Alta rotación. Público diverso 24h.'},
+];
+
+/* ══════════════════════════════════════
+   MAP APP
+══════════════════════════════════════ */
+(function(){
+'use strict';
+
+// ── Keys ──
+const K_STATE = 'sk_v1_dashboard-state';
+const K_KITS  = 'sk_v1_public-kits';
+const K_CFG   = 'sk_v1_config';
+
+// ── State ──
+let screens = [];
+let markers = {};        // id → L.circleMarker
+let activeFilter = 'Todos';
+let activeScreen = null;
+let quote = new Map();   // id → screen
+let lMap = null;
+let searchQ = '';
+
+// ── Helpers ──
+const $ = id => document.getElementById(id);
+const fmt = n => '$' + Math.round(n).toLocaleString('es-AR');
+const fmtImp = n => n >= 1000 ? (n/1000).toFixed(1)+'k' : String(n);
+const esc = s => String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const badgeClass = {Peatonal:'bd-p', Vehicular:'bd-v', Mixto:'bd-m'};
+const dotColor   = {Peatonal:'#0369a1', Vehicular:'#0f766e', Mixto:'#7c3aed'};
+
+let toastTmr;
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTmr); toastTmr=setTimeout(()=>t.classList.remove('show'),2200); }
+
+// ── Boot ──
+function boot(){
+  loadConfig();
+  loadScreens();
+  initMap();
+  setupSearch();
+  setupChips();
+  setupPanel();
+  setupQuotePill();
+  updateQuotePill();
+}
+
+function loadConfig(){
+  let cfg = {};
+  try{ cfg = JSON.parse(localStorage.getItem(K_CFG)||'{}'); }catch(_){}
+  if(cfg.logo) $('brand-logo').textContent = cfg.logo;
+  if(cfg.brand) $('brand-name').textContent = cfg.brand;
+
+  // Update nav-kit link to point to latest kit if exists
+  let kits = {};
+  try{ kits = JSON.parse(localStorage.getItem(K_KITS)||'{}'); }catch(_){}
+  const latest = Object.values(kits).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''))[0];
+  if(latest) $('nav-kit').href = `mediakit.html?id=${encodeURIComponent(latest.id)}`;
+}
+
+function loadScreens(){
+  let overlay = {};
+  try{ overlay = JSON.parse(localStorage.getItem(K_STATE)||'{}'); }catch(_){}
+  screens = BASE_SCREENS
+    .map(s => ({...s, ...(overlay[s.id]||{})}))
+    .filter(s => s.status === 'Activo' && s.lat && s.lng);
+  updateCounts();
+}
+
+// ── Map ──
+function initMap(){
+  lMap = L.map('map', {zoomControl:false, attributionControl:false}).setView([-32.903,-68.839], 12);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(lMap);
+
+  L.control.zoom({position:'bottomleft'}).addTo(lMap);
+  L.control.attribution({prefix:'© CartoDB · © OpenStreetMap'}).addTo(lMap);
+
+  screens.forEach(s => addMarker(s));
+  applyFilters();
+
+  // Close panel when clicking map
+  lMap.on('click', () => closePanel());
+}
+
+function markerRadius(s){ return Math.max(8, Math.min(18, Math.round(s.impactos/2000))); }
+
+function addMarker(s){
+  const col = dotColor[s.tipo] || '#64748b';
+  const r = markerRadius(s);
+  const m = L.circleMarker([s.lat, s.lng], {
+    radius: r,
+    fillColor: col,
+    color: '#fff',
+    weight: 2,
+    fillOpacity: .88,
+    className: 'sc-marker'
+  }).addTo(lMap);
+
+  m.bindTooltip(`<strong>${s.nombre}</strong><br>${s.zona} · ${fmtImp(s.impactos)} imp/día`, {
+    direction:'top', offset:[0,-r], className:'', sticky:false
+  });
+
+  m.on('click', e => { L.DomEvent.stopPropagation(e); openPanel(s); });
+  markers[s.id] = m;
+}
+
+function applyFilters(){
+  let visible = screens.filter(s => {
+    const matchTipo = activeFilter === 'Todos' || s.tipo === activeFilter;
+    const matchQ = !searchQ || s.nombre.toLowerCase().includes(searchQ) || s.zona.toLowerCase().includes(searchQ);
+    return matchTipo && matchQ;
+  });
+
+  // Show/hide markers
+  screens.forEach(s => {
+    const m = markers[s.id]; if(!m) return;
+    const show = visible.some(v => v.id === s.id);
+    const inQ = quote.has(s.id);
+    if(show){ m.setStyle({opacity:1, fillOpacity: inQ ? 1 : .88, weight: inQ ? 3 : 2, color: inQ ? '#fbbf24' : '#fff'}); }
+    else    { m.setStyle({opacity:.15, fillOpacity:.1}); }
+  });
+
+  const c = $('map-counter');
+  if(c) c.textContent = `${visible.length} pantalla${visible.length!==1?'s':''} visibles`;
+}
+
+// ── Panel ──
+function openPanel(s){
+  activeScreen = s;
+  $('sc-title').textContent = s.nombre;
+
+  // Hero
+  const hero = $('sc-hero');
+  hero.style.background = `linear-gradient(135deg, ${dotColor[s.tipo]||'var(--pdk)'}, var(--teal))`;
+  hero.innerHTML = s.video
+    ? `<video src="${esc(s.video)}" autoplay muted loop playsinline></video>${esc((s.nombre||'').substring(0,2).toUpperCase())}`
+    : esc((s.nombre||'').substring(0,2).toUpperCase());
+
+  // Body
+  const inQ = quote.has(s.id);
+  $('sc-body').innerHTML = `
+    <div class="sc-zone-row">
+      <span class="badge ${badgeClass[s.tipo]||''}">${esc(s.tipo)}</span>
+      <span style="color:var(--mu);font-size:12px">${esc(s.zona)}</span>
+      <span class="badge ${s.status==='Activo'?'bd-ok':'bd-mu'}">${esc(s.status)}</span>
+    </div>
+    <div class="sc-stats">
+      <div class="sc-stat"><span>Impactos/día</span><strong>${fmtImp(s.impactos)}</strong></div>
+      <div class="sc-stat"><span>Precio/semana</span><strong>${fmt(s.precio)}</strong></div>
+      <div class="sc-stat"><span>CPM estimado</span><strong>${fmt(Math.round(s.precio/s.impactos*1000/7))}</strong></div>
+      <div class="sc-stat"><span>Zona</span><strong>${esc(s.zona)}</strong></div>
+    </div>
+    ${s.nota ? `<div class="sc-note">${esc(s.nota)}</div>` : ''}
+    <button class="btn-add${inQ?' in':''}" id="panel-add-btn">
+      ${inQ ? '✓ En cotizador · Quitar' : '+ Agregar al cotizador'}
+    </button>`;
+
+  $('panel-add-btn').addEventListener('click', () => toggleQuote(s));
+  $('sc-panel').classList.add('open');
+
+  // Highlight marker
+  applyFilters();
+}
+
+function closePanel(){
+  $('sc-panel').classList.remove('open');
+  activeScreen = null;
+}
+
+// ── Quote ──
+function toggleQuote(s){
+  if(quote.has(s.id)){
+    quote.delete(s.id);
+    toast(`${s.nombre} quitada del cotizador`);
+  } else {
+    quote.set(s.id, s);
+    toast(`✓ ${s.nombre} agregada al cotizador`);
+  }
+  updateQuotePill();
+  applyFilters();
+  // Refresh panel button if open
+  if(activeScreen && activeScreen.id === s.id) openPanel(s);
+}
+
+function updateQuotePill(){
+  const n = quote.size;
+  const items = [...quote.values()];
+  const total = items.reduce((a,s)=>a+s.precio*4,0); // default 4 semanas
+
+  $('q-dot').textContent = n;
+  $('quote-pill').classList.toggle('has-items', n > 0);
+
+  if(n === 0){
+    $('q-label').textContent = 'Cotizador vacío';
+    $('q-sublabel').textContent = 'Agregá pantallas desde el mapa';
+    $('q-actions').style.display = 'none';
+  } else {
+    $('q-label').textContent = `${n} pantalla${n!==1?'s':''} · ${fmt(total)}/mes`;
+    $('q-sublabel').textContent = `${fmtImp(items.reduce((a,s)=>a+s.impactos,0))} imp/día`;
+    $('q-actions').style.display = 'flex';
+  }
+}
+
+function setupQuotePill(){
+  $('q-clear').addEventListener('click', () => {
+    if(!confirm('¿Limpiar el cotizador?')) return;
+    quote.clear();
+    updateQuotePill();
+    applyFilters();
+    toast('Cotizador vaciado');
+  });
+
+  $('q-go').addEventListener('click', () => {
+    // Persist quote to localStorage as a draft kit then navigate
+    const items = [...quote.values()];
+    if(!items.length) return;
+    const weeks = 4;
+    const id = 'kit-draft-' + Date.now().toString(36);
+    const now = new Date();
+    const kit = {
+      id, client:'', contact:'',
+      createdAt: now.toISOString(),
+      validUntil: new Date(now.getTime()+15*86400000).toISOString(),
+      brand:'SmartKit', weeks, weekLabel:'4 semanas',
+      screens: items.map(s=>({...s, precioCampana:s.precio*weeks})),
+      totals:{
+        screens:items.length,
+        impactsPerDay:items.reduce((a,s)=>a+s.impactos,0),
+        impactsTotal:items.reduce((a,s)=>a+s.impactos,0)*weeks*7,
+        investment:items.reduce((a,s)=>a+s.precio*weeks,0)
+      },
+      terms:'Inicio de campaña sujeto a disponibilidad. Valores en ARS.'
+    };
+    let all={};
+    try{all=JSON.parse(localStorage.getItem(K_KITS)||'{}');}catch(_){}
+    all[id]=kit; localStorage.setItem(K_KITS,JSON.stringify(all));
+    window.location.href=`mediakit.html?id=${encodeURIComponent(id)}`;
+  });
+}
+
+// ── Search ──
+function setupSearch(){
+  $('search').addEventListener('input', e => {
+    searchQ = e.target.value.toLowerCase().trim();
+    applyFilters();
+  });
+}
+
+// ── Chips ──
+function setupChips(){
+  document.querySelectorAll('.chip').forEach(c => {
+    c.addEventListener('click', () => {
+      activeFilter = c.dataset.tipo;
+      document.querySelectorAll('.chip').forEach(x => x.classList.remove('on'));
+      c.classList.add('on');
+      applyFilters();
+    });
+  });
+}
+
+// ── Counts ──
+function updateCounts(){
+  const tipos = ['Peatonal','Vehicular','Mixto'];
+  $('cnt-all').textContent = screens.length;
+  tipos.forEach(t => {
+    const el = document.querySelector(`.chip[data-tipo="${t}"] .chip-count`);
+    if(el) el.textContent = screens.filter(s=>s.tipo===t).length;
+  });
+}
+
+// ── Panel close ──
+function setupPanel(){
+  $('sc-close').addEventListener('click', closePanel);
+  document.addEventListener('keydown', e => { if(e.key==='Escape') closePanel(); });
+}
+
+// ── Init ──
+document.readyState==='loading'
+  ? document.addEventListener('DOMContentLoaded', boot)
+  : boot();
+
+})();
+</script>
+</body>
+</html>

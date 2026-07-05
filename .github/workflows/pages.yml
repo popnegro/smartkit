@@ -29,6 +29,10 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Run Playwright tests
+        # This command runs all your e2e tests. If any test fails, the workflow will stop here.
+        run: npx playwright test
+
       - name: Build project
         run: bash ./build.sh static
 

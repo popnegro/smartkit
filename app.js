@@ -170,6 +170,23 @@ function renderBrochureCard(s, eagerVideo=false){
     </article>`;
 }
 
+function renderFilters() {
+  document.getElementById('hero-stats').innerHTML=`
+    <div class="stat"><b>${state.activeScreens.length}</b><span>Pantallas activas</span></div>
+    <div class="stat"><b>${Math.round(state.activeMetrics.totalReach / 1000)}k</b><span>Impactos/día</span></div>
+    <div class="stat"><b>${fmt(state.activeScreens.reduce((min, s) => Math.min(min, s.precio), Infinity))}</b><span>Desde / semana</span></div>
+    <div class="stat"><b>${state.zones.length - 1}</b><span>Zonas</span></div>`;
+
+  document.getElementById('zone-filters').innerHTML = state.zones.map(z =>
+    `<button class="chip ${z === state.activeZone ? 'on' : ''}" data-action="set-zone" data-zone="${h(z)}">${h(z)}</button>`
+  ).join('');
+
+  const sortOptions = [ { key: 'recommended', label: 'Recomendadas' }, { key: 'impact', label: 'Mayor impacto' }, { key: 'price', label: 'Menor precio' }, { key: 'type', label: 'Tipo de tránsito' } ];
+  document.getElementById('sort-filters').innerHTML = sortOptions.map(opt =>
+    `<button class="chip ${opt.key === state.activeSort ? 'on' : ''}" data-action="set-sort" data-sort="${h(opt.key)}">${h(opt.label)}</button>`
+  ).join('');
+}
+
 function durationOptions(){
   return Shared.DURATIONS.map(d => `<option value="${d.v}" ${d.v === state.quoteDuration ? 'selected' : ''}>${h(d.l)}</option>`).join('');
 }
@@ -235,25 +252,6 @@ function renderScreenCard(s){
 }
 
 function renderBrochure(){
-  const minPrice = state.activeScreens.reduce((min, s) => Math.min(min, s.precio), Infinity);
-  document.getElementById('hero-stats').innerHTML=`
-    <div class="stat"><b>${state.activeScreens.length}</b><span>Pantallas activas</span></div>
-    <div class="stat"><b>${Math.round(state.activeMetrics.totalReach / 1000)}k</b><span>Impactos/día</span></div>
-    <div class="stat"><b>${Number.isFinite(minPrice) ? fmt(minPrice) : '$0'}</b><span>Desde / semana</span></div>
-    <div class="stat"><b>${state.zones.length - 1}</b><span>Zonas</span></div>`;
-
-  document.getElementById('zone-filters').innerHTML = state.zones.map(z =>
-    `<button class="chip ${z === state.activeZone ? 'on' : ''}" data-action="set-zone" data-zone="${h(z)}">${h(z)}</button>`
-  ).join('');
-
-  const sortOptions = [
-    { key: 'recommended', label: 'Recomendadas' }, { key: 'impact', label: 'Mayor impacto' },
-    { key: 'price', label: 'Menor precio' }, { key: 'type', label: 'Tipo de tránsito' }
-  ];
-  document.getElementById('sort-filters').innerHTML = sortOptions.map(opt =>
-    `<button class="chip ${opt.key === state.activeSort ? 'on' : ''}" data-action="set-sort" data-sort="${h(opt.key)}">${h(opt.label)}</button>`
-  ).join('');
-
   const list = sortedScreens(state.activeZone === 'Todos' ? state.activeScreens : state.activeScreens.filter(s => s.b === state.activeZone));
   const catalogCount=document.getElementById('catalog-count');
   if (catalogCount) catalogCount.textContent = `${list.length} ${list.length === 1 ? 'pantalla' : 'pantallas'}${state.activeZone === 'Todos' ? '' : ' · ' + state.activeZone}`;
@@ -516,21 +514,17 @@ function bindEvents(){
     }
   }
 
-  async function loadInitialData() {
-  try {
-    console.log('SmartKit: Cargando desde /screens.json...');
-    // Utiliza la función centralizada de shared.js para cargar los datos.
-    state.sourceScreens = await Shared.loadInventory();
-  } catch (error) {
-    // El manejo de errores se mantiene local para actualizar la UI específica de esta página.
-    console.error('Error al cargar datos de pantallas:', error);
-    document.getElementById('cards').innerHTML = `<div class="empty-state"><h3>Error al cargar el inventario</h3><p>Por favor, intenta recargar la página.</p></div>`;
-    state.sourceScreens = [];
-  }
+  async function loadData() {
+    try {
+      state.sourceScreens = await Shared.loadInventory();
+    } catch (error) {
+      console.error('Error al cargar datos de pantallas:', error);
+      document.getElementById('cards').innerHTML = `<div class="empty-state"><h3>Error al cargar el inventario</h3><p>Por favor, intenta recargar la página.</p></div>`;
+    }
   }
 
   async function init() {
-    await loadInitialData();
+    await loadData();
     
     handleRedirectFromMap(); // Check for and handle the action from the map page.
 
@@ -540,7 +534,8 @@ function bindEvents(){
 
   applyBrand();
   Shared.updateMediaKitLinks();
-  renderBrochure(); // Mover renderBrochure() antes de initMap()
+  renderFilters();
+  renderBrochure();
   bindEvents();
   }
 

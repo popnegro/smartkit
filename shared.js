@@ -387,24 +387,33 @@ const SmartKitShared = (() => {
     });
   }
 
-  /**
-   * Carga el inventario de pantallas desde la fuente de datos estática.
-   * @returns {Promise<Array>} Una promesa que se resuelve con el array de pantallas.
-   * @throws {Error} Si la carga o el parseo del JSON falla.
-   */
   async function loadInventory() {
     try {
-      // En un entorno de producción real, esta URL podría ser un endpoint de API.
       const response = await fetch('/screens.json');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const baseScreens = await response.json();
+
+      // Cargar el estado del dashboard desde localStorage para aplicar overrides.
+      const dashboardState = loadDashboardState();
+      if (dashboardState && dashboardState.rows && dashboardState.rows.length > 0) {
+        const overrides = new Map(dashboardState.rows.map(row => [row.id, row]));
+        // Mapear sobre el inventario base y aplicar los cambios.
+        // Esto preserva el orden de screens.json pero actualiza los datos.
+        return baseScreens.map(screen => ({
+          ...screen,
+          ...(overrides.get(screen.id) || {})
+        }));
       }
-      return await response.json();
+
+      // Si no hay estado en el dashboard, devolver el inventario base.
+      return baseScreens;
+
     } catch (error) {
       console.error('Error al cargar el inventario:', error);
       throw new Error('No se pudo cargar el inventario de pantallas.');
     }
   }
+
   // ==========================================================================
   // 6. Public API
   // ==========================================================================
