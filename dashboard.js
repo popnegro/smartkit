@@ -12,11 +12,6 @@ const DashboardApp = (() => {
     selectedId: null,
     currentSection: 'inventory',
     kitSelected: new Set(),
-    filters: {
-      zone: 'Todas',
-      status: 'Todos'
-    },
-    bulkSelected: new Set(),
     savedKits: [],
     brand: { name: 'SmartKit', logo: 'SK', terms: '', validity: '15 dias', whatsapp: '' }
   };
@@ -60,18 +55,19 @@ const DashboardApp = (() => {
     location.reload();
   }
 
+  /**
+   * Loads the initial inventory data from the centralized source.
+   * This function is now consistent with how public pages (brochure, map) load data.
+   */
   async function loadInitialData() {
     try {
-      console.log('SmartKit Dashboard: Cargando desde /screens.json...');
-      const response = await fetch('/screens.json');
-      if (!response.ok) throw new Error('No se pudo cargar el inventario.');
-      
-      const data = await response.json();
-      state.rows = data.map(row => ({ ...row, status: row.active ? SCREEN_STATUS.ACTIVE : SCREEN_STATUS.PAUSED }));
+      console.log('SmartKit Dashboard: Loading inventory...');
+      const inventoryData = await Shared.loadInventory();
+      state.rows = inventoryData.map(row => ({ ...row, status: row.active ? SCREEN_STATUS.ACTIVE : SCREEN_STATUS.PAUSED }));
       document.getElementById('data-status').textContent = 'Datos locales';
       Shared.showToast('Inventario cargado');
     } catch (error) {
-      console.error('Error fatal al cargar el inventario:', error);
+      console.error('Fatal error loading inventory:', error);
       document.getElementById('data-status').textContent = 'Error de carga';
       state.rows = [];
     }
@@ -119,75 +115,26 @@ const DashboardApp = (() => {
   }
 
   function fillFilters() {
-    const zones = ['Todas', ...new Set(state.rows.map(row => row.b))];
-    const statuses = ['Todos', 'Activo', 'Pausado'];
-    
-    const zoneChips = zones.map(zone => `<button class="chip" data-filter="zone" data-value="${h(zone)}">${h(zone)}</button>`).join('');
-    const statusChips = statuses.map(status => `<button class="chip" data-filter="status" data-value="${h(status)}">${h(status)}</button>`).join('');
+    const zones = ['Todos', ...new Set(state.rows.map(row => row.b))];
+    const types = ['Todos', ...new Set(state.rows.map(row => row.tipo))];
+    const zoneOptions = zones.map(zone => `<option value="${h(zone)}">${h(zone)}</option>`).join('');
+    const typeOptions = types.map(type => `<option value="${h(type)}">${h(type)}</option>`).join('');
 
-    document.getElementById('zone-filter-chips').innerHTML = `<span class="filter-label">Zona:</span> ${zoneChips}`;
-    document.getElementById('status-filter-chips').innerHTML = `<span class="filter-label">Estado:</span> ${statusChips}`;
-
-    updateFilterChips();
-
-    // Refactorizado: Usar chips para la duración en el constructor de kits
-    document.getElementById('kit-duration-chips').innerHTML = `<span class="filter-label">Duración:</span>` + Shared.DURATIONS.map(d => 
-      `<button class="chip" data-filter="kit-duration" data-value="${d.v}">${h(d.l)}</button>`
-    ).join('');
-  }
-
-  function loadFiltersFromURL() {
-    const params = new URLSearchParams(window.location.search);
-    const zone = params.get('zone');
-    const status = params.get('status');
-    if (zone) state.filters.zone = zone;
-    if (status) state.filters.status = status;
-  }
-
-  function updateURLWithFilters() {
-    const params = new URLSearchParams();
-    if (state.filters.zone && state.filters.zone !== 'Todas') {
-      params.set('zone', state.filters.zone);
-    }
-    if (state.filters.status && state.filters.status !== 'Todos') {
-      params.set('status', state.filters.status);
-    }
-
-    const queryString = params.toString();
-    const newUrl = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
-    // Usamos replaceState para no contaminar el historial del navegador con cada clic en un filtro.
-    window.history.replaceState({ path: newUrl }, '', newUrl);
-  }
-
-  function updateFilterChips() {
-    document.querySelectorAll('[data-filter]').forEach(chip => {
-      const filterType = chip.dataset.filter;
-      const value = chip.dataset.value;
-      const isActive = state.filters[filterType] === value;
-      chip.classList.toggle('on', isActive);
-    });
-    const hasFilters = state.filters.zone !== 'Todas' || state.filters.status !== 'Todos';
-    document.getElementById('btn-clear-filters').style.display = hasFilters ? 'flex' : 'none';
-  }
-
-  function clearFilters() {
-    state.filters.zone = 'Todas';
-    state.filters.status = 'Todos';
-    renderTable();
-    updateFilterChips();
-    updateURLWithFilters();
+    document.getElementById('zone-filter').innerHTML = zoneOptions;
+    document.getElementById('type-filter').innerHTML = typeOptions;
+    document.getElementById('kit-zone').innerHTML = zoneOptions;
+    document.getElementById('kit-duration').innerHTML = Shared.DURATIONS.map(d => `<option value="${d.v}">${d.l}</option>`).join('');
   }
 
   function filteredRows() {
     const query = document.getElementById('search').value.trim().toLowerCase();
-    const zone = state.filters.zone;
-    const status = state.filters.status;
-
+    const zone = document.getElementById('zone-filter').value;
+    const type = document.getElementById('type-filter').value;
     return state.rows.filter(row => {
       const matchesQuery = !query || [row.n, row.dir, row.b, row.tipo].some(v => String(v).toLowerCase().includes(query));
       const matchesZone = zone === 'Todos' || row.b === zone;
-      const matchesStatus = status === 'Todos' || row.status === status;
-      return matchesQuery && matchesZone && matchesStatus;
+      const matchesType = type === 'Todos' || row.tipo === type;
+      return matchesQuery && matchesZone && matchesType;
     });
   }
 
@@ -199,8 +146,8 @@ const DashboardApp = (() => {
     }
     document.getElementById('result-count').textContent = `${list.length} ${list.length === 1 ? 'resultado' : 'resultados'}`;
     document.getElementById('screen-tbody').innerHTML = list.map(row => `
-      <tr class="${row.id === state.selectedId ? 'selected' : ''} ${state.bulkSelected.has(row.id) ? 'bulk-selected' : ''}" data-row-id="${row.id}">
-        <td><input type="checkbox" data-action="bulk-select" data-id="${row.id}"></td><td><div class="screen-cell"><span class="screen-icon">${h(row.e)}</span><div><strong>${h(row.n)}</strong><span>${h(row.dir)} · ${h(row.b)}</span></div></div></td>
+      <tr class="${row.id === state.selectedId ? 'selected' : ''}" data-action="select" data-id="${row.id}">
+        <td><div class="screen-cell"><span class="screen-icon">${h(row.e)}</span><div><strong>${h(row.n)}</strong><span>${h(row.dir)} · ${h(row.b)}</span></div></div></td>
         <td><span class="badge">${h(row.tipo)}</span></td>
         <td>${h(row.imp)}</td>
         <td><strong>${fmt(row.precio)}</strong></td>
@@ -229,7 +176,6 @@ const DashboardApp = (() => {
   }
 
   function updateEditor(row) {
-    document.getElementById('editor-form').reset();
     if (!row) return;
     document.getElementById('editor-form').style.display = 'grid';
     document.getElementById('editor-empty').style.display = 'none';
@@ -242,15 +188,6 @@ const DashboardApp = (() => {
     document.getElementById('edit-note').value = row.note || '';
     document.getElementById('edit-status').value = row.status || SCREEN_STATUS.ACTIVE;
     renderPreview(row);
-  }
-
-  function showNewScreenForm() {
-    state.selectedId = null; // Deseleccionar cualquier fila
-    renderTable();
-    document.getElementById('editor-form').reset();
-    document.getElementById('editor-form').style.display = 'grid';
-    document.getElementById('editor-empty').style.display = 'none';
-    document.getElementById('ed-title').textContent = 'Nueva Pantalla';
   }
 
   function selectRow(id, doRenderTable = true) {
@@ -458,11 +395,9 @@ const DashboardApp = (() => {
   function bindEvents() {
     document.querySelectorAll('[data-section]').forEach(btn => btn.addEventListener('click', () => setSection(btn.dataset.section)));
 
-    document.getElementById('sb-toggle').addEventListener('click', () => {
-      document.getElementById('app').classList.toggle('nav-collapsed');
+    ['search', 'zone-filter', 'type-filter'].forEach(id => {
+      document.getElementById(id).addEventListener('input', renderTable);
     });
-
-    document.getElementById('btn-clear-filters').addEventListener('click', clearFilters);
 
     ['kit-client', 'kit-contact', 'settings-terms'].forEach(id => {
       document.getElementById(id).addEventListener('input', renderKitPreview);
@@ -474,27 +409,15 @@ const DashboardApp = (() => {
     document.getElementById('kit-search').addEventListener('input', renderKitBuilder);
 
     document.addEventListener('click', event => {
-      // Listener unificado para todas las acciones de clic
-
-      // 1. Filtros
-      const filterChip = event.target.closest('[data-filter]');
-      if (filterChip) {
-        state.filters[filterChip.dataset.filter] = filterChip.dataset.value;
-        renderTable();
-        updateFilterChips();
-        updateURLWithFilters();
-        return;
-      }
-
-      // 2. Acciones de Media Kit
       const target = event.target.closest('[data-action]');
-      if (target) {
-        const action = target.dataset.action;
-        const id = target.dataset.id;
-        const step = target.dataset.step;
+      if (!target) return;
+      const action = target.dataset.action;
+      const id = target.dataset.id;
+      const step = target.dataset.step;
 
-        const actions = {
-          'copy-kit': () => { const kit = state.savedKits.find(k => k.id === id); if (kit) navigator.clipboard?.writeText(new URL(Shared.getMediaKitUrl(kit.id), location.href).href).then(() => Shared.showToast('Link copiado')).catch(() => Shared.showToast('No se pudo copiar')); },
+      const actions = {
+        'select': () => selectRow(id),
+        'copy-kit': () => { const kit = state.savedKits.find(k => k.id === id); if (kit) navigator.clipboard?.writeText(new URL(Shared.getMediaKitUrl(kit.id), location.href).href).then(() => Shared.showToast('Link copiado')).catch(() => Shared.showToast('No se pudo copiar')); },
         'download-kit': () => {
           const kit = state.savedKits.find(k => k.id === id);
           if (kit) { downloadKitJson(kit); Shared.showToast('JSON descargado'); }
@@ -520,16 +443,8 @@ const DashboardApp = (() => {
         },
         'edit-kit': () => editKit(id)
       };
-        if (action === 'set-kit-step') setKitStep(Number(step));
-        if (actions[action]) actions[action]();
-        return;
-      }
-
-      // 3. Selección de fila en la tabla
-      const row = event.target.closest('[data-row-id]');
-      if (row && !event.target.matches('input[type="checkbox"]')) {
-        selectRow(row.dataset.rowId);
-      }
+      if (action === 'set-kit-step') setKitStep(Number(step));
+      if (actions[action]) actionsaction;
     });
 
     document.addEventListener('change', event => {
@@ -543,45 +458,32 @@ const DashboardApp = (() => {
 
     document.getElementById('editor-form').addEventListener('submit', async (event) => {
       event.preventDefault();
-      const isNew = state.selectedId === null;
-      const row = isNew ? {} : state.rows.find(item => item.id === state.selectedId);
-      if (!isNew && !row) return;
+      const row = state.rows.find(item => item.id === state.selectedId);
+      if (!row) return;
 
-      const submitButton = event.target.querySelector('button[type="submit"]');
-      submitButton.disabled = true;
-      submitButton.textContent = 'Guardando...';
-
+      // Prepara el objeto con los datos actualizados del formulario
       const updatedRowData = {
-        ...row,
+        ...row, // Mantiene los campos no editables
         n: document.getElementById('edit-name').value.trim() || row.n,
         b: document.getElementById('edit-zone').value.trim() || row.b,
         aud: document.getElementById('edit-audience').value.trim(),
         precio: Number(document.getElementById('edit-price').value) || row.precio,
         note: document.getElementById('edit-note').value.trim(),
-        status: document.getElementById('edit-status').value,
-        id: isNew ? Date.now() : row.id, // Asigna un nuevo ID si es nuevo
-        e: (document.getElementById('edit-name').value.trim() || 'NN').substring(0, 2).toUpperCase()
+        status: document.getElementById('edit-status').value
       };
 
-      if (isNew) {
-        state.rows.unshift(updatedRowData);
-      } else {
-        Object.assign(row, updatedRowData);
-      }
+      // Actualiza el estado local inmediatamente para una UI fluida (Optimistic Update)
+      Object.assign(row, updatedRowData);
 
-      await updateScreenAPI(updatedRowData);
-
-      submitButton.disabled = false;
-      submitButton.textContent = 'Guardado ✓';
-      setTimeout(() => {
-        submitButton.textContent = 'Guardar Pantalla';
-      }, 2000);
-
-      document.getElementById('last-action').textContent = isNew ? `Creada #${updatedRowData.id}` : `Actualizada #${updatedRowData.id}`;
+      document.getElementById('last-action').textContent = `Actualizada #${row.id}`;
       updateKpis();
       fillFilters();
-      selectRow(updatedRowData.id);
+      selectRow(row.id);
       renderKitBuilder();
+      
+      // Envía la actualización a la API como única fuente de verdad.
+      // La función updateScreenAPI ya debería existir en tu código.
+      await updateScreenAPI(updatedRowData);
     });
 
     document.getElementById('export-btn').addEventListener('click', exportCsv);
@@ -626,14 +528,11 @@ const DashboardApp = (() => {
 
     document.getElementById('app').style.display = 'grid';
     document.body.style.visibility = 'visible';
-
     await loadInitialData();
-    bindEvents();
-
-    loadFiltersFromURL();
     applyBrand();
     fillFilters();
     updateKpis();
+    bindEvents();
     bindStepperEvents();
 
     document.getElementById('settings-brand').value = state.brand.name;

@@ -12,8 +12,7 @@ const BrochureApp = (() => {
     sourceScreens: [],
     activeScreens: [],
     brand: { ...Shared.DEFAULT_BRAND },
-    map: null,
-    activeZone: 'Todos',
+    activeSort: 'recommended',
     markers: {},
     selectedScreens: [],
     quoteDuration: '1s',
@@ -46,11 +45,6 @@ function screenUseCase(s){
   if(s.tipo==='Peatonal')return 'Ideal para cercanía, retail y activaciones urbanas';
   if(s.tipo==='Vehicular')return 'Ideal para cobertura, recordación y accesos rápidos';
   return 'Ideal para campañas masivas y audiencias mixtas';
-}
-
-function setSort(sort){
-  state.activeSort = sort;
-  renderBrochure();
 }
 
 function setMobileQuote(open){
@@ -107,12 +101,6 @@ function showGeneratedFeedback(kit){
 }
 
 function sortedScreens(list){
-  return [...list].sort((a,b)=>{
-    if (state.activeSort === 'impact') return impNum(b) - impNum(a);
-    if (state.activeSort === 'price') return a.precio - b.precio;
-    if (state.activeSort === 'type') return (typeRank[a.tipo] ?? 9) - (typeRank[b.tipo] ?? 9) || impNum(b) - impNum(a);
-    return recommendedScore(b)-recommendedScore(a);
-  });
 }
 
 function loadLazyVideos(root=document){
@@ -151,11 +139,6 @@ function screenVideoHtml(s, eager=false){
   return `
     <span class="media-fallback" aria-hidden="true">${h(s.e)}</span>
     <video ${sourceAttr} ${autoplay} muted loop playsinline preload="${preload}" aria-label="Video de ${h(s.n)}" onerror="this.hidden=true"></video>`;
-}
-
-function screenHead(s, className, overlay='', eager=className==='media'){
-  const background=Shared.safeBackground(s.g);
-  return `<div class="${className} video-head" style="background:${background}">${screenVideoHtml(s, eager)}${overlay}</div>`;
 }
 
 function renderBrochureCard(s, eagerVideo=false){
@@ -251,13 +234,6 @@ function renderScreenCard(s){
     </div>`;
 }
 
-function closeScreen(){
-  state.activeScreenId = null;
-  document.getElementById('screen-panel').className='side';
-  document.getElementById('screen-panel').innerHTML='';
-  if (state.lastScreenTrigger instanceof HTMLElement) state.lastScreenTrigger.focus({ preventScroll: true });
-}
-
 function renderBrochure(){
   const minPrice = state.activeScreens.reduce((min, s) => Math.min(min, s.precio), Infinity);
   document.getElementById('hero-stats').innerHTML=`
@@ -292,27 +268,6 @@ function renderBrochure(){
   document.getElementById('cards').innerHTML=list.length
     ? list.map((s,index)=>renderBrochureCard(s,index<4)).join('')
     : `<div class="empty-state">No hay pantallas activas en ${state.activeZone}.<br><button type="button" data-action="set-zone" data-zone="Todos">Ver todas</button></div>`;
-  updateMapMarkers();
-  renderQuote();
-}
-
-function fitMapToActiveZone(){
-  const list=mapScreens();
-  if (!state.map || !list.length) return;
-  if(list.length===1){
-    state.map.flyTo([list[0].lat, list[0].lng], 14);
-    return;
-  }
-  const bounds=L.latLngBounds(list.map(s=>[s.lat,s.lng]));
-  state.map.fitBounds(bounds, { padding: [48, 48], maxZoom: 13 });
-}
-
-function selectedDuration(){
-  return Shared.DURATIONS.find(d => d.v === state.quoteDuration) || Shared.DURATIONS[0];
-}
-
-function quoteScreens(){
-  return state.selectedScreens.map(id => state.activeScreens.find(s => s.id === id)).filter(Boolean);
 }
 
 function quoteTotals(){
@@ -394,23 +349,6 @@ function handleFocusTrap(event) {
   }
 }
 
-function setOffcanvas(open) {
-  const container = document.getElementById('mediakit-offcanvas');
-  if (!container) return;
-
-  document.body.classList.toggle('offcanvas-open', open);
-  container.setAttribute('aria-hidden', !open);
-
-  if (open) {
-    container.querySelector('button.close')?.focus();
-    container.addEventListener('keydown', handleFocusTrap);
-  } else {
-    const trigger = document.querySelector('[data-action="generate-mediakit"]:not([disabled])');
-    trigger?.focus();
-    container.removeEventListener('keydown', handleFocusTrap);
-  }
-}
-
 async function generateMediaKit(id=null){
   if (id) ensureQuoteScreen(id);
   const kit=await Shared.buildMediaKit(quoteTotals(), BRAND, window.CONFIG || {}, 'Borrador');
@@ -489,14 +427,6 @@ Inversión estimada: ${fmt(q.total)}`;
   if(whatsappTarget&&previousHtml)setTimeout(()=>{whatsappTarget.innerHTML=previousHtml;},1600);
 }
 
-function showOnMap(id, trigger=document.activeElement){
-  const s = state.activeScreens.find(x => x.id === id);
-  if(!s)return;
-  setView('map', false);
-  setTimeout(() => state.map.flyTo([s.lat, s.lng], 14), 90);
-  openScreen(id, trigger);
-}
-
 function applyBrand(){
   document.title = state.brand.name + ' - Brochure y Mapa';
   Shared.applyBrandHeader(state.brand);
@@ -565,36 +495,46 @@ function bindEvents(){
   });
 }
 
-  async function init() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const loadDefault = urlParams.get('load') === 'default';
-  const savedState = Shared.loadDashboardState();
-
-  if (savedState && savedState.rows?.length && !loadDefault) {
-      console.log(`SmartKit: Cargando ${savedState.rows.length} pantallas desde localStorage.`);
-      state.sourceScreens = savedState.rows;
-    if (savedState.brand) Object.assign(state.brand, savedState.brand);
-  } else {
-    // Modificado: Cargar desde la API externa en lugar de screens.json.
-    try {
-      console.log('SmartKit: Cargando desde la API de inventario...');
-      // La URL del endpoint de tu API. Puede estar en una variable de configuración.
-      const response = await fetch('/api/screens'); 
-      if (!response.ok) throw new Error('No se pudo cargar el inventario desde la API.');
-      state.sourceScreens = await response.json();
-    } catch (error) {
-      console.error('Error al cargar datos de pantallas:', error);
-      // Mejora: Mostrar un error en la UI si la carga falla.
-      document.getElementById('cards').innerHTML = `<div class="empty-state">Error al cargar el inventario. Por favor, intenta recargar la página.</div>`;
-      state.sourceScreens = [];
+  /**
+   * Checks for a screen ID passed from map.js via localStorage and adds it to the quote.
+   * This creates a seamless flow for the user between the map and the brochure.
+   */
+  function handleRedirectFromMap() {
+    const screenIdToAdd = localStorage.getItem('sk_v1_add-to-quote');
+    if (screenIdToAdd) {
+      const screenId = parseInt(screenIdToAdd, 10);
+      // Ensure the screen is not already in the quote to avoid duplicates.
+      if (!state.selectedScreens.includes(screenId)) {
+        state.selectedScreens.push(screenId);
+        const screen = state.sourceScreens.find(s => s.id === screenId);
+        if (screen) {
+          // The toast from map.js is already shown, so this is optional.
+          // Shared.showToast(`✓ ${screen.n} agregada al cotizador`);
+        }
+      }
+      localStorage.removeItem('sk_v1_add-to-quote'); // Clean up the temporary key.
     }
   }
 
-    // Corregido: Unificar el criterio para pantallas activas.
-    // Prioriza el campo `status` del dashboard, y si no existe, usa el `active` del JSON.
-    state.activeScreens = state.sourceScreens.filter(s =>
-      s.status ? s.status === 'Activo' : (s.active !== false)
-    );
+  async function loadInitialData() {
+  try {
+    console.log('SmartKit: Cargando desde /screens.json...');
+    // Utiliza la función centralizada de shared.js para cargar los datos.
+    state.sourceScreens = await Shared.loadInventory();
+  } catch (error) {
+    // El manejo de errores se mantiene local para actualizar la UI específica de esta página.
+    console.error('Error al cargar datos de pantallas:', error);
+    document.getElementById('cards').innerHTML = `<div class="empty-state"><h3>Error al cargar el inventario</h3><p>Por favor, intenta recargar la página.</p></div>`;
+    state.sourceScreens = [];
+  }
+  }
+
+  async function init() {
+    await loadInitialData();
+    
+    handleRedirectFromMap(); // Check for and handle the action from the map page.
+
+    state.activeScreens = state.sourceScreens.filter(s => s.status ? s.status === 'Activo' : (s.active !== false));
     state.zones = ['Todos', ...new Set(state.activeScreens.map(s => s.b))];
     state.activeMetrics.totalReach = state.activeScreens.reduce((acc, s) => acc + impNum(s), 0);
 
@@ -602,7 +542,6 @@ function bindEvents(){
   Shared.updateMediaKitLinks();
   renderBrochure(); // Mover renderBrochure() antes de initMap()
   bindEvents();
-  initMap();
   }
 
   return { init };

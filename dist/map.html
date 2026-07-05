@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SmartKit – Mapa de Pantallas</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css?v=7c91013">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js?v=7c91013"></script>
-<link rel="stylesheet" href="styles.css?v=7c91013">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css?v=ea21af7">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js?v=ea21af7"></script>
+<link rel="stylesheet" href="styles.css?v=ea21af7">
 </head>
 <body>
 
@@ -22,11 +22,10 @@
 </div>
 
 <!-- ── FILTER CHIPS ── -->
-<div class="chips" id="chips">
-  <button class="chip on" data-tipo="Todos">Todos<span class="chip-count" id="cnt-all">0</span></button>
-  <button class="chip" data-tipo="Peatonal">Peatonal<span class="chip-count" id="cnt-peatonal">0</span></button>
-  <button class="chip" data-tipo="Vehicular">Vehicular<span class="chip-count" id="cnt-vehicular">0</span></button>
-  <button class="chip" data-tipo="Mixto">Mixto<span class="chip-count" id="cnt-mixto">0</span></button>
+<div class="filters-bar" style="position: fixed; top: 64px; left: 250px; right: 18px; z-index: 400;">
+  <div class="filter-chips" id="zone-filter-chips"></div>
+  <div class="filter-chips" id="type-filter-chips"></div>
+  <button class="btn ghost sm" id="btn-clear-filters" style="display:none">Limpiar filtros</button>
 </div>
 
 <!-- ── MAP ── -->
@@ -52,22 +51,9 @@
   <div class="sc-body" id="sc-body"></div>
 </aside>
 
-<!-- ── QUOTE PILL ── -->
-<div class="quote-pill" id="quote-pill">
-  <div class="q-pill-dot" id="q-dot">0</div>
-  <div class="q-pill-info">
-    <strong id="q-label">Cotizador vacío</strong>
-    <span id="q-sublabel">Agregá pantallas desde el mapa</span>
-  </div>
-  <div class="q-pill-actions" id="q-actions" style="display:none">
-    <button class="q-pill-btn" id="q-clear">Limpiar</button>
-    <button class="q-pill-btn pri" id="q-go">Ver cotizador →</button>
-  </div>
-</div>
-
 <!-- ── TOAST ── -->
 <div class="toast" id="toast"></div>
 
-<script src="public.js?v=7c91013"></script>
+<script src="public.js?v=ea21af7"></script>
 </body>
 </html>

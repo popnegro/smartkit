@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SmartKit – Brochure DOOH</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css?v=7c91013">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js?v=7c91013"></script>
-<link rel="stylesheet" href="styles.css?v=7c91013">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css?v=ea21af7">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js?v=ea21af7"></script>
+<link rel="stylesheet" href="styles.css?v=ea21af7">
 </head>
 <body>
 
@@ -22,6 +22,7 @@
     <div class="filters-bar">
       <div class="zone-filters" id="zone-filters"></div>
       <div class="sort-filters" id="sort-filters"></div>
+      <div id="active-filter-chip" hidden></div>
     </div>
     <div class="brochure-grid">
       <section>
@@ -69,21 +70,6 @@
   </div>
 </div>
 
-<div id="view-map" class="view">
-  <div id="map"></div>
-  <div class="legend">
-    <span><i class="dot dot-p"></i>Peatonal</span>
-    <span><i class="dot dot-v"></i>Vehicular</span>
-    <span><i class="dot dot-m"></i>Mixto</span>
-  </div>
-  <div id="sc-panel">
-    <div class="scp-inner">
-      <button class="scp-close" id="scp-close">✕</button>
-      <div id="scp-content"></div>
-    </div>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
 
 <!-- Media Kit Modal -->
@@ -94,6 +80,6 @@
   </div>
 </div>
 
-<script src="public.js?v=7c91013"></script>
+<script src="public.js?v=ea21af7"></script>
 </body>
 </html>

@@ -13,7 +13,6 @@ let screens = [];
 let markers = {};        // id → L.circleMarker
 let activeFilter = 'Todos';
 let activeScreen = null;
-let quote = new Map();   // id → screen
 let lMap = null;
 let searchQ = '';
 
@@ -37,8 +36,6 @@ async function boot(){
   setupSearch();
   setupChips();
   setupPanel();
-  setupQuotePill();
-  updateQuotePill();
 }
 
 function loadConfig(){
@@ -56,7 +53,7 @@ function loadConfig(){
 
 async function loadScreens(){
   try {
-    const allScreens = await Shared.loadInventory();
+    const allScreens = await Shared.loadInventory(); // Use the centralized data loader.
     screens = allScreens.filter(s => (s.status === 'Activo' || s.active) && s.lat && s.lng);
   } catch (error) {
     console.error('Error al cargar pantallas en el mapa:', error);
@@ -115,8 +112,7 @@ function applyFilters(){
   screens.forEach(s => {
     const m = markers[s.id]; if(!m) return;
     const show = visible.some(v => v.id === s.id);
-    const inQ = quote.has(s.id);
-    if(show){ m.setStyle({opacity:1, fillOpacity: inQ ? 1 : .88, weight: inQ ? 3 : 2, color: inQ ? '#fbbf24' : '#fff'}); }
+    if(show){ m.setStyle({opacity:1, fillOpacity:.88 }); }
     else    { m.setStyle({opacity:.15, fillOpacity:.1}); }
   });
 
@@ -137,7 +133,6 @@ function openPanel(s){
     : esc((s.nombre||'').substring(0,2).toUpperCase());
 
   // Body
-  const inQ = quote.has(s.id);
   $('sc-body').innerHTML = `
     <div class="sc-zone-row">
       <span class="badge ${badgeClass[s.tipo]||''}">${esc(s.tipo)}</span>
@@ -151,11 +146,11 @@ function openPanel(s){
       <div class="sc-stat"><span>Zona</span><strong>${esc(s.zona)}</strong></div>
     </div>
     ${s.nota ? `<div class="sc-note">${esc(s.nota)}</div>` : ''}
-    <button class="btn-add${inQ?' in':''}" id="panel-add-btn">
-      ${inQ ? '✓ En cotizador · Quitar' : '+ Agregar al cotizador'}
+    <button class="btn-add" id="panel-add-btn">
+      + Agregar al cotizador
     </button>`;
 
-  $('panel-add-btn').addEventListener('click', () => toggleQuote(s));
+  $('panel-add-btn').addEventListener('click', () => addToQuoteAndRedirect(s));
   $('sc-panel').classList.add('open');
 
   // Highlight marker
@@ -167,94 +162,43 @@ function closePanel(){
   activeScreen = null;
 }
 
-// ── Quote ──
-function toggleQuote(s){
-  if(quote.has(s.id)){
-    quote.delete(s.id);
-    toast(`${s.nombre} quitada del cotizador`);
-  } else {
-    quote.set(s.id, s);
-    toast(`✓ ${s.nombre} agregada al cotizador`);
-  }
-  updateQuotePill();
-  applyFilters();
-  // Refresh panel button if open
-  if(activeScreen && activeScreen.id === s.id) openPanel(s);
-}
-
-function updateQuotePill(){
-  const n = quote.size;
-  const items = [...quote.values()];
-  const total = items.reduce((a,s)=>a+s.precio*4,0); // default 4 semanas
-
-  $('q-dot').textContent = n;
-  $('quote-pill').classList.toggle('has-items', n > 0);
-
-  if(n === 0){
-    $('q-label').textContent = 'Cotizador vacío';
-    $('q-sublabel').textContent = 'Agregá pantallas desde el mapa';
-    $('q-actions').style.display = 'none';
-  } else {
-    $('q-label').textContent = `${n} pantalla${n!==1?'s':''} · ${fmt(total)}/mes`;
-    $('q-sublabel').textContent = `${fmtImp(items.reduce((a,s)=>a+s.impactos,0))} imp/día`;
-    $('q-actions').style.display = 'flex';
-  }
-}
-
-function setupQuotePill(){
-  $('q-clear').addEventListener('click', () => {
-    if(!confirm('¿Limpiar el cotizador?')) return;
-    quote.clear();
-    updateQuotePill();
-    applyFilters();
-    toast('Cotizador vaciado');
-  });
-
-  $('q-go').addEventListener('click', () => {
-    // Persist quote to localStorage as a draft kit then navigate
-    const items = [...quote.values()];
-    if(!items.length) return;
-    const weeks = 4;
-    const id = 'kit-draft-' + Date.now().toString(36);
-    const now = new Date();
-    const kit = {
-      id, client:'', contact:'',
-      createdAt: now.toISOString(),
-      validUntil: new Date(now.getTime()+15*86400000).toISOString(),
-      brand:'SmartKit', weeks, weekLabel:'4 semanas',
-      screens: items.map(s=>({...s, precioCampana:s.precio*weeks})),
-      totals:{
-        screens:items.length,
-        impactsPerDay:items.reduce((a,s)=>a+s.impactos,0),
-        impactsTotal:items.reduce((a,s)=>a+s.impactos,0)*weeks*7,
-        investment:items.reduce((a,s)=>a+s.precio*weeks,0)
-      },
-      terms:'Inicio de campaña sujeto a disponibilidad. Valores en ARS.'
-    };
-    let all={};
-    try{all=JSON.parse(localStorage.getItem(K_KITS)||'{}');}catch(_){}
-    all[id]=kit; localStorage.setItem(K_KITS,JSON.stringify(all));
-    window.location.href=`mediakit.html?id=${encodeURIComponent(id)}`;
-  });
+/**
+ * Adds a screen to the main quote system (managed by app.js) via localStorage
+ * and redirects the user to the brochure page.
+ * @param {object} screen The screen object to add.
+ */
+function addToQuoteAndRedirect(screen) {
+  toast(`✓ ${screen.nombre} agregada. Redirigiendo al cotizador...`);
+  // Use a temporary storage key that app.js can read on load.
+  localStorage.setItem('sk_v1_add-to-quote', screen.id);
+  setTimeout(() => {
+    window.location.href = '/index.html';
+  }, 800); // Wait a moment for the user to read the toast.
 }
 
 // ── Search ──
 function setupSearch(){
+  const debouncedFilter = Shared.debounce(() => applyFilters(), 250);
   $('search').addEventListener('input', e => {
     searchQ = e.target.value.toLowerCase().trim();
-    applyFilters();
+    debouncedFilter();
   });
 }
 
 // ── Chips ──
 function setupChips(){
-  document.querySelectorAll('.chip').forEach(c => {
-    c.addEventListener('click', () => {
-      activeFilter = c.dataset.tipo;
-      document.querySelectorAll('.chip').forEach(x => x.classList.remove('on'));
-      c.classList.add('on');
-      applyFilters();
-    });
+  const tipos = ['Todos', 'Peatonal', 'Vehicular', 'Mixto'];
+  const typeChips = tipos.map(tipo => 
+    `<button class="chip ${tipo === activeFilter ? 'on' : ''}" data-filter="type" data-value="${tipo}">${tipo}<span class="chip-count" id="cnt-${tipo.toLowerCase()}">0</span></button>`
+  ).join('');
+  document.getElementById('type-filter-chips').innerHTML = `<span class="filter-label">Tipo:</span> ${typeChips}`;
+
+  document.getElementById('type-filter-chips').addEventListener('click', (event) => {
+    const chip = event.target.closest('[data-filter="type"]');
+    if (!chip) return;
+    activeFilter = chip.dataset.value;
+    applyFilters();
+    updateChipSelection();
   });
 }
 
@@ -263,8 +207,14 @@ function updateCounts(){
   const tipos = ['Peatonal','Vehicular','Mixto'];
   $('cnt-all').textContent = screens.length;
   tipos.forEach(t => {
-    const el = document.querySelector(`.chip[data-tipo="${t}"] .chip-count`);
+    const el = document.getElementById(`cnt-${t.toLowerCase()}`); // Corregido para apuntar a los nuevos IDs
     if(el) el.textContent = screens.filter(s => s.tipo === t).length;
+  });
+}
+
+function updateChipSelection() {
+  document.querySelectorAll('[data-filter="type"]').forEach(chip => {
+    chip.classList.toggle('on', chip.dataset.value === activeFilter);
   });
 }
 
