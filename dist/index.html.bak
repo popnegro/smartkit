@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SmartKit - Brochure y Mapa</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css?v=93a2a21">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css?v=dafe0a5">
 <script type="module" src="https://esm.run/@material/web/all.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<link rel="stylesheet" href="./styles.css?v=93a2a21">
+<link rel="stylesheet" href="./styles.css?v=dafe0a5">
 </head>
 <body>
 <a class="skip-link" href="#view-brochure">Saltar al contenido</a>

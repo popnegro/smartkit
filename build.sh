@@ -18,7 +18,6 @@ DEST_DIR="dist"
 JS_FILES_TO_MINIFY=(
     "shared.js"
     "mediakit.js"
-    "config.js"
 )
 CSS_FILES_TO_MINIFY=(
     "styles.css"
@@ -38,7 +37,7 @@ limpiar() {
 copiar_archivos() {
     echo "Copiando archivos y directorios..."
     # Copia los archivos HTML y el readme
-    for file in "${HTML_FILES[@]}" "readme.md" "screens.json"; do
+    for file in "${HTML_FILES[@]}" "readme.md"; do
         cp "$file" "$DEST_DIR/"
     done
     # Copia los directorios de assets
