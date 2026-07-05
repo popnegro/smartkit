@@ -42,8 +42,8 @@
   </a>
 </nav>
 
-<script src="./config.js?v=1c84ba0"></script>
-<script src="./shared.js?v=1c84ba0"></script>
-<script src="./mediakit.js?v=1c84ba0"></script>
+<script src="./config.js"></script>
+<script src="./shared.js"></script>
+<script src="./mediakit.js"></script>
 </body>
 </html>

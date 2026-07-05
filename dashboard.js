@@ -42,9 +42,14 @@ const DashboardApp = (() => {
       state.savedKits = savedState.kits || [];
       Object.assign(state.brand, savedState.brand || {});
     } else {
-      state.rows = JSON.parse(JSON.stringify(SCREENS));
-      state.rows.forEach(row => { row.status = row.active ? SCREEN_STATUS.ACTIVE : SCREEN_STATUS.PAUSED; });
-      Shared.showToast('Datos iniciales cargados');
+      try {
+        console.log('SmartKit Dashboard: Cargando desde screens.json...');
+        const response = await fetch('./screens.json');
+        if (!response.ok) throw new Error('No se pudo cargar screens.json');
+        state.rows = await response.json();
+        state.rows.forEach(row => { row.status = row.active ? SCREEN_STATUS.ACTIVE : SCREEN_STATUS.PAUSED; });
+        Shared.showToast('Datos iniciales cargados desde screens.json');
+      } catch (error) { console.error(error); state.rows = []; }
     }
     state.selectedId = state.rows?.id;
   }
