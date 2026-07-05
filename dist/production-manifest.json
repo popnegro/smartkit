@@ -20,5 +20,6 @@
   "dashboard.js",
   "mediakit.html.bak",
   "index.html.bak",
-  "shared.js"
+  "shared.js",
+  "production-manifest.json"
 ]

@@ -49,15 +49,9 @@ copiar_archivos() {
 
 minificar_js() {
     echo "Minificando JavaScript con Terser..."
-    if [ "$MODE" == "api" ]; then
-        echo "  Modificando app.js y dashboard.js para modo API..."
-        sed "s/const MODE = 'static';/const MODE = 'api';/" app.js | ./node_modules/.bin/terser -c -m > "$DEST_DIR/app.js"
-        sed "s/const MODE = 'static';/const MODE = 'api';/" dashboard.js | ./node_modules/.bin/terser -c -m > "$DEST_DIR/dashboard.js"
-    else
-        echo "  Minificando app.js y dashboard.js..."
-        (./node_modules/.bin/terser -c -m -- "app.js" > "$DEST_DIR/app.js" && echo "  ✅ Minificado: app.js") &
-        (./node_modules/.bin/terser -c -m -- "dashboard.js" > "$DEST_DIR/dashboard.js" && echo "  ✅ Minificado: dashboard.js") &
-    fi
+    echo "  Minificando app.js y dashboard.js..."
+    (./node_modules/.bin/terser -c -m -- "app.js" > "$DEST_DIR/app.js" && echo "  ✅ Minificado: app.js") &
+    (./node_modules/.bin/terser -c -m -- "dashboard.js" > "$DEST_DIR/dashboard.js" && echo "  ✅ Minificado: dashboard.js") &
 
     # Ejecuta la minificación en paralelo para acelerar el proceso
     for file in "${JS_FILES_TO_MINIFY[@]}"; do

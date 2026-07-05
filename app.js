@@ -734,9 +734,9 @@ function bindEvents(){
 
   applyBrand();
   Shared.updateMediaKitLinks();
+  renderBrochure(); // Mover renderBrochure() antes de initMap()
   bindEvents();
   initMap();
-  renderBrochure();
     setView('brochure', false);
   }
 

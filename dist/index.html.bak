@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SmartKit - Brochure y Mapa</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css?v=e01ac92">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css?v=4580cda">
 <script type="module" src="https://esm.run/@material/web/all.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<link rel="stylesheet" href="./styles.css?v=e01ac92">
+<link rel="stylesheet" href="./styles.css?v=4580cda">
 </head>
 <body>
 <a class="skip-link" href="#view-brochure">Saltar al contenido</a>
@@ -24,7 +24,8 @@
     <nav class="nav" id="primary-nav" aria-label="Vistas principales">
       <button id="btn-brochure" class="on" type="button" aria-current="page" data-view="brochure">Brochure</button>
       <button id="btn-map" type="button" data-view="map">Mapa</button>
-      <a href="./mediakit.html" class="nav-link" data-mediakit-link>Último Kit</a>
+      <a href="./mediakit.html" class="nav-link" data-mediakit-link>Media Kit</a>
+      <a href="./dashboard.html" class="nav-link">Dashboard</a>
     </nav>
     <div class="header-actions">
       <button class="mobile-quote-toggle" id="mobile-quote-toggle" type="button" aria-controls="quote-panel" aria-expanded="false" data-action="toggle-mobile-quote">

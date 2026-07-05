@@ -2,8 +2,6 @@ const DashboardApp = (() => {
   const Shared = window.SmartKitShared;
   const { formatMoney: fmt, impNum: imp, escapeHtml: h } = Shared;
 
-  const MODE = 'static'; // El script de build lo cambiará a 'api' si es necesario
-
   const SECTIONS = { INVENTORY: 'inventory', MEDIAKITS: 'mediakits', METRICS: 'metrics', SETTINGS: 'settings' };
   const KIT_STATUS = { DRAFT: 'Borrador', ARCHIVED: 'Archivado' };
   const SCREEN_STATUS = { ACTIVE: 'Activo', PAUSED: 'Pausado' };
@@ -27,17 +25,7 @@ const DashboardApp = (() => {
     const loadDefault = urlParams.get('load') === 'default';
     const savedState = Shared.loadDashboardState();
 
-    if (MODE === 'api') {
-      try {
-        console.log('SmartKit: Modo API, cargando desde /inventory...');
-        const response = await fetch('/inventory');
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        state.rows = await response.json();
-      } catch (err) {
-        console.error('Fallo al cargar las pantallas desde la API', err);
-        state.rows = [];
-      }
-    } else if (savedState && !loadDefault) {
+    if (savedState && !loadDefault) {
       state.rows = savedState.rows;
       state.savedKits = savedState.kits || [];
       Object.assign(state.brand, savedState.brand || {});
@@ -53,7 +41,8 @@ const DashboardApp = (() => {
         Shared.showToast('Datos iniciales cargados desde screens.json');
       } catch (error) { console.error(error); state.rows = []; }
     }
-    state.selectedId = state.rows?.id;
+    // Corregido: Seleccionar el ID del *primer* elemento del array.
+    state.selectedId = state.rows?.[0]?.id;
   }
 
   function calculateKitMetrics(screens, duration) {
@@ -118,8 +107,9 @@ const DashboardApp = (() => {
 
   function renderTable() {
     const list = filteredRows();
+    // Corregido: Si el ID seleccionado no está en la lista filtrada, seleccionar el primero de la lista.
     if (list.length && !list.some(row => row.id === state.selectedId)) {
-      selectRow(list.id, false); // Evitar bucle de renderizado
+      selectRow(list[0].id, false); // Evitar bucle de renderizado
     }
     document.getElementById('result-count').textContent = `${list.length} ${list.length === 1 ? 'resultado' : 'resultados'}`;
     document.getElementById('screen-table').innerHTML = list.map(row => `

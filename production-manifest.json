@@ -11,6 +11,7 @@
     "mediakit.js",
     "dashboard.js",
     "config.js",
+    "screens.json",
     "assets/videos",
     "data/kits"
   ]
