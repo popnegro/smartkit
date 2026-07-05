@@ -320,14 +320,6 @@ const SmartKitShared = (() => {
 
       const savedState = JSON.parse(stateJSON);
       if (savedState && savedState.rows && Array.isArray(savedState.rows)) {
-        // Sincronizar con la fuente de verdad (screens-data.js) para el estado 'active'
-        if (typeof SCREENS !== 'undefined') {
-          const sourceScreens = new Map(SCREENS.map(s => [s.id, s]));
-          savedState.rows.forEach(row => {
-            const sourceScreen = sourceScreens.get(row.id);
-            row.active = sourceScreen ? sourceScreen.active : false;
-          });
-        }
         return savedState;
       }
     } catch (err) {

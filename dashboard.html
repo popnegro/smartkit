@@ -121,6 +121,13 @@
             <label for="edit-note">Nota interna</label>
             <textarea id="edit-note" name="note" placeholder="Ej: validar disponibilidad antes de cotizar"></textarea>
           </div>
+          <div class="field">
+            <label for="edit-status">Estado</label>
+            <select id="edit-status" name="status">
+              <option value="Activo">Activo (Visible en brochure)</option>
+              <option value="Pausado">Pausado (Oculto de brochure)</option>
+            </select>
+          </div>
           <button class="btn success" type="submit">Aplicar al dashboard</button>
         </form>
         <div class="status-line">
