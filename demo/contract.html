@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Acuerdo de Desarrollo de Software — SmartKit SaaS (Proposal Style)</title>
+
+  <meta name="description" content="Propuesta Comercial y Acuerdo de Desarrollo de Software para la plataforma SmartKit SaaS. Un sistema integral para la gestión de catálogos de medios y generación de media kits." />
+  <meta name="author" content="SmartWeb" />
+  <meta name="keywords" content="Contrato, Propuesta Comercial, Desarrollo de Software, SaaS, SmartKit, SmartWeb, Next.js, Supabase, Vercel" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://smartkit-saas.vercel.app/contract.html">
+  <meta property="og:title" content="Acuerdo de Desarrollo de Software — SmartKit SaaS">
+  <meta property="og:description" content="Propuesta Comercial y Acuerdo de Desarrollo de Software para la plataforma SmartKit SaaS.">
+  <meta property="og:image" content="https://smartkit-saas.vercel.app/og-image.png">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://smartkit-saas.vercel.app/contract.html">
+  <meta property="twitter:title" content="Acuerdo de Desarrollo de Software — SmartKit SaaS">
+  <meta property="twitter:description" content="Propuesta Comercial y Acuerdo de Desarrollo de Software para la plataforma SmartKit SaaS.">
+  <meta property="twitter:image" content="https://smartkit-saas.vercel.app/og-image.png">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- =================================================================
+  STYLES - PROPOSAL STYLE
+  ================================================================== -->
+  <style>
+    /*
+    * INDEX
+    * 1.  Variables & Theming
+    * 2.  Reset & Base Styles
+    * 3.  Layout & Grid System
+    * 4.  Header & Sidebar
+    * 5.  Typography
+    * 6.  Core Components (Button, Card, Badge, Table, etc.)
+    * 7.  Section-Specific Components (Hero, Timeline, Arch Diagram, etc.)
+    * 8.  Utility & Helper Classes
+    * 9.  Animations & Transitions
+    * 10. Print Styles
+    */
+
+    /* 1. VARIABLES & THEMING
+    ----------------------------------------------------------------*/
+    :root {
+      /* Colors */
+      --color-bg: #ffffff;
+      --color-bg-secondary: #f9fafb;
+      --color-text: #111827;
+      --color-text-secondary: #6b7280;
+      --color-border: #e5e7eb;
+      --color-primary: #3b82f6;
+      --color-shadow: rgba(15, 23, 42, .06);
+      --color-shadow-lg: rgba(15, 23, 42, .1);
+
+      /* Typography */
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-serif: 'Playfair Display', serif;
+
+      /* Spacing */
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.25rem;
+      --space-6: 1.5rem;
+      --space-8: 2rem;
+      --space-10: 2.5rem;
+      --space-12: 3rem;
+      --space-16: 4rem;
+      --space-20: 5rem;
+      --space-24: 6rem;
+
+      /* Other */
+      --border-radius: 1rem; /* rounded-2xl */
+      --border-radius-sm: 0.75rem; /* rounded-xl */
+      --transition-duration: 0.3s;
+      --max-width: 80rem;
+      --sidebar-width: 16rem;
+    }
+
+    /* 2. RESET & BASE STYLES
+    ----------------------------------------------------------------*/
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.6;
+    }
+
+    /* 3. LAYOUT & GRID SYSTEM
+    ----------------------------------------------------------------*/
+    .page-wrapper {
+      display: flex;
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding-top: 80px; /* Space for fixed header */
+    }
+
+    .sidebar {
+      width: var(--sidebar-width);
+      height: calc(100vh - 80px);
+      position: sticky;
+      top: 80px;
+      flex-shrink: 0;
+      overflow-y: auto;
+      padding: var(--space-8) 0;
+      border-right: 1px solid var(--color-border);
+    }
+
+    .main-content {
+      flex-grow: 1;
+      min-width: 0;
+      padding: var(--space-8) var(--space-10);
+    }
+
+    .content-section {
+      padding-top: var(--space-16);
+      padding-bottom: var(--space-16);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .content-section:first-child {
+      padding-top: 0;
+    }
+    .content-section:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .container {
+      max-width: 65ch;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .container-wide {
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .grid-2, .grid-3, .grid-4 {
+      display: grid;
+      gap: var(--space-8);
+    }
+    .grid-2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+    .grid-3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); }
+    .grid-4 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
+
+    /* 4. HEADER & SIDEBAR
+    ----------------------------------------------------------------*/
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--space-8);
+      background-color: rgba(17, 24, 39, 0.95);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 1000;
+    }
+    
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      text-decoration: none;
+      color: #ffffff;
+    }
+    .header-logo svg {
+      width: 32px;
+      height: 32px;
+    }
+    .header-logo span {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .progress-bar {
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      height: 2px;
+      background-color: #ffffff;
+      width: 0;
+      transition: width 0.1s linear;
+    }
+
+    .toc {
+      list-style: none;
+    }
+    .toc-item {
+      margin-bottom: var(--space-1);
+    }
+    .toc-link {
+      display: block;
+      padding: var(--space-2) var(--space-6);
+      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      border-left: 2px solid transparent;
+      transition: all var(--transition-duration) ease;
+    }
+    .toc-link:hover {
+      color: var(--color-text);
+    }
+    .toc-link.is-active {
+      color: var(--color-primary);
+      font-weight: 600;
+      border-left-color: var(--color-primary);
+    }
+    
+    .mobile-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+    .mobile-menu-btn svg {
+      width: 24px;
+      height: 24px;
+      stroke: #ffffff;
+    }
+
+    /* 5. TYPOGRAPHY
+    ----------------------------------------------------------------*/
+    h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-serif);
+      color: var(--color-text);
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+    .section-header {
+      margin-bottom: var(--space-12);
+    }
+    .section-kicker {
+      display: block;
+      font-family: var(--font-sans);
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-4);
+    }
+    .section-title {
+      font-size: clamp(2rem, 5vw, 3rem);
+    }
+    .section-subtitle {
+      font-family: var(--font-sans);
+      font-size: 1.25rem;
+      color: var(--color-text-secondary);
+      margin-top: var(--space-6);
+      max-width: 65ch;
+      line-height: 1.6;
+    }
+
+    .content-title {
+      font-size: 1.75rem;
+      margin-bottom: var(--space-6);
+      margin-top: var(--space-12);
+    }
+    .content-title:first-child {
+      margin-top: 0;
+    }
+
+    p, li {
+      font-size: 1rem;
+      line-height: 1.7;
+      color: var(--color-text-secondary);
+    }
+    p + p { margin-top: var(--space-4); }
+    ul, ol {
+      padding-left: var(--space-5);
+      margin-top: var(--space-4);
+      margin-bottom: var(--space-4);
+    }
+    li { margin-bottom: var(--space-2); }
+    strong { font-weight: 600; color: var(--color-text); }
+    a { color: var(--color-primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code {
+      font-family: monospace;
+      background-color: var(--color-bg-secondary);
+      padding: 0.2em 0.4em;
+      border-radius: 4px;
+      font-size: 0.9em;
+      color: var(--color-text);
+    }
+
+    /* 6. CORE COMPONENTS
+    ----------------------------------------------------------------*/
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-5);
+      border-radius: var(--border-radius-sm);
+      font-weight: 500;
+      font-size: 0.9rem;
+      border: 1px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all var(--transition-duration) ease;
+    }
+    .btn-primary {
+      background-color: var(--color-text);
+      color: var(--color-bg);
+      border-color: var(--color-text);
+    }
+    .btn-primary:hover {
+      background-color: #374151;
+    }
+    .btn-secondary {
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      border-color: var(--color-border);
+    }
+    .btn-secondary:hover {
+      border-color: var(--color-text);
+    }
+    .btn-secondary.inverted {
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    .btn-secondary.inverted:hover {
+      border-color: #fff;
+    }
+
+    .card {
+      background-color: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--border-radius);
+      padding: var(--space-8);
+      transition: all var(--transition-duration) ease;
+      height: 100%;
+    }
+    .card-hover:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px var(--color-shadow-lg);
+    }
+    .card-title {
+      font-size: 1.25rem;
+      margin-bottom: var(--space-4);
+    }
+    .card-icon {
+      margin-bottom: var(--space-6);
+    }
+    .card-icon svg {
+      width: 32px;
+      height: 32px;
+      color: var(--color-primary);
+    }
+    .card-feature-list {
+      list-style: none;
+      padding: 0;
+      margin-top: var(--space-6);
+    }
+    .card-feature-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      font-size: 0.9rem;
+    }
+    .card-feature-list li svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      margin-top: 4px;
+      color: var(--color-primary);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.3rem 0.8rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-radius: 999px;
+      border: 1px solid var(--color-border);
+      background-color: var(--color-bg);
+      color: var(--color-text-secondary);
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      border: 1px solid var(--color-border);
+      border-radius: var(--border-radius);
+      margin-top: var(--space-8);
+    }
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    .table th, .table td {
+      padding: var(--space-4);
+      text-align: left;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .table th {
+      font-weight: 600;
+      background-color: var(--color-bg-secondary);
+      color: var(--color-text);
+    }
+    .table tbody tr:last-child td {
+      border-bottom: none;
+    }
+    .table tbody tr:hover {
+      background-color: var(--color-bg-secondary);
+    }
+    .table-editable td[contenteditable="true"]:focus {
+      outline: 2px solid var(--color-primary);
+      background-color: var(--color-bg);
+    }
+
+    .accordion-item {
+      border-bottom: 1px solid var(--color-border);
+    }
+    .accordion-item:last-child {
+      border-bottom: none;
+    }
+    .accordion-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: var(--space-6) 0;
+      background: none;
+      border: none;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+      color: var(--color-text);
+    }
+    .accordion-icon {
+      transition: transform var(--transition-duration) ease;
+      flex-shrink: 0;
+      margin-left: var(--space-4);
+    }
+    .accordion-header[aria-expanded="true"] .accordion-icon {
+      transform: rotate(45deg);
+    }
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease-out;
+    }
+    .accordion-content-inner {
+      padding-bottom: var(--space-6);
+    }
+
+    .callout {
+      padding: var(--space-6);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--color-border);
+      background-color: var(--color-bg-secondary);
+      display: flex;
+      gap: var(--space-4);
+      align-items: flex-start;
+    }
+    .callout-icon {
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .callout-icon svg {
+      width: 20px;
+      height: 20px;
+      color: var(--color-text-secondary);
+    }
+
+    /* 7. SECTION-SPECIFIC COMPONENTS
+    ----------------------------------------------------------------*/
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding-top: var(--space-10);
+      padding-bottom: var(--space-20);
+    }
+    .hero-gradient {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      background:
+        radial-gradient(circle at top left, hsla(217, 91%, 60%, 0.12), transparent 40%),
+        radial-gradient(circle at bottom right, hsla(262, 83%, 60%, 0.12), transparent 35%);
+    }
+    .hero-content {
+      max-width: 800px;
+      text-align: center;
+      margin: 0 auto;
+    }
+    .hero-title {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+    }
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: var(--color-text-secondary);
+      margin-top: var(--space-6);
+      max-width: 65ch;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .hero-meta {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-8);
+      margin-top: var(--space-8);
+      font-size: 0.9rem;
+      color: var(--color-text-secondary);
+    }
+
+    .arch-diagram {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2);
+      font-family: monospace;
+      margin: var(--space-16) 0;
+    }
+    .arch-item {
+      background-color: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      padding: var(--space-4) var(--space-8);
+      border-radius: 0.5rem;
+      text-align: center;
+      width: 200px;
+    }
+    .arch-arrow {
+      color: var(--color-text-secondary);
+      font-size: 1.5rem;
+      line-height: 1;
+    }
+
+    .timeline {
+      position: relative;
+      margin: var(--space-16) 0;
+      padding: 0;
+      list-style: none;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 12px;
+      height: 100%;
+      width: 2px;
+      background: var(--color-border);
+    }
+    .timeline-item {
+      position: relative;
+      padding-left: var(--space-12);
+      padding-bottom: var(--space-12);
+    }
+    .timeline-item:last-child {
+      padding-bottom: 0;
+    }
+    .timeline-dot {
+      position: absolute;
+      left: 0;
+      top: 4px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background-color: var(--color-bg);
+      border: 3px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 0.8rem;
+      color: var(--color-text-secondary);
+    }
+    .timeline-item.is-active .timeline-dot {
+      border-color: var(--color-primary);
+      background-color: var(--color-primary);
+      color: #ffffff;
+    }
+    .timeline-date {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-2);
+    }
+    .timeline-title {
+      font-family: var(--font-sans);
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: var(--space-3);
+    }
+    .timeline-content {
+      font-size: 0.9rem;
+    }
+
+    .signature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-16);
+      margin-top: var(--space-12);
+    }
+    .signature-box {
+      border-top: 1px solid var(--color-text);
+      padding-top: var(--space-4);
+    }
+    .signature-box p {
+      margin: 0;
+      font-size: 0.9rem;
+    }
+
+    .checklist {
+      list-style: none;
+      padding: 0;
+      margin-top: var(--space-8);
+    }
+    .checklist li {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+    .checklist input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--color-primary);
+    }
+
+    .footer {
+      padding: var(--space-12) var(--space-8);
+      background-color: var(--color-bg-secondary);
+      border-top: 1px solid var(--color-border);
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--color-text-secondary);
+    }
+
+    .back-to-top {
+      position: fixed;
+      bottom: var(--space-8);
+      right: var(--space-8);
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: var(--color-text);
+      color: var(--color-bg);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(20px);
+      transition: all var(--transition-duration) ease;
+      z-index: 100;
+    }
+    .back-to-top.is-visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    .back-to-top:hover {
+      transform: scale(1.1);
+    }
+
+    /* 8. UTILITY & HELPER CLASSES
+    ----------------------------------------------------------------*/
+    .text-center { text-align: center; }
+    .mt-4 { margin-top: var(--space-4); }
+    .mt-8 { margin-top: var(--space-8); }
+    .mt-12 { margin-top: var(--space-12); }
+    .mt-16 { margin-top: var(--space-16); }
+    .mb-4 { margin-bottom: var(--space-4); }
+    .mb-8 { margin-bottom: var(--space-8); }
+    .mb-12 { margin-bottom: var(--space-12); }
+    .mb-16 { margin-bottom: var(--space-16); }
+    
+    /* 9. ANIMATIONS & TRANSITIONS
+    ----------------------------------------------------------------*/
+    .reveal-item {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal-item.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    /* 10. RESPONSIVE & PRINT STYLES
+    ----------------------------------------------------------------*/
+    @media (max-width: 1024px) {
+      .page-wrapper {
+        flex-direction: column;
+        padding-top: 60px;
+      }
+      .header {
+        height: 60px;
+      }
+      .sidebar {
+        display: none;
+        width: 100%;
+        height: auto;
+        position: static;
+        border-right: none;
+        border-bottom: 1px solid var(--color-border);
+        padding: var(--space-4);
+      }
+      .main-content {
+        padding: var(--space-6);
+      }
+      .mobile-menu-btn {
+        display: block;
+      }
+      .header-actions .btn:not(.btn-icon) {
+        display: none;
+      }
+      .signature-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+      body {
+        background-color: #fff !important;
+        color: #000 !important;
+        font-size: 10pt;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .header, .sidebar, .back-to-top, .mobile-menu-btn, .header-actions {
+        display: none !important;
+      }
+
+      @page {
+        size: A4;
+        margin: 1.5cm;
+        
+        @bottom-right {
+          content: "Página " counter(page);
+          font-size: 9pt;
+          color: #666;
+        }
+      }
+
+      .page-wrapper, .main-content {
+        display: block;
+        padding-top: 0;
+        padding: 0;
+      }
+
+      h1, h2, h3 { font-family: 'Times New Roman', serif; }
+      .section-title { font-size: 22pt; }
+      .content-title { font-size: 16pt; }
+      a { color: #000; text-decoration: none; }
+      
+      .card, .table-wrapper, .timeline-item, .callout, .content-section {
+        page-break-inside: avoid;
+      }
+      h2, h3 { page-break-after: avoid; }
+      
+      .content-section { padding: 2rem 0; border: none; }
+      .card { border: 1px solid #ccc; box-shadow: none; }
+      .table, .table th, .table td { border-color: #ccc; }
+      .table th { background-color: #eee !important; }
+      .hero-gradient { display: none; }
+      .signature-box { border-color: #000; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- =================================================================
+  HEADER
+  ================================================================== -->
+  <header class="header">
+    <a href="#portada" class="header-logo">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 7L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 7L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 22V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 4.5L7 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>SmartWeb</span>
+    </a>
+
+    <div class="header-actions">
+      <a href="#aceptacion" class="btn btn-primary" style="background-color: #fff; color: #000;">Aceptar Propuesta</a>
+    </div>
+
+    <button id="mobile-menu-btn" class="mobile-menu-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+    </button>
+
+    <div id="progress-bar" class="progress-bar"></div>
+  </header>
+
+  <!-- =================================================================
+  MAIN WRAPPER
+  ================================================================== -->
+  <div class="page-wrapper">
+
+    <!-- =================================================================
+    SIDEBAR / TABLE OF CONTENTS
+    ================================================================== -->
+    <aside class="sidebar">
+      <nav id="toc-nav">
+        <ul id="toc-list" class="toc">
+          <!-- TOC items will be generated by JavaScript -->
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- =================================================================
+    MAIN CONTENT
+    ================================================================== -->
+    <main id="main-content" class="main-content">
+
+      <!-- 1. PORTADA -->
+      <section id="portada" class="content-section hero">
+        <div class="hero-content reveal-item">
+          <h1 class="hero-title">Acuerdo de Desarrollo de Software</h1>
+          <p class="hero-subtitle">Una propuesta integral para el diseño, desarrollo y despliegue de la plataforma <strong>SmartKit SaaS</strong>, una solución moderna para la gestión de medios publicitarios.</p>
+          <div class="hero-meta">
+            <div><strong>Cliente:</strong> [Nombre del Cliente]</div>
+            <div><strong>Fecha:</strong> <span id="current-date"></span></div>
+            <div><strong>Código:</strong> SW-SK-2026-07-01</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. CARTA DE PRESENTACIÓN -->
+      <section id="carta-presentacion" class="content-section reveal-item">
+        <div class="container">
+          <h2 class="content-title">Carta de Presentación</h2>
+          <p>Estimados Sres. de [Nombre del Cliente],</p>
+          <p>Es un placer presentarles esta propuesta para el desarrollo de <strong>SmartKit SaaS</strong>. En SmartWeb, nos especializamos en transformar ideas en productos digitales robustos, escalables y de alto impacto. Entendemos la necesidad de modernizar la gestión comercial en la industria de medios y hemos diseñado una solución que no solo resuelve los desafíos actuales, sino que también sienta las bases para el crecimiento futuro.</p>
+          <p>Este documento detalla el alcance, la tecnología, la inversión y los términos de nuestra colaboración. Estamos convencidos de que nuestra experiencia y enfoque centrado en el producto son la combinación perfecta para llevar a SmartKit al siguiente nivel. Agradecemos la oportunidad y quedamos a su disposición para cualquier consulta.</p>
+          <p>Atentamente,<br>El equipo de SmartWeb</p>
+        </div>
+      </section>
+
+      <!-- 3. RESUMEN EJECUTIVO -->
+      <section id="resumen-ejecutivo" class="content-section reveal-item">
+        <div class="container">
+          <h2 class="content-title">Resumen Ejecutivo</h2>
+          <p>El presente proyecto consiste en el desarrollo de una aplicación web completa (SaaS) que permitirá a [Nombre del Cliente] ofrecer una plataforma para que empresas de publicidad gestionen su inventario de soportes (digitales y tradicionales), generen media kits profesionales y automaticen parte de su proceso comercial.</p>
+          <p>El cliente final recibirá una solución "llave en mano" que incluye:</p>
+          <ul>
+            <li>Una plataforma multi-tenant robusta construida con tecnologías de vanguardia.</li>
+            <li>Un panel de administración para gestionar clientes, configuraciones y funcionalidades.</li>
+            <li>Funcionalidades clave como gestión de inventario (CRM), constructor de landing pages, y reportes.</li>
+            <li>Infraestructura cloud escalable, segura y de alto rendimiento.</li>
+            <li>Capacitación completa y documentación para la autogestión de la plataforma.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 4. OBJETIVOS -->
+      <section id="objetivos" class="content-section reveal-item">
+        <div class="container">
+          <h2 class="content-title">Objetivos del Proyecto</h2>
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20V16"/></svg></div>
+              <h3 class="card-title">Centralizar la Oferta</h3>
+              <p>Crear un punto único de verdad para todo el inventario de medios, eliminando la dependencia de PDFs y planillas dispersas.</p>
+            </div>
+            <div class="card">
+              <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg></div>
+              <h3 class="card-title">Escalabilidad SaaS</h3>
+              <p>Construir una arquitectura multi-tenant que permita ofrecer el servicio a múltiples clientes de forma segura y aislada.</p>
+            </div>
+            <div class="card">
+              <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div>
+              <h3 class="card-title">Monetización</h3>
+              <p>Establecer un modelo de negocio basado en suscripciones, con diferentes planes y funcionalidades para cada nivel.</p>
+            </div>
+            <div class="card">
+              <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg></div>
+              <h3 class="card-title">Automatización</h3>
+              <p>Reducir el trabajo manual en la creación de propuestas, seguimiento y gestión de clientes a través de flujos de trabajo eficientes.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. ALCANCE -->
+      <section id="alcance" class="content-section reveal-item">
+        <div class="container-wide">
+          <div class="section-header text-center">
+            <span class="section-kicker">Alcance del Proyecto</span>
+            <h2 class="section-title">Una Solución Integral y Lista para Producción</h2>
+            <p class="section-subtitle">Cubrimos todo el ciclo de vida del producto, desde la configuración inicial hasta el soporte post-lanzamiento, garantizando una entrega de alta calidad.</p>
+          </div>
+          <div class="grid-3">
+            <div class="callout">
+              <div class="callout-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></div>
+              <div><strong>Desarrollo & Personalización</strong><p class="mt-2">Adaptación de la plataforma base de SmartKit a la identidad de marca y requerimientos específicos del cliente.</p></div>
+            </div>
+            <div class="callout">
+              <div class="callout-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15H12.01"/><path d="M10 3H3v18h18V10"/><path d="M14 3v7h7"/></svg></div>
+              <div><strong>Configuración & Deploy</strong><p class="mt-2">Puesta en marcha de toda la infraestructura en Vercel, configuración de dominios, y bases de datos.</p></div>
+            </div>
+            <div class="callout">
+              <div class="callout-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25"></path><path d="M8 16.25V18a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-1.75"></path></svg></div>
+              <div><strong>Hosting, SSL & CDN</strong><p class="mt-2">Alojamiento de alto rendimiento con SSL, distribuido globalmente para máxima velocidad y disponibilidad.</p></div>
+            </div>
+            <div class="callout">
+              <div class="callout-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div>
+              <div><strong>Diseño Responsive</strong><p class="mt-2">Experiencia de usuario óptima en dispositivos de escritorio, tablets y móviles.</p></div>
+            </div>
+            <div class="callout">
+              <div class="callout-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg></div>
+              <div><strong>SEO Técnico & Analytics</strong><p class="mt-2">Implementación de mejores prácticas de SEO, sitemap, robots.txt y conexión con Google Analytics y Search Console.</p></div>
+            </div>
+            <div class="callout">
+              <div class="callout-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg></div>
+              <div><strong>Optimización & Seguridad</strong><p class="mt-2">Optimización de Core Web Vitals, configuración de Firewall, y políticas de backups automáticos.</p></div>
+            </div>
+            <div class="callout">
+              <div class="callout-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v15H6.5A2.5 2.5 0 0 1 4 14.5V4A2 2 0 0 1 6.5 2z"></path></svg></div>
+              <div><strong>Capacitación & Documentación</strong><p class="mt-2">Sesiones de capacitación para el equipo y entrega de un manual de usuario detallado.</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. FUNCIONALIDADES -->
+      <section id="funcionalidades" class="content-section reveal-item">
+        <div class="container-wide">
+          <div class="section-header text-center">
+            <span class="section-kicker">Funcionalidades</span>
+            <h2 class="section-title">Un Ecosistema de Herramientas de Venta</h2>
+            <p class="section-subtitle">La plataforma se compone de módulos interconectados diseñados para potenciar cada etapa del ciclo comercial.</p>
+          </div>
+          <div class="grid-3">
+            <div class="card card-hover">
+              <h3 class="card-title">Dashboard de Gestión</h3>
+              <p class="mb-4">Un centro de control intuitivo para que cada empresa gestione su inventario, precios, disponibilidad y clientes.</p>
+              <ul class="card-feature-list">
+                <li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Vista general del inventario</li>
+                <li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Edición masiva de precios</li>
+                <li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Gestión de estados (disponible, reservado)</li>
+              </ul>
+            </div>
+            <div class="card card-hover">
+              <h3 class="card-title">CRM de Medios</h3>
+              <p class="mb-4">Funcionalidad de CRM para gestionar los soportes publicitarios como activos, con toda su información centralizada.</p>
+              <ul class="card-feature-list">
+                <li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Ficha detallada por soporte</li>
+                <li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Galería de imágenes y videos</li>
+                <li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Métricas de audiencia y geolocalización</li>
+              </ul>
+            </div>
+            <div class="card card-hover">
+              <h3 class="card-title">Generador de Landing Pages</h3>
+              <p class="mb-4">Cada empresa podrá publicar su catálogo en una landing page personalizable con su propia marca y dominio.</p>
+              <ul class="card-feature-list">
+                <li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Catálogo público con mapa interactivo</li>
+                <li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Generador de Media Kits online</li>
+                <li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Personalización de colores y logo</li>
+              </ul>
+            </div>
+            <div class="card card-hover">
+              <h3 class="card-title">Panel de Administración</h3>
+              <p class="mb-4">Un super-admin para [Nombre del Cliente] para gestionar toda la plataforma, clientes, planes y configuraciones globales.</p>
+              <ul class="card-feature-list">
+                <li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Gestión de tenants (clientes)</li>
+                <li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Configuración de planes y features</li>
+                <li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Métricas de uso de la plataforma</li>
+              </ul>
+            </div>
+            <div class="card card-hover">
+              <h3 class="card-title">Reportes & IA</h3>
+              <p class="mb-4">Módulo de analítica para visualizar el rendimiento de los soportes y sugerencias inteligentes para optimizar la oferta.</p>
+              <ul class="card-feature-list">
+                <li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Dashboard de KPIs de venta</li>
+                <li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Análisis de performance por soporte</li>
+                <li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Sugerencias de precios por IA (Opcional)</li>
+              </ul>
+            </div>
+            <div class="card card-hover">
+              <h3 class="card-title">Integraciones</h3>
+              <p class="mb-4">Capacidad de conectar la plataforma con herramientas externas para expandir su funcionalidad y automatizar flujos.</p>
+              <ul class="card-feature-list">
+                <li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>API REST para consumo de datos</li>
+                <li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Webhooks para notificaciones</li>
+                <li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Integración con pasarelas de pago</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7. ARQUITECTURA -->
+      <section id="arquitectura" class="content-section reveal-item">
+        <div class="container">
+          <div class="section-header text-center">
+            <span class="section-kicker">Arquitectura</span>
+            <h2 class="section-title">Moderna, Escalable y Segura</h2>
+          </div>
+          <div class="arch-diagram">
+            <div class="arch-item">Cliente (Navegador)</div>
+            <div class="arch-arrow">↓</div>
+            <div class="arch-item">Cloud (Vercel / Cloudflare)</div>
+            <div class="arch-arrow">↓</div>
+            <div class="arch-item">Servidor (Next.js)</div>
+            <div class="arch-arrow">↓</div>
+            <div class="arch-item">Aplicación (React)</div>
+            <div class="arch-arrow">↓</div>
+            <div class="arch-item">Base de Datos (Supabase)</div>
+            <div class="arch-arrow">↓</div>
+            <div class="arch-item">Backups (Storage)</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 8. TECNOLOGÍAS -->
+      <section id="tecnologias" class="content-section reveal-item">
+        <div class="container-wide">
+          <div class="section-header text-center">
+            <span class="section-kicker">Stack Tecnológico</span>
+            <h2 class="section-title">Construido con Herramientas de Vanguardia</h2>
+            <p class="section-subtitle">Seleccionamos un conjunto de tecnologías probadas que garantizan rendimiento, escalabilidad y una excelente experiencia de desarrollo.</p>
+          </div>
+          <div class="grid-4">
+            <div class="card text-center">
+              <h3 class="card-title">Next.js</h3>
+              <p>Framework de React para aplicaciones web de producción.</p>
+            </div>
+            <div class="card text-center">
+              <h3 class="card-title">React</h3>
+              <p>Librería líder para construir interfaces de usuario interactivas.</p>
+            </div>
+            <div class="card text-center">
+              <h3 class="card-title">Supabase</h3>
+              <p>Backend como servicio sobre PostgreSQL, con auth y storage.</p>
+            </div>
+            <div class="card text-center">
+              <h3 class="card-title">PostgreSQL</h3>
+              <p>Base de datos relacional open-source, robusta y confiable.</p>
+            </div>
+            <div class="card text-center">
+              <h3 class="card-title">Vercel</h3>
+              <p>Plataforma de despliegue optimizada para Next.js y Jamstack.</p>
+            </div>
+            <div class="card text-center">
+              <h3 class="card-title">Cloudflare</h3>
+              <p>CDN global, seguridad y optimización de red.</p>
+            </div>
+            <div class="card text-center">
+              <h3 class="card-title">OpenAI</h3>
+              <p>Integración con modelos de IA para funcionalidades avanzadas.</p>
+            </div>
+            <div class="card text-center">
+              <h3 class="card-title">Tailwind CSS</h3>
+              <p>Framework CSS utility-first para un diseño rápido y consistente.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9. CRONOGRAMA -->
+      <section id="cronograma" class="content-section reveal-item">
+        <div class="container">
+          <div class="section-header">
+            <span class="section-kicker">Cronograma</span>
+            <h2 class="section-title">Plan de Implementación</h2>
+          </div>
+          <ul class="timeline">
+            <li class="timeline-item">
+              <div class="timeline-dot">1</div>
+              <div class="timeline-date">Semana 1</div>
+              <h3 class="timeline-title">Discovery & Setup</h3>
+              <p class="timeline-content">Reuniones de kick-off, definición de la arquitectura final, configuración de repositorios y entorno de desarrollo. Diseño de la base de datos.</p>
+            </li>
+            <li class="timeline-item">
+              <div class="timeline-dot">2</div>
+              <div class="timeline-date">Semana 2-4</div>
+              <h3 class="timeline-title">Desarrollo del Core</h3>
+              <p class="timeline-content">Implementación del sistema de autenticación, panel de administración, y funcionalidades de CRM de medios y gestión de tenants.</p>
+            </li>
+            <li class="timeline-item">
+              <div class="timeline-dot">3</div>
+              <div class="timeline-date">Semana 5-6</div>
+              <h3 class="timeline-title">Desarrollo de Módulos</h3>
+              <p class="timeline-content">Construcción del generador de Landing Pages, módulo de Media Kits y sistema de reportes inicial.</p>
+            </li>
+            <li class="timeline-item">
+              <div class="timeline-dot">4</div>
+              <div class="timeline-date">Semana 7</div>
+              <h3 class="timeline-title">QA & Pruebas</h3>
+              <p class="timeline-content">Fase intensiva de pruebas de integración, performance y seguridad. Corrección de errores y ajustes finales.</p>
+            </li>
+            <li class="timeline-item">
+              <div class="timeline-dot">5</div>
+              <div class="timeline-date">Semana 8</div>
+              <h3 class="timeline-title">Deploy y Capacitación</h3>
+              <p class="timeline-content">Despliegue final a producción, entrega de documentación, credenciales y sesiones de capacitación al equipo del cliente.</p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 10. ENTREGABLES -->
+      <section id="entregables" class="content-section reveal-item">
+        <div class="container">
+          <h2 class="content-title">Entregables</h2>
+          <p>Al finalizar el proyecto, el cliente recibirá los siguientes activos:</p>
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Entregable</th>
+                  <th>Descripción</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Código Fuente</td>
+                  <td>Acceso completo al repositorio Git privado con todo el código de la aplicación.</td>
+                </tr>
+                <tr>
+                  <td>Despliegue en Producción</td>
+                  <td>Aplicación funcionando en el dominio principal del cliente, desplegada en Vercel.</td>
+                </tr>
+                <tr>
+                  <td>Hosting y SSL</td>
+                  <td>Configuración del hosting administrado por 1 año y certificado SSL.</td>
+                </tr>
+                <tr>
+                  <td>Documentación</td>
+                  <td>Manual de usuario y documentación técnica de la arquitectura y API.</td>
+                </tr>
+                <tr>
+                  <td>Capacitación</td>
+                  <td>Sesión de 2 horas de capacitación virtual para el equipo administrador.</td>
+                </tr>
+                <tr>
+                  <td>Credenciales</td>
+                  <td>Documento seguro con todas las credenciales de acceso a los servicios.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 11. HOSTING -->
+      <section id="hosting" class="content-section reveal-item">
+        <div class="container">
+          <h2 class="content-title">Infraestructura de Hosting Administrado</h2>
+          <p>La solución se despliega sobre una infraestructura cloud de primer nivel, garantizando rendimiento, seguridad y alta disponibilidad.</p>
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Característica</th>
+                  <th>Detalle</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Hosting Administrado</td>
+                  <td>Plataforma Vercel, optimizada para aplicaciones Next.js.</td>
+                </tr>
+                <tr>
+                  <td>Certificado SSL</td>
+                  <td>HTTPS habilitado por defecto con renovación automática.</td>
+                </tr>
+                <tr>
+                  <td>CDN Global</td>
+                  <td>Contenido distribuido en la red de Vercel/Cloudflare para baja latencia.</td>
+                </tr>
+                <tr>
+                  <td>Firewall (WAF)</td>
+                  <td>Protección contra ataques comunes como inyección SQL y XSS.</td>
+                </tr>
+                <tr>
+                  <td>Backups</td>
+                  <td>Copias de seguridad diarias y automáticas de la base de datos.</td>
+                </tr>
+                <tr>
+                  <td>Monitoreo 24/7</td>
+                  <td>Supervisión constante del estado de la aplicación y la infraestructura.</td>
+                </tr>
+                <tr>
+                  <td>Uptime Garantizado</td>
+                  <td>99.9% de tiempo de actividad mensual.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 12. MANTENIMIENTO -->
+      <section id="mantenimiento" class="content-section reveal-item">
+        <div class="container">
+          <h2 class="content-title">Plan de Mantenimiento Mensual (Opcional)</h2>
+          <p>Ofrecemos un plan de mantenimiento proactivo para asegurar que la plataforma se mantenga actualizada, segura y optimizada a lo largo del tiempo.</p>
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Servicio</th>
+                  <th>Incluido</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Actualización de dependencias</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>Corrección de errores (bugs)</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>Cambios menores y ajustes visuales</td>
+                  <td>Hasta 5 horas mensuales</td>
+                </tr>
+                <tr>
+                  <td>Optimización de performance</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>Monitoreo de seguridad</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>Reportes de SEO técnico</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>Gestión de backups</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>Soporte técnico prioritario</td>
+                  <td>✓</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 13. SLA -->
+      <section id="sla" class="content-section reveal-item">
+        <div class="container">
+          <h2 class="content-title">Acuerdo de Nivel de Servicio (SLA)</h2>
+          <p>Para clientes con plan de mantenimiento activo, garantizamos los siguientes tiempos de respuesta inicial para solicitudes de soporte.</p>
+          <div class="grid-2">
+            <div class="card">
+              <h3 class="card-title">Crítico (Caída del servicio)</h3>
+              <p><strong>Tiempo de respuesta:</strong> 4 horas.</p>
+              <p class="mt-4">Intervención inmediata para restaurar la funcionalidad principal.</p>
+            </div>
+            <div class="card">
+              <h3 class="card-title">Alto (Error bloqueante)</h3>
+              <p><strong>Tiempo de respuesta:</strong> 24 horas (días hábiles).</p>
+              <p class="mt-4">Un error que impide el uso de una funcionalidad clave sin alternativa.</p>
+            </div>
+            <div class="card">
+              <h3 class="card-title">Medio (Error no bloqueante)</h3>
+              <p><strong>Tiempo de respuesta:</strong> 48 horas (días hábiles).</p>
+              <p class="mt-4">Un error en una funcionalidad que tiene una solución alternativa temporal.</p>
+            </div>
+            <div class="card">
+              <h3 class="card-title">Bajo (Consulta o cambio menor)</h3>
+              <p><strong>Tiempo de respuesta:</strong> 72 horas (días hábiles).</p>
+              <p class="mt-4">Consultas generales, dudas o solicitudes de cambios menores.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 14. GARANTÍA -->
+      <section id="garantia" class="content-section reveal-item">
+        <div class="container">
+          <h2 class="content-title">Garantía de Calidad</h2>
+          <p>El software entregado cuenta con una <strong>garantía de 90 días</strong> a partir de la fecha de despliegue en producción. Durante este período, SmartWeb se compromete a corregir, sin costo adicional, cualquier error o defecto de funcionamiento (bug) que sea atribuible al desarrollo realizado y que no haya sido causado por modificaciones de terceros o mal uso de la plataforma.</p>
+          <p>Esta garantía cubre exclusivamente la corrección de errores y no incluye el desarrollo de nuevas funcionalidades, cambios en el alcance original o soporte por problemas derivados de la infraestructura no gestionada por SmartWeb.</p>
+        </div>
+      </section>
+
+      <!-- 15. EXCLUSIONES -->
+      <section id="exclusiones" class="content-section reveal-item">
+        <div class="container">
+          <h2 class="content-title">Exclusiones del Alcance</h2>
+          <p>La presente propuesta no incluye los siguientes puntos, los cuales podrán ser cotizados por separado:</p>
+          <ul>
+            <li>Desarrollo de aplicaciones móviles nativas (iOS/Android).</li>
+            <li>Carga masiva de datos iniciales o migración desde sistemas preexistentes.</li>
+            <li>Costos de licencias de software de terceros (ej. Google Maps API a gran escala, servicios de email transaccional, etc.).</li>
+            <li>Creación de contenido (textos, imágenes, videos) para las landing pages de los clientes finales.</li>
+            <li>Campañas de marketing digital, gestión de redes sociales o estrategias de posicionamiento de marca.</li>
+            <li>Integraciones complejas con sistemas ERP o software a medida no especificados en esta propuesta.</li>
+            <li>Soporte técnico a los usuarios finales de los clientes de la plataforma.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 16. OBLIGACIONES DEL CLIENTE -->
+      <section id="obligaciones-cliente" class="content-section reveal-item">
+        <div class="container">
+          <h2 class="content-title">Obligaciones del Cliente</h2>
+          <p>Para el correcto desarrollo del proyecto, el Cliente se compromete a:</p>
+          <ul>
+            <li>Designar un único interlocutor o responsable de proyecto para centralizar la comunicación.</li>
+            <li>Proveer en tiempo y forma toda la información, material gráfico (logos, manual de marca) y accesos necesarios.</li>
+            <li>Realizar las validaciones y entregar feedback en las etapas acordadas dentro de los plazos establecidos para no generar retrasos.</li>
+            <li>Realizar los pagos según las condiciones acordadas en este documento.</li>
+            <li>Disponer de los recursos necesarios para la fase de capacitación y adopción de la plataforma.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 17. OBLIGACIONES DEL PROVEEDOR -->
+      <section id="obligaciones-proveedor" class="content-section reveal-item">
+        <div class="container">
+          <h2 class="content-title">Obligaciones del Proveedor</h2>
+          <p>SmartWeb, como Proveedor, se compromete a:</p>
+          <ul>
+            <li>Cumplir con el alcance, funcionalidades y plazos descritos en este acuerdo.</li>
+            <li>Asignar un equipo de profesionales calificados para la ejecución del proyecto.</li>
+            <li>Mantener una comunicación fluida y regular sobre los avances del proyecto.</li>
+            <li>Desarrollar el software siguiendo las mejores prácticas de la industria en cuanto a calidad, seguridad y rendimiento.</li>
+            <li>Garantizar la confidencialidad de toda la información proporcionada por el Cliente.</li>
+            <li>Brindar la capacitación y documentación necesarias para la correcta operación de la plataforma.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 18. PROPIEDAD INTELECTUAL -->
+      <section id="propiedad-intelectual" class="content-section reveal-item">
+        <div class="container">
+          <h2 class="content-title">Propiedad Intelectual</h2>
+          <p>Una vez completado el pago final del proyecto, la propiedad intelectual del <strong>código fuente específico y personalizado</strong> desarrollado para SmartKit SaaS será transferida en su totalidad al Cliente. El Cliente tendrá derecho a usar, modificar y explotar dicho código sin restricciones.</p>
+          <p>SmartWeb conservará la propiedad sobre sus herramientas internas, librerías, componentes genéricos y conocimientos preexistentes utilizados en el desarrollo del proyecto. SmartWeb otorga al Cliente una licencia perpetua, no exclusiva y libre de regalías para utilizar dichos elementos como parte integral e inseparable de la aplicación entregada.</p>
+        </div>
+      </section>
+
+      <!-- 19. CONFIDENCIALIDAD -->
+      <section id="confidencialidad" class="content-section reveal-item">
+        <div class="container">
+          <h2 class="content-title">Confidencialidad</h2>
+          <p>Ambas partes, el Cliente y el Proveedor, acuerdan mantener en estricta confidencialidad toda la información técnica, comercial, financiera o de cualquier otra naturaleza que reciban de la otra parte en el marco de este proyecto. Esta obligación de confidencialidad se extenderá por un período de 5 años tras la finalización del acuerdo.</p>
+          <p>Esta cláusula no se aplica a la información que sea de dominio público, que deba ser revelada por imperativo legal, o que fuera conocida por una de las partes con anterioridad a la firma de este acuerdo.</p>
+        </div>
+      </section>
+
+      <!-- 20. PROTECCIÓN DE DATOS -->
+      <section id="proteccion-datos" class="content-section reveal-item">
+        <div class="container">
+          <h2 class="content-title">Protección de Datos</h2>
+          <p>El Proveedor se compromete a tratar los datos personales a los que pudiera tener acceso durante la ejecución del proyecto de acuerdo con la normativa vigente en materia de protección de datos (Ley 25.326 de Protección de los Datos Personales en Argentina y/o GDPR si aplicase). El Proveedor actuará en calidad de "Encargado del Tratamiento", siguiendo las instrucciones del Cliente, quien es el "Responsable del Tratamiento".</p>
+          <p>Se implementarán las medidas de seguridad técnicas y organizativas necesarias para garantizar la seguridad de los datos y evitar su alteración, pérdida, tratamiento o acceso no autorizado.</p>
+        </div>
+      </section>
+
+      <!-- 21. VALORES -->
+      <section id="valores" class="content-section reveal-item">
+        <div class="container">
+          <h2 class="content-title">Inversión</h2>
+          <p>A continuación se detalla la inversión para el desarrollo completo de la plataforma SmartKit SaaS.</p>
+          <div class="table-wrapper">
+            <table class="table table-editable">
+              <thead>
+                <tr>
+                  <th>Concepto</th>
+                  <th>Cantidad</th>
+                  <th>Subtotal (USD)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Desarrollo de Software SmartKit SaaS</td>
+                  <td>1</td>
+                  <td contenteditable="true">25,000.00</td>
+                </tr>
+                <tr>
+                  <td>Plan de Mantenimiento Mensual (Opcional)</td>
+                  <td>1</td>
+                  <td contenteditable="true">500.00</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="2" style="text-align: right; font-weight: bold;">Subtotal</td>
+                  <td style="font-weight: bold;">$25,000.00</td>
+                </tr>
+                <tr>
+                  <td colspan="2" style="text-align: right; font-weight: bold;">IVA (21%)</td>
+                  <td style="font-weight: bold;">$5,250.00</td>
+                </tr>
+                <tr>
+                  <td colspan="2" style="text-align: right; font-weight: bold; font-size: 1.2rem;">Total</td>
+                  <td style="font-weight: bold; font-size: 1.2rem;">$30,250.00</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          <p class="mt-4" style="font-size: 0.8rem;">* Los valores no incluyen IVA. La moneda de pago es Dólar Estadounidense (USD) o su equivalente en Pesos Argentinos (ARS) a la cotización del día de pago.</p>
+        </div>
+      </section>
+
+      <!-- 22. FORMA DE PAGO -->
+      <section id="forma-pago" class="content-section reveal-item">
+        <div class="container">
+          <h2 class="content-title">Forma de Pago</h2>
+          <p>La inversión en el desarrollo se abonará de la siguiente manera:</p>
+          <div class="table-wrapper">
+            <table class="table table-editable">
+              <thead>
+                <tr>
+                  <th>Hito</th>
+                  <th>Porcentaje</th>
+                  <th>Monto (USD)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Firma del contrato y Kick-off</td>
+                  <td>50%</td>
+                  <td>12,500.00</td>
+                </tr>
+                <tr>
+                  <td>Entrega final y despliegue</td>
+                  <td>50%</td>
+                  <td>12,500.00</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 23. RENOVACIONES -->
+      <section id="renovaciones" class="content-section reveal-item">
+        <div class="container">
+          <h2 class="content-title">Renovaciones</h2>
+          <p>Existen costos recurrentes asociados a la operación de la plataforma que se facturarán de forma independiente al desarrollo inicial.</p>
+          <ul>
+            <li><strong>Hosting Administrado y Dominio:</strong> Se renovará anualmente. El costo para el primer año está incluido en la propuesta. La renovación anual será de aprox. USD 300 (sujeto a cambios del proveedor).</li>
+            <li><strong>Plan de Mantenimiento:</strong> Es un servicio opcional de pago mensual. Se puede contratar o dar de baja en cualquier momento con 30 días de preaviso.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 24. TERMINACIÓN -->
+      <section id="terminacion" class="content-section reveal-item">
+        <div class="container">
+          <h2 class="content-title">Terminación del Acuerdo</h2>
+          <p>Cualquiera de las partes podrá dar por terminado el presente acuerdo mediante notificación por escrito con 30 días de antelación. En caso de terminación anticipada por parte del Cliente, este deberá abonar el trabajo realizado por el Proveedor hasta la fecha de terminación. En caso de incumplimiento grave de una de las partes, la otra podrá rescindir el contrato de forma inmediata. Se considerará incumplimiento grave el no pago de las facturas en los plazos acordados o la no entrega de los hitos del proyecto sin causa justificada.</p>
+        </div>
+      </section>
+
+      <!-- 25. ACEPTACIÓN -->
+      <section id="aceptacion" class="content-section reveal-item">
+        <div class="container">
+          <h2 class="content-title">Aceptación de la Propuesta</h2>
+          <p>La firma de este documento implica la aceptación de todos los términos y condiciones aquí expuestos, y sirve como Orden de Trabajo para iniciar el proyecto.</p>
+          <ul class="checklist">
+            <li>
+              <input type="checkbox" id="check-terms" />
+              <label for="check-terms">He leído y acepto el alcance, los plazos y la inversión detallada.</label>
+            </li>
+            <li>
+              <input type="checkbox" id="check-ip" />
+              <label for="check-ip">Comprendo y estoy de acuerdo con las cláusulas de Propiedad Intelectual y Confidencialidad.</label>
+            </li>
+            <li>
+              <input type="checkbox" id="check-payment" />
+              <label for="check-payment">Acepto las condiciones de pago y el cronograma de facturación.</label>
+            </li>
+          </ul>
+          <a href="#firmas" class="btn btn-primary mt-8">Proceder a la Firma</a>
+        </div>
+      </section>
+
+      <!-- 26. FIRMAS -->
+      <section id="firmas" class="content-section reveal-item">
+        <div class="container">
+          <h2 class="content-title">Firmas</h2>
+          <p>En prueba de conformidad, las partes firman el presente acuerdo en dos ejemplares de un mismo tenor y a un solo efecto, en el lugar y fecha indicados a continuación.</p>
+          <div class="signature-grid">
+            <div class="signature-box">
+              <p><strong>Por el Proveedor:</strong></p>
+              <p>SmartWeb</p>
+              <p>Firma: _________________________</p>
+              <p>Aclaración: ______________________</p>
+              <p>Cargo: _________________________</p>
+            </div>
+            <div class="signature-box">
+              <p><strong>Por el Cliente:</strong></p>
+              <p>[Nombre del Cliente]</p>
+              <p>Firma: _________________________</p>
+              <p>Aclaración: ______________________</p>
+              <p>Cargo: _________________________</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 27. ANEXOS -->
+      <section id="anexos" class="content-section reveal-item">
+        <div class="container">
+          <h2 class="content-title">Anexos</h2>
+          <div id="accordion-container">
+            <div class="accordion-item">
+              <button class="accordion-header" aria-expanded="false">
+                <span>Anexo I: Inventario de Funcionalidades Detallado</span>
+                <span class="accordion-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></span>
+              </button>
+              <div class="accordion-content">
+                <div class="accordion-content-inner">
+                  <p>Aquí se detallaría cada una de las funcionalidades con un nivel de granularidad mayor, especificando sub-características, flujos de usuario y criterios de aceptación para cada módulo (Dashboard, CRM, Landing Pages, etc.).</p>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <button class="accordion-header" aria-expanded="false">
+                <span>Anexo II: Roadmap de Producto Futuro</span>
+                <span class="accordion-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></span>
+              </button>
+              <div class="accordion-content">
+                <div class="accordion-content-inner">
+                  <p>Se presentaría una propuesta de roadmap para futuras versiones del producto (Q3, Q4, etc.), incluyendo funcionalidades como integraciones avanzadas, módulos de facturación, analítica predictiva, entre otros, que no forman parte del MVP inicial pero que marcan la visión a largo plazo.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- =================================================================
+  FOOTER
+  ================================================================== -->
+  <footer class="footer">
+    <p>© <span id="current-year"></span> SmartWeb. Todos los derechos reservados.</p>
+  </footer>
+
+  <!-- =================================================================
+  BACK TO TOP BUTTON
+  ================================================================== -->
+  <button id="back-to-top" class="back-to-top" title="Volver arriba">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+  </button>
+
+  <!-- =================================================================
+  JAVASCRIPT
+  ================================================================== -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+      // Element references
+      const progressBar = document.getElementById('progress-bar');
+      const backToTopButton = document.getElementById('back-to-top');
+      const tocList = document.getElementById('toc-list');
+      const mainContent = document.getElementById('main-content');
+      const printButton = document.getElementById('print-btn');
+      const mobileMenuButton = document.getElementById('mobile-menu-btn');
+      const sidebar = document.querySelector('.sidebar');
+
+      // --- UTILITY FUNCTIONS ---
+      const throttle = (func, limit) => {
+        let inThrottle;
+        return function() {
+          const args = arguments;
+          const context = this;
+          if (!inThrottle) {
+            func.apply(context, args);
+            inThrottle = true;
+            setTimeout(() => inThrottle = false, limit);
+          }
+        }
+      };
+
+      // --- DYNAMIC CONTENT ---
+      function setDynamicDates() {
+        const yearSpan = document.getElementById('current-year');
+        const dateSpan = document.getElementById('current-date');
+        const now = new Date();
+        if (yearSpan) yearSpan.textContent = now.getFullYear();
+        if (dateSpan) dateSpan.textContent = now.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+      }
+
+      // --- TABLE OF CONTENTS & SCROLLSPY ---
+      function createTOC() {
+        if (!tocList || !mainContent) return;
+        const sections = mainContent.querySelectorAll('.content-section[id]');
+        let tocHTML = '';
+        sections.forEach(section => {
+          const titleEl = section.querySelector('h1, h2');
+          if (titleEl) {
+            const titleText = titleEl.textContent;
+            const sectionId = section.id;
+            tocHTML += `<li class="toc-item"><a href="#${sectionId}" class="toc-link">${titleText}</a></li>`;
+          }
+        });
+        tocList.innerHTML = tocHTML;
+      }
+
+      function updateScrollSpy() {
+        const sections = mainContent.querySelectorAll('.content-section[id]');
+        const tocLinks = tocList.querySelectorAll('.toc-link');
+        let currentSectionId = '';
+
+        sections.forEach(section => {
+          const sectionTop = section.offsetTop - 150; // Offset for header
+          if (window.scrollY >= sectionTop) {
+            currentSectionId = section.id;
+          }
+        });
+
+        tocLinks.forEach(link => {
+          link.classList.remove('is-active');
+          if (link.getAttribute('href') === `#${currentSectionId}`) {
+            link.classList.add('is-active');
+          }
+        });
+      }
+
+      // --- SCROLL-BASED ANIMATIONS & UI ---
+      function handleScroll() {
+        // Progress Bar
+        const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const scrollTop = window.scrollY;
+        const progress = (scrollTop / scrollHeight) * 100;
+        if (progressBar) progressBar.style.width = `${progress}%`;
+
+        // Back to Top Button
+        if (backToTopButton) {
+          if (window.scrollY > 300) {
+            backToTopButton.classList.add('is-visible');
+          } else {
+            backToTopButton.classList.remove('is-visible');
+          }
+        }
+      }
+      
+      // Intersection Observer for reveal animations
+      function setupIntersectionObserver() {
+        const revealItems = document.querySelectorAll('.reveal-item');
+        const observer = new IntersectionObserver((entries, observer) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.1 });
+
+        revealItems.forEach(item => observer.observe(item));
+      }
+
+      // --- ACCORDION ---
+      function setupAccordions() {
+        const accordionContainer = document.getElementById('accordion-container');
+        if (!accordionContainer) return;
+
+        accordionContainer.addEventListener('click', (e) => {
+          const header = e.target.closest('.accordion-header');
+          if (!header) return;
+
+          const content = header.nextElementSibling;
+          const isExpanded = header.getAttribute('aria-expanded') === 'true';
+
+          header.setAttribute('aria-expanded', !isExpanded);
+          if (!isExpanded) {
+            content.style.maxHeight = content.scrollHeight + 'px';
+          } else {
+            content.style.maxHeight = '0px';
+          }
+        });
+      }
+
+      // --- EVENT LISTENERS ---
+      if (backToTopButton) {
+        backToTopButton.addEventListener('click', () => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      }
+
+      if (printButton) {
+        printButton.addEventListener('click', () => {
+          window.print();
+        });
+      }
+      
+      if (mobileMenuButton && sidebar) {
+        mobileMenuButton.addEventListener('click', () => {
+          const isHidden = sidebar.style.display === 'none' || sidebar.style.display === '';
+          sidebar.style.display = isHidden ? 'block' : 'none';
+        });
+      }
+
+      window.addEventListener('scroll', throttle(handleScroll, 100));
+      window.addEventListener('scroll', throttle(updateScrollSpy, 100));
+
+      // --- INITIALIZATION ---
+      setDynamicDates();
+      createTOC();
+      updateScrollSpy();
+      setupIntersectionObserver();
+      setupAccordions();
+
+    });
+  </script>
+
+</body>
+
+</html>
