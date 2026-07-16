@@ -1,17 +1,14 @@
 {
   "version": 2,
+  "cleanUrls": true,
+  "trailingSlash": false,
   "builds": [
     {
-      "src": "./build.sh",
+      "src": "build.sh",
       "use": "@vercel/static-build",
-      "config": { "distDir": "dist" }
-    }
-  ],
-  "rewrites": [
-    { "source": "/dashboard", "destination": "/dashboard.html" },
-    { "source": "/mediakit", "destination": "/mediakit.html" },
-    {
-      "source": "/:path((?!.*\\.).*)", "destination": "/index.html"
+      "config": {
+        "distDir": "dist"
+      }
     }
   ]
 }
