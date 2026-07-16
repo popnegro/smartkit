@@ -15,8 +15,8 @@ MODE=${1:-static}
 DEST_DIR="dist"
 
 # Archivos y directorios a procesar
-CSS_FILE="styles.css"
-HTML_FILES=("index.html" "dashboard.html" "mediakit.html" "map.html" "screens.json" "contract.html")
+CSS_FILES=("styles.css" "contract.css")
+HTML_FILES=("index.html" "dashboard.html" "mediakit.html" "map.html" "contract.html")
 STATIC_ASSETS=("assets" "data") # Directorios para copiar
 
 # --- Funciones ---
@@ -55,8 +55,12 @@ minificar_js() {
 
 minificar_css() {
     echo "Minificando CSS con postcss y cssnano..."
-    ./node_modules/.bin/postcss "$CSS_FILE" --use cssnano -o "$DEST_DIR/$CSS_FILE"
-    echo "  ✅ Minificado: $CSS_FILE"
+    for file in "${CSS_FILES[@]}"; do
+      if [ -f "$file" ]; then
+        ./node_modules/.bin/postcss "$file" --use cssnano -o "$DEST_DIR/$file"
+        echo "  ✅ Minificado: $file"
+      fi
+    done
 }
 
 versionar_assets() {
@@ -70,9 +74,13 @@ versionar_assets() {
     fi
 
     echo "  ID de Build: $BUILD_ID"
-    # Use a more portable sed command that works on both Linux (Vercel) and macOS.
-    find "$DEST_DIR" -name "*.html" -exec sed -i.bak -e "s/\(href=\"[^\"]*\.css\)\"/\1?v=$BUILD_ID\"/g" {} +
+    # Versionar solo styles.css, ya que contract.css se carga dinámicamente.
+    find "$DEST_DIR" -name "*.html" -exec sed -i.bak -e "s/\(href=\"styles\.css\)\"/\1?v=$BUILD_ID\"/g" {} +
+    
+    # Versionar todos los archivos JS.
     find "$DEST_DIR" -name "*.html" -exec sed -i.bak -e "s/\(src=\"[^\"]*\.js\)\"/\1?v=$BUILD_ID\"/g" {} +
+    # Limpiar archivos .bak creados por sed
+    find "$DEST_DIR" -name "*.html.bak" -delete
 }
 
 # Función para generar un manifiesto de los archivos de producción.

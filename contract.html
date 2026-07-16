@@ -372,13 +372,22 @@
               document.getElementById('acceptance-form').style.display = 'none';
               document.getElementById('next-steps').style.display = 'block';
             } else {
-              // Leer el cuerpo del error para un mensaje más específico
-              const errorData = await response.json().catch(() => ({ message: 'El servidor respondió con un error inesperado.' }));
+              // Mejora: Formspree devuelve un JSON con un campo 'error' que es más descriptivo.
+              let errorData = { message: 'El servidor respondió con un error inesperado.' };
+              try {
+                const body = await response.json();
+                if (body && body.error) {
+                  errorData.message = body.error;
+                }
+              } catch (e) {
+                // El cuerpo del error no era JSON, mantener el mensaje genérico.
+              }
               throw new Error(errorData.message || 'Error desconocido del servidor.');
             }
           } catch (error) {
             console.error('Error al enviar el formulario:', error.message);
-            statusMessage.textContent = `No se pudo enviar la confirmación. ${error.message}`;
+            // Mejora: Mostrar un mensaje más útil al usuario.
+            statusMessage.textContent = `Error: ${error.message}. Si el problema persiste, contacte al soporte.`;
             statusMessage.className = 'form-status is-error';
           } finally {
             submitButton.disabled = false;

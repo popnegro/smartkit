@@ -233,9 +233,6 @@
   </div>
 
   <script>
-    // Constante para el endpoint del formulario, fácil de gestionar.
-    const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xgogobro';
-
     document.addEventListener('DOMContentLoaded', function() {
       const tocList = document.getElementById('toc-list');
       const mainContent = document.getElementById('main-content');
@@ -324,111 +321,73 @@
 
         acceptanceForm.addEventListener('submit', async function(event) {
           event.preventDefault();
-          submitButton.disabled = true; // Deshabilitar inmediatamente para evitar doble envío.
-
           const isAccepted = document.getElementById('terms-acceptance').checked;
           const clientName = document.getElementById('client-name-input').value;
           const email = document.getElementById('email-input').value;
           statusMessage.textContent = '';
-          
-          // Validación unificada de campos
-          const errors = [];
-          if (!isAccepted) errors.push('aceptar los términos');
-          if (!clientName.trim()) errors.push('ingresar un nombre');
-          if (!email.trim()) errors.push('ingresar un correo electrónico');
 
-          if (errors.length > 0) {
-            statusMessage.textContent = `Por favor, debe ${errors.join(', ')}.`;
+          if (!isAccepted) {
+            statusMessage.textContent = 'Por favor, debe aceptar los términos para continuar.';
             statusMessage.className = 'form-status is-error';
-            submitButton.disabled = false;
+            return;
+          }
+          if (!clientName) {
+            statusMessage.textContent = 'Por favor, ingrese un nombre o razón social.';
+            statusMessage.className = 'form-status is-error';
+            return;
+          }
+          if (!email) {
+            statusMessage.textContent = 'Por favor, ingrese un correo electrónico válido.';
+            statusMessage.className = 'form-status is-error';
             return;
           }
 
           statusMessage.className = 'form-status';
           statusMessage.textContent = 'Enviando confirmación...';
+          submitButton.disabled = true;
 
           try {
-            // Optimización: Enviar solo el contenido principal del contrato, no toda la página.
-            // Se carga el CSS y se incrusta para máxima compatibilidad con clientes de email.
-            // Usamos una URL absoluta para asegurar que siempre se encuentre el archivo en producción.
-            const cssUrl = new URL('contract.css', window.location.href).href;
-            const cssResponse = await fetch(cssUrl);
-            const cssText = await cssResponse.text();
-            const contractContent = document.getElementById('main-content').innerHTML;
-            const contractHtml = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Copia de Propuesta</title><style>${cssText}</style></head><body><main class="main-content">${contractContent}</main></body></html>`;
-            const textSummary = `
-              Propuesta aceptada por: ${clientName} (${email}).
-              
-              Se ha generado una copia de la propuesta comercial.
-              
-              Próximos Pasos:
-              - Reunión de Kick-off: Nuestro equipo se pondrá en contacto con usted dentro de las próximas 24 horas hábiles.
-              - Facturación: Recibirá la factura correspondiente al pago inicial.
-              - Comunicación: Para cualquier consulta, no dude en responder al correo de confirmación.
-            `;
-            
-            const payload = {
-              _name: clientName,
-              _replyto: email,
-              contractHtml: contractHtml,
-              _txt: textSummary,
-              _subject: `Propuesta Aceptada para ${clientName}`
-            };
+            // Clonar el documento y limpiar el HTML para el email
+            const clonedDoc = document.cloneNode(true);
+            clonedDoc.querySelector('.sidebar')?.remove();
+            clonedDoc.querySelector('.mobile-header')?.remove();
+            clonedDoc.querySelector('.overlay')?.remove();
+            clonedDoc.querySelectorAll('script').forEach(s => s.remove());
+            const contractHtml = clonedDoc.documentElement.outerHTML;
 
-            // --- Auditoría Local ---
-            // Si estamos en localhost, simulamos el envío para auditar el payload.
-            const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname) ||
-                            window.location.hostname.startsWith('192.168.');
+            // Reemplaza esta URL con tu endpoint de Formspree
+            const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xgogobro';
 
-            if (isLocal) {
-              console.log('--- AUDITORÍA LOCAL: Payload del Formulario ---');
-              console.log(payload);
-              
-              // Simular una respuesta exitosa después de 1 segundo
-              await new Promise(resolve => setTimeout(resolve, 1000));
-              
-              statusMessage.textContent = `Propuesta aceptada. Se ha enviado una copia a ${email}. Si no lo ve, revise su carpeta de spam.`;
+            const response = await fetch(FORMSPREE_ENDPOINT, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ clientName, email, contractHtml, _subject: `Propuesta Aceptada para ${clientName}` }),
+            });
+
+            // Formspree siempre responde con 'ok' si el formato es correcto,
+            // incluso si hay errores de envío, por lo que el manejo de errores se simplifica.
+            if (response.ok) {
+              statusMessage.textContent = `Propuesta aceptada. Se ha enviado una copia a ${email}.`;
               statusMessage.className = 'form-status is-success';
               document.getElementById('acceptance-form').style.display = 'none';
-              const nextSteps = document.getElementById('next-steps');
-              if (nextSteps) nextSteps.style.display = 'block';
-
+              document.getElementById('next-steps').style.display = 'block';
             } else {
-              // --- Envío en Producción ---
-              const response = await fetch(FORMSPREE_ENDPOINT, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-              });
-
-              if (!response.ok) {
-                // Formspree a menudo devuelve un JSON con un campo 'error' o 'errors'.
-                const errorData = await response.json().catch(() => ({}));
-                if (errorData.error) {
-                  throw new Error(errorData.error);
+              // Mejora: Formspree devuelve un JSON con un campo 'error' que es más descriptivo.
+              let errorData = { message: 'El servidor respondió con un error inesperado.' };
+              try {
+                const body = await response.json();
+                if (body && body.error) {
+                  errorData.message = body.error;
                 }
-                // Fallback para otros errores.
-                throw new Error(errorData.message || 'Error desconocido del servidor.');
+              } catch (e) {
+                // El cuerpo del error no era JSON, mantener el mensaje genérico.
               }
-              
-              statusMessage.textContent = `Propuesta aceptada. Se ha enviado una copia a ${email}. Si no lo ve, revise su carpeta de spam.`;
-              statusMessage.className = 'form-status is-success';
-              document.getElementById('acceptance-form').style.display = 'none';
-              const nextSteps = document.getElementById('next-steps');
-              if (nextSteps) nextSteps.style.display = 'block';
+              throw new Error(errorData.message || 'Error desconocido del servidor.');
             }
           } catch (error) {
             console.error('Error al enviar el formulario:', error.message);
-            // Mejora: Dar un mensaje más específico si el error es por spam o validación.
-            let userMessage = 'No se pudo enviar la confirmación. Por favor, intente más tarde.';
-            if (error.message.includes('validation error') || error.message.includes('is not a valid email address')) {
-              userMessage = `Error de validación: ${error.message}. Revise los datos e intente de nuevo.`;
-            } else if (error.message.includes('Form not found') || error.message.includes('must be confirmed')) {
-              userMessage = 'Error de configuración del formulario. Por favor, contacte al soporte.';
-            } else if (error.message.includes('blocked')) {
-              userMessage = 'El envío fue bloqueado por el filtro de spam. Por favor, contacte al soporte si el problema persiste.';
-            }
-            statusMessage.textContent = userMessage;
+            // Mejora: Mostrar un mensaje más útil al usuario.
+            statusMessage.textContent = `Error: ${error.message}. Si el problema persiste, contacte al soporte.`;
             statusMessage.className = 'form-status is-error';
           } finally {
             submitButton.disabled = false;
