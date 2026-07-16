@@ -2,7 +2,6 @@
   "data/data/kits/demo-trapiche.json",
   "styles.css",
   "public.js",
-  "contract.html",
   "dashboard.html",
   "readme.md",
   "assets/assets/videos/peatonal-sarmiento.mp4",
@@ -15,6 +14,7 @@
   "index.html",
   "mediakit.html",
   "admin.js",
+  "proposal.html",
   "map.html",
   "production-manifest.json"
 ]

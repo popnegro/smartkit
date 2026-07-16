@@ -16,7 +16,7 @@ DEST_DIR="dist"
 
 # Archivos y directorios a procesar
 CSS_FILES=("styles.css" "contract.css")
-HTML_FILES=("index.html" "dashboard.html" "mediakit.html" "map.html" "contract.html")
+HTML_FILES=("index.html" "dashboard.html" "mediakit.html" "map.html" "proposal.html")
 STATIC_ASSETS=("assets" "data") # Directorios para copiar
 
 # --- Funciones ---
