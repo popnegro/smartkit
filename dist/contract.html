@@ -11,9 +11,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
   <!-- Carga de CSS optimizada para performance -->
-  <link rel="preload" href="contract.css?v=750e0de" as="style">
-  <link rel="stylesheet" href="contract.css?v=750e0de" media="print" onload="this.media='all'">
-  <noscript><link rel="stylesheet" href="contract.css?v=750e0de"></noscript>
+  <link rel="preload" href="contract.css" as="style">
+  <link rel="stylesheet" href="contract.css" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="contract.css"></noscript>
 </head>
 
 <body>
@@ -350,7 +350,9 @@
           try {
             // Optimización: Enviar solo el contenido principal del contrato, no toda la página.
             // Se carga el CSS y se incrusta para máxima compatibilidad con clientes de email.
-            const cssResponse = await fetch('contract.css');
+            // Usamos una URL absoluta para asegurar que siempre se encuentre el archivo en producción.
+            const cssUrl = new URL('contract.css', window.location.href).href;
+            const cssResponse = await fetch(cssUrl);
             const cssText = await cssResponse.text();
             const contractContent = document.getElementById('main-content').innerHTML;
             const contractHtml = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Copia de Propuesta</title><style>${cssText}</style></head><body><main class="main-content">${contractContent}</main></body></html>`;
@@ -375,7 +377,8 @@
 
             // --- Auditoría Local ---
             // Si estamos en localhost, simulamos el envío para auditar el payload.
-            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname) ||
+                            window.location.hostname.startsWith('192.168.');
 
             if (isLocal) {
               console.log('--- AUDITORÍA LOCAL: Payload del Formulario ---');
@@ -399,7 +402,12 @@
               });
 
               if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ message: 'El servidor respondió con un error inesperado.' }));
+                // Formspree a menudo devuelve un JSON con un campo 'error' o 'errors'.
+                const errorData = await response.json().catch(() => ({}));
+                if (errorData.error) {
+                  throw new Error(errorData.error);
+                }
+                // Fallback para otros errores.
                 throw new Error(errorData.message || 'Error desconocido del servidor.');
               }
               
@@ -413,7 +421,11 @@
             console.error('Error al enviar el formulario:', error.message);
             // Mejora: Dar un mensaje más específico si el error es por spam o validación.
             let userMessage = 'No se pudo enviar la confirmación. Por favor, intente más tarde.';
-            if (error.message.includes('validation errors')) {
+            if (error.message.includes('validation error') || error.message.includes('is not a valid email address')) {
+              userMessage = `Error de validación: ${error.message}. Revise los datos e intente de nuevo.`;
+            } else if (error.message.includes('Form not found') || error.message.includes('must be confirmed')) {
+              userMessage = 'Error de configuración del formulario. Por favor, contacte al soporte.';
+            } else if (error.message.includes('blocked')) {
               userMessage = 'El envío fue bloqueado por el filtro de spam. Por favor, contacte al soporte si el problema persiste.';
             }
             statusMessage.textContent = userMessage;
