@@ -11,9 +11,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
   <!-- Carga de CSS optimizada para performance -->
-  <link rel="preload" href="contract.css?v=4a25699" as="style">
-  <link rel="stylesheet" href="contract.css?v=4a25699" media="print" onload="this.media='all'">
-  <noscript><link rel="stylesheet" href="contract.css?v=4a25699"></noscript>
+  <link rel="preload" href="contract.css?v=750e0de" as="style">
+  <link rel="stylesheet" href="contract.css?v=750e0de" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="contract.css?v=750e0de"></noscript>
 </head>
 
 <body>
@@ -349,13 +349,27 @@
 
           try {
             // Optimización: Enviar solo el contenido principal del contrato, no toda la página.
+            // Se carga el CSS y se incrusta para máxima compatibilidad con clientes de email.
+            const cssResponse = await fetch('contract.css');
+            const cssText = await cssResponse.text();
             const contractContent = document.getElementById('main-content').innerHTML;
-            const contractHtml = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Copia de Propuesta</title><link rel="stylesheet" href="https://smartkit-saas.vercel.app/contract.css?v=4a25699"></head><body><main class="main-content">${contractContent}</main></body></html>`;
+            const contractHtml = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Copia de Propuesta</title><style>${cssText}</style></head><body><main class="main-content">${contractContent}</main></body></html>`;
+            const textSummary = `
+              Propuesta aceptada por: ${clientName} (${email}).
+              
+              Se ha generado una copia de la propuesta comercial.
+              
+              Próximos Pasos:
+              - Reunión de Kick-off: Nuestro equipo se pondrá en contacto con usted dentro de las próximas 24 horas hábiles.
+              - Facturación: Recibirá la factura correspondiente al pago inicial.
+              - Comunicación: Para cualquier consulta, no dude en responder al correo de confirmación.
+            `;
             
             const payload = {
-              clientName: clientName,
-              email: email,
+              _name: clientName,
+              _replyto: email,
               contractHtml: contractHtml,
+              _txt: textSummary,
               _subject: `Propuesta Aceptada para ${clientName}`
             };
 
@@ -370,7 +384,7 @@
               // Simular una respuesta exitosa después de 1 segundo
               await new Promise(resolve => setTimeout(resolve, 1000));
               
-              statusMessage.textContent = `Propuesta aceptada. Se ha enviado una copia a ${email}.`;
+              statusMessage.textContent = `Propuesta aceptada. Se ha enviado una copia a ${email}. Si no lo ve, revise su carpeta de spam.`;
               statusMessage.className = 'form-status is-success';
               document.getElementById('acceptance-form').style.display = 'none';
               const nextSteps = document.getElementById('next-steps');
@@ -389,7 +403,7 @@
                 throw new Error(errorData.message || 'Error desconocido del servidor.');
               }
               
-              statusMessage.textContent = `Propuesta aceptada. Se ha enviado una copia a ${email}.`;
+              statusMessage.textContent = `Propuesta aceptada. Se ha enviado una copia a ${email}. Si no lo ve, revise su carpeta de spam.`;
               statusMessage.className = 'form-status is-success';
               document.getElementById('acceptance-form').style.display = 'none';
               const nextSteps = document.getElementById('next-steps');
@@ -397,7 +411,12 @@
             }
           } catch (error) {
             console.error('Error al enviar el formulario:', error.message);
-            statusMessage.textContent = `No se pudo enviar la confirmación. ${error.message}`;
+            // Mejora: Dar un mensaje más específico si el error es por spam o validación.
+            let userMessage = 'No se pudo enviar la confirmación. Por favor, intente más tarde.';
+            if (error.message.includes('validation errors')) {
+              userMessage = 'El envío fue bloqueado por el filtro de spam. Por favor, contacte al soporte si el problema persiste.';
+            }
+            statusMessage.textContent = userMessage;
             statusMessage.className = 'form-status is-error';
           } finally {
             submitButton.disabled = false;
