@@ -11,9 +11,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
   <!-- Carga de CSS optimizada para performance -->
-  <link rel="preload" href="contract.css?v=f832d96" as="style">
-  <link rel="stylesheet" href="contract.css?v=f832d96" media="print" onload="this.media='all'">
-  <noscript><link rel="stylesheet" href="contract.css?v=f832d96"></noscript>
+  <link rel="preload" href="contract.css?v=4a25699" as="style">
+  <link rel="stylesheet" href="contract.css?v=4a25699" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="contract.css?v=4a25699"></noscript>
 </head>
 
 <body>
@@ -233,6 +233,9 @@
   </div>
 
   <script>
+    // Constante para el endpoint del formulario, fácil de gestionar.
+    const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xgogobro';
+
     document.addEventListener('DOMContentLoaded', function() {
       const tocList = document.getElementById('toc-list');
       const mainContent = document.getElementById('main-content');
@@ -321,60 +324,76 @@
 
         acceptanceForm.addEventListener('submit', async function(event) {
           event.preventDefault();
+          submitButton.disabled = true; // Deshabilitar inmediatamente para evitar doble envío.
+
           const isAccepted = document.getElementById('terms-acceptance').checked;
           const clientName = document.getElementById('client-name-input').value;
           const email = document.getElementById('email-input').value;
           statusMessage.textContent = '';
+          
+          // Validación unificada de campos
+          const errors = [];
+          if (!isAccepted) errors.push('aceptar los términos');
+          if (!clientName.trim()) errors.push('ingresar un nombre');
+          if (!email.trim()) errors.push('ingresar un correo electrónico');
 
-          if (!isAccepted) {
-            statusMessage.textContent = 'Por favor, debe aceptar los términos para continuar.';
+          if (errors.length > 0) {
+            statusMessage.textContent = `Por favor, debe ${errors.join(', ')}.`;
             statusMessage.className = 'form-status is-error';
-            return;
-          }
-          if (!clientName) {
-            statusMessage.textContent = 'Por favor, ingrese un nombre o razón social.';
-            statusMessage.className = 'form-status is-error';
-            return;
-          }
-          if (!email) {
-            statusMessage.textContent = 'Por favor, ingrese un correo electrónico válido.';
-            statusMessage.className = 'form-status is-error';
+            submitButton.disabled = false;
             return;
           }
 
           statusMessage.className = 'form-status';
           statusMessage.textContent = 'Enviando confirmación...';
-          submitButton.disabled = true;
 
           try {
-            // Clonar el documento y limpiar el HTML para el email
-            const clonedDoc = document.cloneNode(true);
-            clonedDoc.querySelector('.sidebar')?.remove();
-            clonedDoc.querySelector('.mobile-header')?.remove();
-            clonedDoc.querySelector('.overlay')?.remove();
-            clonedDoc.querySelectorAll('script').forEach(s => s.remove());
-            const contractHtml = clonedDoc.documentElement.outerHTML;
+            // Optimización: Enviar solo el contenido principal del contrato, no toda la página.
+            const contractContent = document.getElementById('main-content').innerHTML;
+            const contractHtml = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Copia de Propuesta</title><link rel="stylesheet" href="https://smartkit-saas.vercel.app/contract.css?v=4a25699"></head><body><main class="main-content">${contractContent}</main></body></html>`;
+            
+            const payload = {
+              clientName: clientName,
+              email: email,
+              contractHtml: contractHtml,
+              _subject: `Propuesta Aceptada para ${clientName}`
+            };
 
-            // Reemplaza esta URL con tu endpoint de Formspree
-            const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xgogobro';
+            // --- Auditoría Local ---
+            // Si estamos en localhost, simulamos el envío para auditar el payload.
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-            const response = await fetch(FORMSPREE_ENDPOINT, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ clientName, email, contractHtml, _subject: `Propuesta Aceptada para ${clientName}` }),
-            });
-
-            // Formspree siempre responde con 'ok' si el formato es correcto,
-            // incluso si hay errores de envío, por lo que el manejo de errores se simplifica.
-            if (response.ok) {
+            if (isLocal) {
+              console.log('--- AUDITORÍA LOCAL: Payload del Formulario ---');
+              console.log(payload);
+              
+              // Simular una respuesta exitosa después de 1 segundo
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              
               statusMessage.textContent = `Propuesta aceptada. Se ha enviado una copia a ${email}.`;
               statusMessage.className = 'form-status is-success';
               document.getElementById('acceptance-form').style.display = 'none';
-              document.getElementById('next-steps').style.display = 'block';
+              const nextSteps = document.getElementById('next-steps');
+              if (nextSteps) nextSteps.style.display = 'block';
+
             } else {
-              // Leer el cuerpo del error para un mensaje más específico
-              const errorData = await response.json().catch(() => ({ message: 'El servidor respondió con un error inesperado.' }));
-              throw new Error(errorData.message || 'Error desconocido del servidor.');
+              // --- Envío en Producción ---
+              const response = await fetch(FORMSPREE_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+              });
+
+              if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: 'El servidor respondió con un error inesperado.' }));
+                throw new Error(errorData.message || 'Error desconocido del servidor.');
+              }
+              
+              statusMessage.textContent = `Propuesta aceptada. Se ha enviado una copia a ${email}.`;
+              statusMessage.className = 'form-status is-success';
+              document.getElementById('acceptance-form').style.display = 'none';
+              const nextSteps = document.getElementById('next-steps');
+              if (nextSteps) nextSteps.style.display = 'block';
             }
           } catch (error) {
             console.error('Error al enviar el formulario:', error.message);
