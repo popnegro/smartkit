@@ -355,21 +355,30 @@
             clonedDoc.querySelectorAll('script').forEach(s => s.remove());
             const contractHtml = clonedDoc.documentElement.outerHTML;
 
-            const response = await fetch('/api/accept-proposal', {
+            // Reemplaza esta URL con tu endpoint de Formspree
+            const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xgogobro';
+
+            const response = await fetch(FORMSPREE_ENDPOINT, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ clientName: clientName, email: email, contractHtml: contractHtml }),
+              body: JSON.stringify({ clientName, email, contractHtml, _subject: `Propuesta Aceptada para ${clientName}` }),
             });
 
+            // Formspree siempre responde con 'ok' si el formato es correcto,
+            // incluso si hay errores de envío, por lo que el manejo de errores se simplifica.
             if (response.ok) {
               statusMessage.textContent = `Propuesta aceptada. Se ha enviado una copia a ${email}.`;
               statusMessage.className = 'form-status is-success';
+              document.getElementById('acceptance-form').style.display = 'none';
+              document.getElementById('next-steps').style.display = 'block';
             } else {
-              throw new Error('El servidor respondió con un error.');
+              // Leer el cuerpo del error para un mensaje más específico
+              const errorData = await response.json().catch(() => ({ message: 'El servidor respondió con un error inesperado.' }));
+              throw new Error(errorData.message || 'Error desconocido del servidor.');
             }
           } catch (error) {
-            console.error('Error al enviar el formulario:', error);
-            statusMessage.textContent = 'No se pudo enviar la confirmación. Por favor, intente más tarde.';
+            console.error('Error al enviar el formulario:', error.message);
+            statusMessage.textContent = `No se pudo enviar la confirmación. ${error.message}`;
             statusMessage.className = 'form-status is-error';
           } finally {
             submitButton.disabled = false;
