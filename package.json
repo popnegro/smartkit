@@ -24,5 +24,8 @@
     "testMatch": [
       "**/?(*.)+(test).[jt]s?(x)"
     ]
+  },
+  "dependencies": {
+    "entities": "^8.0.0"
   }
 }
