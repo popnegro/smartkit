@@ -229,12 +229,10 @@
         <div class="cta-box">
           <div class="container">
             <h2 class="content-title">Aceptación de la Propuesta</h2>
-            <p>Para aceptar esta propuesta, por favor complete sus datos. Al hacer clic en "Aceptar", se abrirá WhatsApp con un mensaje pre-redactado para que pueda enviar su confirmación formal.</p>
             <form id="acceptance-form">
               <div class="form-group">
                 <label for="client-name-input" class="form-label">Nombre y Apellido o Razón Social:</label>
                 <input type="text" id="client-name-input" name="clientName" required placeholder="Ej: Juan Pérez o Empresa S.A." class="form-input">
-                <p id="name-validation-msg" class="form-status" style="margin-top: 0.5rem; font-size: 0.8rem;"></p>
               </div>
               <div class="form-group">
                 <label for="phone-input" class="form-label">Teléfono de contacto:</label>
@@ -245,19 +243,20 @@
                 <input type="checkbox" id="terms-acceptance" name="terms-acceptance" required>
                 <label for="terms-acceptance">He leído y acepto los <a href="#terminos-condiciones" style="color: var(--color-primary);">términos y condiciones de esta propuesta</a>.</label>
               </div>
-              <div class="form-group">
-                <button type="submit" id="submit-btn" class="btn" style="width: 100%;" disabled>Aceptar y Enviar por WhatsApp</button>
+              <div class="form-group" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <button type="button" id="download-pdf-btn" class="btn" style="background-color: var(--color-text-secondary); flex-grow: 1;">Descargar PDF</button>
+                <button type="submit" class="btn" style="flex-grow: 2;">Aceptar y Enviar por WhatsApp</button>
               </div>
               <p id="form-status" class="form-status"></p>
             </form>
             <div id="next-steps" style="display: none;">
               <h3 class="content-title" style="margin-top: 0;">¡Gracias por su confianza!</h3>
-              <p>Hemos recibido su aceptación. Estamos en camino.</p>
+              <p>Hemos recibido su aceptación. En breve, usted y nuestro equipo recibirán una copia de la propuesta en el correo electrónico proporcionado.</p>
               <h4 style="font-family: var(--font-serif); margin-top: 1.5rem; margin-bottom: 1rem;">Próximos Pasos:</h4>
               <ul style="margin-top: 0; padding-left: 1rem;">
-                <li><strong>Cancelación del 50% para iniciar el proyecto</strong> Quedamos a la espera de su confirmación.</li>
-                <li><strong>Reunión de Kick-off:</strong> Nuestro equipo se pondrá en contacto con usted dentro de las 24 horas hábiles para agendar la reunión initial del proyecto.</li>
-                <li><strong>Comunicación:</strong> Para cualquier consulta, no dude en <a href="mailto:smartwebmendoza@gmail.com" style="color: var(--color-primary);">escribirnos un email</a> o <a id="next-steps-whatsapp" href="#" style="color: var(--color-primary);">contactarnos por WhatsApp</a>.</li>
+                <li><strong>Reunión de Kick-off:</strong> Nuestro equipo se pondrá en contacto con usted dentro de las 24 horas hábiles para agendar la reunión inicial del proyecto.</li>
+                <li><strong>Facturación:</strong> Paralelamente, recibirá la factura correspondiente al pago inicial para dar comienzo formal al desarrollo.</li>
+                <li><strong>Comunicación:</strong> Para cualquier consulta, no dude en responder al correo de confirmación que ha recibido o contactarnos directamente.</li>
               </ul>
               <p style="margin-top: 1.5rem;">¡Estamos muy entusiasmados de comenzar a trabajar juntos!</p>
             </div>
@@ -270,7 +269,6 @@
   <script>
     // --- CONFIGURACIÓN ---
     const WHATSAPP_NUMBER = '5492613871088'; // Reemplaza con tu número de WhatsApp en formato internacional sin '+' o '00'.
-
 
     // --- LÓGICA DE LA PÁGINA ---
     document.addEventListener('DOMContentLoaded', function() {
@@ -362,19 +360,28 @@
       // Acceptance Form Logic
       const acceptanceForm = document.getElementById('acceptance-form');
       if (acceptanceForm) {
-        const submitButton = document.getElementById('submit-btn');
         const statusMessage = document.getElementById('form-status');
-        const clientNameInput = document.getElementById('client-name-input');
-        const phoneInput = document.getElementById('phone-input');
-        const termsCheckbox = document.getElementById('terms-acceptance');
+        const submitButton = acceptanceForm.querySelector('button[type="submit"]');
         
         acceptanceForm.addEventListener('submit', function(event) {
           event.preventDefault();
-          
-          const clientName = clientNameInput.value;
+          const isAccepted = document.getElementById('terms-acceptance').checked;
+          const clientName = document.getElementById('client-name-input').value;
+          const email = document.getElementById('email-input').value;
           statusMessage.textContent = '';
-          if (!validateForm()) {
-            statusMessage.textContent = 'Por favor, complete todos los campos correctamente.';
+
+          if (!isAccepted) {
+            statusMessage.textContent = 'Por favor, debe aceptar los términos para continuar.';
+            statusMessage.className = 'form-status is-error';
+            return;
+          }
+          if (!clientName) {
+            statusMessage.textContent = 'Por favor, ingrese un nombre o razón social.';
+            statusMessage.className = 'form-status is-error';
+            return;
+          }
+          if (!phoneInput.checkValidity()) {
+            statusMessage.textContent = 'Por favor, ingrese un número de teléfono válido.';
             statusMessage.className = 'form-status is-error';
             return;
           }
@@ -396,12 +403,6 @@
             statusMessage.className = 'form-status is-success';
             document.getElementById('acceptance-form').style.display = 'none';
             document.getElementById('next-steps').style.display = 'block';
-            
-            // Configurar el enlace de WhatsApp en los próximos pasos
-            const nextStepsWhatsappLink = document.getElementById('next-steps-whatsapp');
-            if (nextStepsWhatsappLink) {
-              nextStepsWhatsappLink.href = `https://wa.me/${WHATSAPP_NUMBER}`;
-            }
 
           } catch (error) {
             console.error('Error al enviar el formulario:', error.message);
@@ -410,48 +411,32 @@
           }
         });
 
-        // --- Validación en tiempo real ---
-        const nameValidationMsg = document.getElementById('name-validation-msg');
+        // Validación en tiempo real para el campo de teléfono
+        const phoneInput = document.getElementById('phone-input');
         const phoneValidationMsg = document.getElementById('phone-validation-msg');
-
-        function validateForm() {
-          let isNameValid = false;
-          if (clientNameInput.value.trim().length >= 3) {
-            clientNameInput.classList.remove('is-invalid');
-            clientNameInput.classList.add('is-valid');
-            nameValidationMsg.textContent = '';
-            isNameValid = true;
-          } else {
-            clientNameInput.classList.remove('is-valid');
-            clientNameInput.classList.add('is-invalid');
-            nameValidationMsg.textContent = 'Debe tener al menos 3 caracteres.';
-            nameValidationMsg.className = 'form-status is-error';
-          }
-
-          let isPhoneValid = false;
-          const phoneRegex = /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/;
-          if (phoneRegex.test(phoneInput.value) && phoneInput.value.replace(/\D/g, '').length >= 8) {
-            phoneInput.classList.remove('is-invalid');
-            phoneInput.classList.add('is-valid');
-            phoneValidationMsg.textContent = ''; // No mostrar mensaje en caso de éxito
-            isPhoneValid = true;
-          } else {
-            phoneInput.classList.remove('is-valid');
-            phoneInput.classList.add('is-invalid');
-            phoneValidationMsg.textContent = 'Formato de teléfono inválido.';
-            phoneValidationMsg.className = 'form-status is-error';
-          }
-
-          const isTermsValid = termsCheckbox.checked;
-          const isFormValid = isNameValid && isPhoneValid && isTermsValid;
-          submitButton.disabled = !isFormValid;
-          return isFormValid;
+        if (phoneInput && phoneValidationMsg) {
+          phoneInput.addEventListener('input', function() {
+            const phoneRegex = /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/;
+            if (phoneInput.value.length === 0) {
+              phoneValidationMsg.textContent = '';
+              phoneInput.classList.remove('is-invalid');
+            } else if (phoneRegex.test(phoneInput.value) && phoneInput.value.replace(/\D/g, '').length >= 8) {
+              phoneValidationMsg.textContent = 'Formato válido.';
+              phoneValidationMsg.className = 'form-status is-success';
+              phoneInput.setCustomValidity('');
+            } else {
+              phoneValidationMsg.textContent = 'Formato de teléfono inválido. Use solo números y +, -, (, ).';
+              phoneValidationMsg.className = 'form-status is-error';
+              phoneInput.setCustomValidity('Formato inválido.');
+            }
+          });
         }
 
-        // Añadir listeners para validar en tiempo real
-        clientNameInput.addEventListener('input', validateForm);
-        phoneInput.addEventListener('input', validateForm);
-        termsCheckbox.addEventListener('change', validateForm);
+        // Botón para descargar PDF
+        const downloadPdfBtn = document.getElementById('download-pdf-btn');
+        if (downloadPdfBtn) {
+          downloadPdfBtn.addEventListener('click', () => window.print());
+        }
       }
     });
   </script>
