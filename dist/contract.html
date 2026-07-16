@@ -32,11 +32,10 @@
     <div id="overlay" class="overlay"></div>
 
     <main id="main-content" class="main-content">
-      <div id="contract-body">
+
       <!-- 1. TÍTULO -->
       <section id="portada" class="content-section animate-on-scroll">
         <div class="container">
-          
           <h1 class="section-title">Smartkit</h1>
           <p><strong>Branch</strong> Grupo Comunicarte<br>
              <strong>Deploy</strong> wwww.grupocomunicarte.com.ar<br>
@@ -241,7 +240,6 @@
           </div>
         </div>
       </section>
-      </div>
     </main>
   </div>
 
@@ -367,13 +365,13 @@
             const cssUrl = new URL('contract.css', window.location.href).href;
             const cssResponse = await fetch(cssUrl);
             const cssText = await cssResponse.ok ? await cssResponse.text() : '';
-            
-            // Clonar solo el cuerpo del contrato para un email limpio.
-            const contractBodyClone = document.getElementById('contract-body').cloneNode(true);
-            // Limpiar el formulario de aceptación del clon para que no aparezca en el email.
-            contractBodyClone.querySelector('#aceptacion')?.remove();
-            const contractContent = contractBodyClone.innerHTML;
 
+            // Clonar solo el main-content para asegurar que no se incluyan elementos extra.
+            const mainContentClone = document.getElementById('main-content').cloneNode(true);
+            // Limpiar elementos no deseados del clon.
+            mainContentClone.querySelector('.mobile-header')?.remove();
+            mainContentClone.querySelector('.overlay')?.remove();
+            const contractContent = mainContentClone.innerHTML;
             const contractHtml = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Copia de Propuesta</title><style>${cssText}</style></head><body><main class="main-content">${contractContent}</main></body></html>`;
             const textSummary = `
               Propuesta aceptada por: ${clientName} (${email}).
@@ -381,7 +379,7 @@
               Se ha generado una copia de la propuesta comercial.
               
               Próximos Pasos:
-              - Reunión de Kick-off: Nuestro equipo se pondrá en contacto con usted dentro de las 24 horas hábiles.
+              - Reunión de Kick-off: Nuestro equipo se pondrá en contacto con usted dentro de las próximas 24 horas hábiles.
               - Facturación: Recibirá la factura correspondiente al pago inicial.
               - Comunicación: Para cualquier consulta, no dude en responder al correo de confirmación.
             `;
@@ -413,6 +411,7 @@
 
             } else {
               // --- Envío en Producción ---
+              // (El resto del código de envío y manejo de errores permanece igual)
               const response = await fetch(FORMSPREE_ENDPOINT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

@@ -41,13 +41,13 @@ copiar_archivos() {
 
 minificar_js() {
     echo "Minificando JavaScript con Terser..."
-
-    # Bundle para páginas públicas (brochure, mapa, mediakit)
+    
+    # Bundle para páginas públicas
     echo "  Creando public.js..."
-    cat shared.js app.js map.js mediakit.js | ./node_modules/.bin/terser -c -m > "$DEST_DIR/public.js"
+    cat shared.js nav.js footer.js app.js map.js mediakit.js | ./node_modules/.bin/terser -c -m > "$DEST_DIR/public.js"
     echo "  ✅ Minificado: public.js"
-
-    # Bundle para el dashboard de administración
+    
+    # Bundle para el dashboard
     echo "  Creando admin.js..."
     cat shared.js dashboard.js | ./node_modules/.bin/terser -c -m > "$DEST_DIR/admin.js"
     echo "  ✅ Minificado: admin.js"
