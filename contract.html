@@ -38,8 +38,8 @@
         <div class="container">
           <h1 class="section-title">Smartkit</h1>
           <p><strong>Branch</strong> Grupo Comunicarte<br>
-             <strong>Deploy</strong> wwww.grupocomunicarte.com.ar<br>
-             <strong>Date</strong> <span id="current-date"></span><br>
+             <strong>Deploy</strong> www.grupocomunicarte.com.ar<br>
+             <strong>Date</strong> <input type="date" id="current-date" style="background: transparent; border: none; font-family: inherit; font-size: inherit; color: inherit; padding: 0;"><br>
              <strong>File ID</strong> SW-SK-2026-07-01</p>
         </div>
       </section>
@@ -144,21 +144,30 @@
       <!-- 5. INVERSIÓN Y PAGO -->
       <section id="inversion" class="content-section animate-on-scroll">
         <div class="container">
-          <h2 class="content-title">Despliegue en Producción</h2>
-          <table class="table">
-            <thead><tr><th>Concepto</th><th>Monto (USD)</th></tr></thead>
-            <tbody>
-              <tr><td>Migración de DNS a Vercel y creación de Pipelines</td><td>100</td></tr>
-              <tr><td>Desarrollo de Plataforma de Gestión de Medios</td><td>400</td></tr>
-              <tr><td><strong>Total</strong></td><td><strong>USD 500</strong></td></tr>
-            </tbody>
-          </table>
+          <h2 class="content-title">Inversión y Forma de Pago</h2>
+          <p>A continuación se detalla la inversión necesaria para el desarrollo e implementación del proyecto SmartKit.</p>
+          <div class="grid" style="margin-top: 2rem; gap: 1rem;">
+            <div class="feature-card">
+              <h3 style="font-size: 1.1rem;">Desarrollo de Plataforma</h3>
+              <p style="font-size: 0.9rem; color: var(--color-text-secondary);">Creación de la aplicación, base de datos y funcionalidades descritas.</p>
+              <p style="font-size: 1.5rem; font-weight: 700; margin-top: 1rem;">USD 400</p>
+            </div>
+            <div class="feature-card">
+              <h3 style="font-size: 1.1rem;">Despliegue y Puesta en Marcha</h3>
+              <p style="font-size: 0.9rem; color: var(--color-text-secondary);">Configuración de hosting, dominio y pipelines de despliegue continuo.</p>
+              <p style="font-size: 1.5rem; font-weight: 700; margin-top: 1rem;">USD 100</p>
+            </div>
+            <div class="feature-card highlight" style="text-align: center;">
+              <h3 style="font-size: 1.1rem;">Inversión Total</h3>
+              <p style="font-size: 2rem; font-weight: 700; margin-top: 1rem;">USD 500</p>
+            </div>
+          </div>
           <h3 class="content-title">Forma de Pago</h3>
           <ul>
             <li><strong>50% a la firma del contrato:</strong> USD 250</li>
             <li><strong>50% a la entrega final:</strong> USD 250</li>
           </ul>
-           <p style="font-size: 0.8rem; margin-top: 1rem;">* Los valores no incluyen IVA. La moneda de pago es Dólar Estadounidense (USD) o su equivalente en Pesos Argentinos (ARS) a la cotización del Dólar Venta Banco Nación al día de pago.</p>
+           <p style="font-size: 0.8rem; margin-top: 1.5rem; color: var(--color-text-secondary);">* Los valores no incluyen IVA. La moneda de pago es Dólar Estadounidense (USD) o su equivalente en Pesos Argentinos (ARS) a la cotización del Dólar Venta Banco Nación al día de pago.</p>
         </div>
       </section>
       
@@ -195,34 +204,48 @@
           </table>
           <h3 class="content-title">Forma de Pago</h3>
           <ul>
-            <li><strong>100% al inicio del período de servicio:</strong> USD 100</li>
+            <li><strong>100% al inicio del período de servicio:</strong> USD 100, a abonarse del 1 al 5 de cada mes.</li>
           </ul>
           <p style="font-size: 0.8rem; margin-top: 1rem;">* El servicio de Hosting Administrado se activa al momento de delegar los DNS sobre el dominio en Producción. </p>
         </div>
       </section>
    
+      <!-- TÉRMINOS Y CONDICIONES -->
+      <section id="terminos-condiciones" class="content-section animate-on-scroll">
+        <div class="container">
+          <h2 class="content-title">Términos y Condiciones</h2>
+          <p>Al aceptar esta propuesta, ambas partes (el "Proveedor" y el "Cliente") acuerdan los siguientes términos:</p>
+          <ul>
+            <li><strong>Confidencialidad:</strong> Toda la información compartida durante el proyecto será considerada confidencial y no será divulgada a terceros sin consentimiento previo por escrito.</li>
+            <li><strong>Pagos:</strong> Los pagos se realizarán según el cronograma establecido en la sección "Inversión y Pago". Las demoras en los pagos pueden resultar en la suspensión del trabajo.</li>
+            <li><strong>Alcance y Cambios:</strong> Cualquier trabajo solicitado fuera del alcance detallado en esta propuesta será cotizado por separado. Los cambios significativos en el alcance pueden requerir un ajuste en el cronograma y el presupuesto.</li>
+            <li><strong>Terminación:</strong> Cualquiera de las partes puede rescindir este acuerdo con un aviso por escrito de 15 días. En caso de terminación por parte del Cliente, se facturará el trabajo completado hasta la fecha.</li>
+          </ul>
+        </div>
+      </section>
 
       <!-- 7. ACEPTACIÓN -->
       <section id="aceptacion" class="content-section animate-on-scroll">
         <div class="cta-box">
           <div class="container">
             <h2 class="content-title">Aceptación de la Propuesta</h2>
-            <p>Para aceptar esta propuesta, marque la casilla de confirmación y proporcione un correo electrónico para recibir una copia del acuerdo.</p>
             <form id="acceptance-form">
-              <div class="form-checkbox-group">
-                <input type="checkbox" id="terms-acceptance" name="terms-acceptance" required>
-                <label for="terms-acceptance">He leído y acepto los términos y condiciones de esta propuesta.</label>
-              </div>
               <div class="form-group">
                 <label for="client-name-input" class="form-label">Nombre y Apellido o Razón Social:</label>
                 <input type="text" id="client-name-input" name="clientName" required placeholder="Ej: Juan Pérez o Empresa S.A." class="form-input">
               </div>
               <div class="form-group">
-                <label for="email-input" class="form-label">Correo electrónico para recepción:</label>
-                <input type="email" id="email-input" name="email" required placeholder="su.email@ejemplo.com" class="form-input">
+                <label for="phone-input" class="form-label">Teléfono de contacto:</label>
+                <input type="tel" id="phone-input" name="phone" required placeholder="Ej: +54 9 261 1234567" class="form-input">
+                <p id="phone-validation-msg" class="form-status" style="margin-top: 0.5rem; font-size: 0.8rem;"></p>
               </div>
-              <div class="form-group">
-                <button type="submit" class="btn">Aceptar</button>
+              <div class="form-checkbox-group">
+                <input type="checkbox" id="terms-acceptance" name="terms-acceptance" required>
+                <label for="terms-acceptance">He leído y acepto los <a href="#terminos-condiciones" style="color: var(--color-primary);">términos y condiciones de esta propuesta</a>.</label>
+              </div>
+              <div class="form-group" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <button type="button" id="download-pdf-btn" class="btn" style="background-color: var(--color-text-secondary); flex-grow: 1;">Descargar PDF</button>
+                <button type="submit" class="btn" style="flex-grow: 2;">Aceptar y Enviar por WhatsApp</button>
               </div>
               <p id="form-status" class="form-status"></p>
             </form>
@@ -244,14 +267,24 @@
   </div>
 
   <script>
+    // --- CONFIGURACIÓN ---
+    const WHATSAPP_NUMBER = '5492613871088'; // Reemplaza con tu número de WhatsApp en formato internacional sin '+' o '00'.
+
+    // --- LÓGICA DE LA PÁGINA ---
     document.addEventListener('DOMContentLoaded', function() {
       const tocList = document.getElementById('toc-list');
       const mainContent = document.getElementById('main-content');
       const sections = mainContent.querySelectorAll('.content-section[id]');
       
       // Set current date
-      const dateSpan = document.getElementById('current-date');
-      if (dateSpan) dateSpan.textContent = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+      const dateInput = document.getElementById('current-date');
+      if (dateInput) {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+        const day = String(today.getDate()).padStart(2, '0');
+        dateInput.value = `${year}-${month}-${day}`;
+      }
 
       // Create TOC
       if (tocList && mainContent) {
@@ -329,8 +362,8 @@
       if (acceptanceForm) {
         const statusMessage = document.getElementById('form-status');
         const submitButton = acceptanceForm.querySelector('button[type="submit"]');
-
-        acceptanceForm.addEventListener('submit', async function(event) {
+        
+        acceptanceForm.addEventListener('submit', function(event) {
           event.preventDefault();
           const isAccepted = document.getElementById('terms-acceptance').checked;
           const clientName = document.getElementById('client-name-input').value;
@@ -347,63 +380,63 @@
             statusMessage.className = 'form-status is-error';
             return;
           }
-          if (!email) {
-            statusMessage.textContent = 'Por favor, ingrese un correo electrónico válido.';
+          if (!phoneInput.checkValidity()) {
+            statusMessage.textContent = 'Por favor, ingrese un número de teléfono válido.';
             statusMessage.className = 'form-status is-error';
             return;
           }
 
           statusMessage.className = 'form-status';
-          statusMessage.textContent = 'Enviando confirmación...';
+          statusMessage.textContent = 'Abriendo WhatsApp...';
           submitButton.disabled = true;
 
           try {
-            // Clonar el documento y limpiar el HTML para el email
-            const clonedDoc = document.cloneNode(true);
-            clonedDoc.querySelector('.sidebar')?.remove();
-            clonedDoc.querySelector('.mobile-header')?.remove();
-            clonedDoc.querySelector('.overlay')?.remove();
-            clonedDoc.querySelectorAll('script').forEach(s => s.remove());
-            const contractHtml = clonedDoc.documentElement.outerHTML;
+            const fileId = document.querySelector('#portada p strong:last-of-type')?.nextSibling.textContent.trim() || 'SW-SK-2026-07-01';
+            const message = `¡Hola! He aceptado la propuesta comercial (ID: ${fileId}).\n\n- Nombre: ${clientName}\n- Teléfono: ${phoneInput.value}\n\nQuedo a la espera de los próximos pasos.`;
+            const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+            
+            // Abrir WhatsApp en una nueva pestaña
+            window.open(whatsappUrl, '_blank');
 
-            // Reemplaza esta URL con tu endpoint de Formspree
-            const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xgogobro';
+            // Actualizar la UI para mostrar que la acción fue iniciada
+            statusMessage.textContent = '¡Gracias! Por favor, envía el mensaje en WhatsApp para confirmar.';
+            statusMessage.className = 'form-status is-success';
+            document.getElementById('acceptance-form').style.display = 'none';
+            document.getElementById('next-steps').style.display = 'block';
 
-            const response = await fetch(FORMSPREE_ENDPOINT, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ clientName, email, contractHtml, _subject: `Propuesta Aceptada para ${clientName}` }),
-            });
-
-            // Formspree siempre responde con 'ok' si el formato es correcto,
-            // incluso si hay errores de envío, por lo que el manejo de errores se simplifica.
-            if (response.ok) {
-              statusMessage.textContent = `Propuesta aceptada. Se ha enviado una copia a ${email}.`;
-              statusMessage.className = 'form-status is-success';
-              document.getElementById('acceptance-form').style.display = 'none';
-              document.getElementById('next-steps').style.display = 'block';
-            } else {
-              // Mejora: Formspree devuelve un JSON con un campo 'error' que es más descriptivo.
-              let errorData = { message: 'El servidor respondió con un error inesperado.' };
-              try {
-                const body = await response.json();
-                if (body && body.error) {
-                  errorData.message = body.error;
-                }
-              } catch (e) {
-                // El cuerpo del error no era JSON, mantener el mensaje genérico.
-              }
-              throw new Error(errorData.message || 'Error desconocido del servidor.');
-            }
           } catch (error) {
             console.error('Error al enviar el formulario:', error.message);
-            // Mejora: Mostrar un mensaje más útil al usuario.
-            statusMessage.textContent = `Error: ${error.message}. Si el problema persiste, contacte al soporte.`;
+            statusMessage.textContent = `Error: No se pudo generar el enlace de WhatsApp.`;
             statusMessage.className = 'form-status is-error';
-          } finally {
-            submitButton.disabled = false;
           }
         });
+
+        // Validación en tiempo real para el campo de teléfono
+        const phoneInput = document.getElementById('phone-input');
+        const phoneValidationMsg = document.getElementById('phone-validation-msg');
+        if (phoneInput && phoneValidationMsg) {
+          phoneInput.addEventListener('input', function() {
+            const phoneRegex = /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/;
+            if (phoneInput.value.length === 0) {
+              phoneValidationMsg.textContent = '';
+              phoneInput.classList.remove('is-invalid');
+            } else if (phoneRegex.test(phoneInput.value) && phoneInput.value.replace(/\D/g, '').length >= 8) {
+              phoneValidationMsg.textContent = 'Formato válido.';
+              phoneValidationMsg.className = 'form-status is-success';
+              phoneInput.setCustomValidity('');
+            } else {
+              phoneValidationMsg.textContent = 'Formato de teléfono inválido. Use solo números y +, -, (, ).';
+              phoneValidationMsg.className = 'form-status is-error';
+              phoneInput.setCustomValidity('Formato inválido.');
+            }
+          });
+        }
+
+        // Botón para descargar PDF
+        const downloadPdfBtn = document.getElementById('download-pdf-btn');
+        if (downloadPdfBtn) {
+          downloadPdfBtn.addEventListener('click', () => window.print());
+        }
       }
     });
   </script>
