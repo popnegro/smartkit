@@ -3,6 +3,7 @@
   "map.html.bak",
   "styles.css",
   "public.js",
+  "contract.html",
   "screens.json",
   "dashboard.html",
   "readme.md",
@@ -12,6 +13,7 @@
   "assets/assets/videos/sarmiento-y-belgrano.mp4",
   "assets/assets/videos/chacras.mp4",
   "assets/assets/videos/maipu.mp4",
+  "contract.css",
   "dashboard.html.bak",
   "index.html",
   "mediakit.html",
@@ -19,5 +21,6 @@
   "mediakit.html.bak",
   "index.html.bak",
   "map.html",
-  "production-manifest.json"
+  "production-manifest.json",
+  "contract.html.bak"
 ]
