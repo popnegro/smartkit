@@ -42,6 +42,16 @@ ul { padding-left: var(--space-4); margin-top: var(--space-4); }
 .form-checkbox-group { margin-top: var(--space-6); display: flex; align-items: center; }
 .form-label { display: block; margin-bottom: var(--space-2); font-weight: 500; }
 .form-input { width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--space-2); background-color: var(--color-bg); }
+.form-input.is-invalid {
+  border-color: #ef4444; /* text-red-500 */
+}
+.form-input.is-valid {
+  border-color: #22c55e; /* text-green-500 */
+}
+.form-input:disabled, .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 .form-checkbox-group label { margin-left: var(--space-2); color: var(--color-text-secondary); }
 .form-status { margin-top: var(--space-4); font-weight: 500; }
 .form-status.is-success { color: #22c55e; } /* text-green-500 */
@@ -54,6 +64,34 @@ ul { padding-left: var(--space-4); margin-top: var(--space-4); }
 .animate-on-scroll.is-visible { opacity: 1; transform: translateY(0); }
 
 .mobile-header { display: none; }
+
+/* Botón Flotante de WhatsApp */
+.whatsapp-fab {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  background-color: #25D366;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  z-index: 1000;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  transform: scale(0.8);
+  opacity: 0;
+}
+.whatsapp-fab.is-visible {
+  transform: scale(1);
+  opacity: 1;
+}
+.whatsapp-fab svg {
+  width: 1.75rem;
+  height: 1.75rem;
+}
 
 @media (max-width: 1024px) {
   .page-wrapper { flex-direction: column; }

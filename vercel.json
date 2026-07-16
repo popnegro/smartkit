@@ -10,11 +10,5 @@
         "distDir": "dist"
       }
     }
-  ],
-  "routes": [
-    {
-      "src": "/([^/.]*)$",
-      "dest": "/$1.html"
-    }
   ]
 }
