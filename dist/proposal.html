@@ -388,6 +388,24 @@
         phoneInput.value = '+54 ';
 
         acceptanceForm.addEventListener('submit', function(event) {
+
+          /**
+           * Genera el mensaje de WhatsApp con los datos del formulario.
+           * @param {string} clientName - Nombre del cliente.
+           * @param {string} companyName - Nombre de la empresa (opcional).
+           * @param {string} phone - Número de teléfono.
+           * @param {string} email - Correo electrónico.
+           * @returns {string} Mensaje formateado para WhatsApp.
+           */
+          function generateWhatsAppMessage(clientName, companyName, phone, email) {
+            const fileId = document.querySelector('#portada p strong:last-of-type')?.nextSibling.textContent.trim() || 'SW-SK-2026-07-01';
+            const confirmationDate = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            let message = `¡Hola! He aceptado la propuesta comercial (ID: ${fileId}).\n\n`;
+            message += `- Nombre: ${clientName}\n`;
+            if (companyName) message += `- Empresa: ${companyName}\n`;
+            message += `- Teléfono: ${phone}\n- Email: ${email}\n- Fecha de Aceptación: ${confirmationDate}\n\nQuedo a la espera de los próximos pasos.`;
+            return message;
+          }
           event.preventDefault();
           const clientName = clientNameInput.value;
           statusMessage.textContent = '';
@@ -509,8 +527,8 @@
             }
           }
 
-          isFormValid = isNameValid && isCompanyNameValid && isEmailValid && isPhoneValid && isTermsValid; // Asignación del valor
-          submitButton.disabled = !isFormValid;
+          isFormValid = isNameValid && isCompanyNameValid && isEmailValid && isPhoneValid && isTermsValid;
+          submitButton.disabled = !isFormValid; // Ahora isFormValid ya tiene su valor correcto
           return isFormValid;
         }
 
@@ -531,36 +549,6 @@
         companyNameInput.addEventListener('blur', handleBlur); // Nuevo
         emailInput.addEventListener('blur', handleBlur);
         phoneInput.addEventListener('blur', handleBlur);
-      }
-
-      // --- Lógica del Botón Flotante de WhatsApp ---
-      const whatsappFab = document.getElementById('whatsapp-fab');
-      if (whatsappFab) {
-        whatsappFab.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hola, tengo una consulta sobre la propuesta comercial.')}`;
-        let scrollTimeout;
-        let fabVisible = false;
-
-        const showFab = () => {
-          if (fabVisible) return;
-          fabVisible = true;
-          whatsappFab.style.display = 'flex';
-          requestAnimationFrame(() => whatsappFab.classList.add('is-visible'));
-        };
-
-        // 1. Mostrar por inactividad de scroll
-        window.addEventListener('scroll', () => {
-          clearTimeout(scrollTimeout);
-          scrollTimeout = setTimeout(showFab, 10000); // 10 segundos de inactividad
-        }, { passive: true });
-
-        // 2. Mostrar al llegar al final
-        const footerObserver = new IntersectionObserver((entries) => {
-          if (entries[0].isIntersecting) {
-            showFab();
-          }
-        }, { threshold: 0.1 });
-        
-        footerObserver.observe(document.getElementById('aceptacion'));
       }
     });
   </script>
