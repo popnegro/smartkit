@@ -13,7 +13,7 @@ set -o pipefail # Salir si un comando en una tubería falla
 # --- Configuración del Build ---
 MODE=${1:-static}
 DEST_DIR="dist"
-
+VERCEL_DIST_DIR="public" # Directorio de salida esperado por Vercel
 # Archivos y directorios a procesar
 CSS_FILES=("styles.css" "contract.css")
 HTML_FILES=("index.html" "dashboard.html" "mediakit.html" "map.html" "proposal.html")
@@ -22,9 +22,9 @@ STATIC_ASSETS=("assets" "data") # Directorios para copiar
 # --- Funciones ---
 
 limpiar() {
-    echo "Limpiando y creando el directorio '$DEST_DIR' para el modo '$MODE'..."
-    rm -rf "$DEST_DIR"
-    mkdir -p "$DEST_DIR/assets" "$DEST_DIR/data"
+    echo "Limpiando y creando el directorio '$VERCEL_DIST_DIR' para el modo '$MODE'..."
+    rm -rf "$VERCEL_DIST_DIR"
+    mkdir -p "$VERCEL_DIST_DIR/assets" "$VERCEL_DIST_DIR/data"
 }
 
 copiar_archivos() {
@@ -32,14 +32,14 @@ copiar_archivos() {
     # Copia los archivos HTML y el readme
     for file in "${HTML_FILES[@]}" "readme.md"; do
         cp "$file" "$DEST_DIR/"
-    done
+    done # Se copiará a 'dist' y luego se moverá a 'public'
     # Copia los directorios de assets
     for asset_dir in "${STATIC_ASSETS[@]}"; do
         cp -R "$asset_dir/" "$DEST_DIR/$asset_dir/"
     done
 }
 
-minificar_js() {
+minificar_js() { # Opera sobre DEST_DIR
     echo "Minificando JavaScript con Terser..."
     
     # Bundle para páginas públicas
@@ -54,7 +54,7 @@ minificar_js() {
 }
 
 minificar_css() {
-    echo "Minificando CSS con postcss y cssnano..."
+    echo "Minificando CSS con postcss y cssnano..." # Opera sobre DEST_DIR
     for file in "${CSS_FILES[@]}"; do
       if [ -f "$file" ]; then
         ./node_modules/.bin/postcss "$file" --use cssnano -o "$DEST_DIR/$file"
@@ -75,10 +75,10 @@ versionar_assets() {
 
     echo "  ID de Build: $BUILD_ID"
     # Versionar solo styles.css, ya que contract.css se carga dinámicamente.
-    find "$DEST_DIR" -name "*.html" -exec sed -i.bak -e "s/\(href=\"styles\.css\)\"/\1?v=$BUILD_ID\"/g" {} +
+    find "$DEST_DIR" -name "*.html" -exec sed -i.bak -e "s/\(href=\"styles\.css\)\"/\1?v=$BUILD_ID\"/g" {} + # Opera sobre DEST_DIR
     
     # Versionar todos los archivos JS.
-    find "$DEST_DIR" -name "*.html" -exec sed -i.bak -e "s/\(src=\"[^\"]*\.js\)\"/\1?v=$BUILD_ID\"/g" {} +
+    find "$DEST_DIR" -name "*.html" -exec sed -i.bak -e "s/\(src=\"[^\"]*\.js\)\"/\1?v=$BUILD_ID\"/g" {} + # Opera sobre DEST_DIR
     # Limpiar archivos .bak creados por sed
     find "$DEST_DIR" -name "*.html.bak" -delete
 }
@@ -87,9 +87,11 @@ versionar_assets() {
 # Útil para verificar la integridad del despliegue.
 generar_manifiesto() {
     echo "Generando production-manifest.json..."
+    # Mover el contenido de DEST_DIR a VERCEL_DIST_DIR antes de generar el manifiesto final
+    mv "$DEST_DIR"/* "$VERCEL_DIST_DIR"/
     if command -v jq &> /dev/null; then
         echo "Usando 'jq' para generar el manifiesto."
-        find "$DEST_DIR" -type f | sed "s|$DEST_DIR/||" | jq -R . | jq -s '.' > "$DEST_DIR/production-manifest.json"
+        find "$VERCEL_DIST_DIR" -type f | sed "s|$VERCEL_DIST_DIR/||" | jq -R . | jq -s '.' > "$VERCEL_DIST_DIR/production-manifest.json"
     else
         echo "Advertencia: 'jq' no encontrado. Usando Node.js como alternativa para generar el manifiesto."
         find "$DEST_DIR" -type f | sed "s|$DEST_DIR/||" | node -e "const fs=require('fs');const lines=fs.readFileSync(0,'utf-8').trim().split('\n').filter(Boolean);console.log(JSON.stringify(lines,null,2));" > "$DEST_DIR/production-manifest.json"
@@ -113,6 +115,9 @@ verificar_dependencias() {
 
 START_TIME=$SECONDS
 
+# Asegurarse de que DEST_DIR sea el directorio de salida final
+DEST_DIR=$VERCEL_DIST_DIR
+
 verificar_dependencias
 limpiar
 copiar_archivos
@@ -120,6 +125,5 @@ minificar_js
 minificar_css
 versionar_assets
 generar_manifiesto
-
 ELAPSED_TIME=$(($SECONDS - $START_TIME))
-echo "✅ Build completado en ${ELAPSED_TIME}s. Directorio '$DEST_DIR' generado para modo '$MODE'."
+echo "✅ Build completado en ${ELAPSED_TIME}s. Directorio '$VERCEL_DIST_DIR' generado para modo '$MODE'."

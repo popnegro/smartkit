@@ -3,6 +3,7 @@
 // También deberás configurar tus claves de API como "Environment Variables" en Vercel.
 import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
+const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'SmartKit Notifier <notify@grupocomunicarte.com.ar>';
 
 export default async function handler(request, response) {
   // 1. Seguridad: Solo permitir peticiones POST
@@ -25,7 +26,7 @@ export default async function handler(request, response) {
 
   try {
     await resend.emails.send({
-      from: 'SmartKit Notifier <notify@grupocomunicarte.com.ar>', // Reemplaza con tu dominio verificado
+      from: RESEND_FROM_EMAIL, // Reemplaza con tu dominio verificado
       to: [email, adminEmail], // Enviar al cliente y copia al admin
       subject: `Copia de la Propuesta Aceptada para ${clientName}${companyName ? ` (${companyName})` : ''}`,
       html: `
