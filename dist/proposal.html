@@ -457,6 +457,11 @@
 
         function validateForm() {
           let isNameValid = false;
+          let isCompanyNameValid = true; // Declaración movida al inicio
+          let isEmailValid = false;     // Declaración movida al inicio
+          let isPhoneValid = false;     // Declaración movida al inicio
+          const isTermsValid = termsCheckbox.checked; // Declaración movida al inicio
+
           if (clientNameInput.value.trim().length >= 3) {
             clientNameInput.classList.remove('is-invalid');
             clientNameInput.classList.add('is-valid');
@@ -472,7 +477,26 @@
             }
           }
 
-          let isEmailValid = false;
+          // Nueva validación para el nombre de la empresa (opcional, pero con min-length si se rellena)
+          if (companyNameInput.value.trim() !== '') {
+            if (companyNameInput.value.trim().length >= 2) {
+              companyNameInput.classList.remove('is-invalid');
+              companyNameInput.classList.add('is-valid');
+              companyNameValidationMsg.textContent = '';
+            } else {
+              companyNameInput.classList.remove('is-valid');
+              if (companyNameInput.classList.contains('is-touched')) {
+                companyNameInput.classList.add('is-invalid');
+                companyNameValidationMsg.textContent = 'Debe tener al menos 2 caracteres si se especifica.';
+                companyNameValidationMsg.className = 'form-status is-error';
+              }
+              isCompanyNameValid = false;
+            }
+          } else {
+            companyNameInput.classList.remove('is-invalid');
+            companyNameInput.classList.remove('is-valid');
+            companyNameValidationMsg.textContent = '';
+          }
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
           if (emailRegex.test(emailInput.value)) {
             emailInput.classList.remove('is-invalid');
@@ -487,7 +511,6 @@
               emailValidationMsg.className = 'form-status is-error';
             }
           }
-          let isPhoneValid = false;
           const phoneRegex = /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/;
           if (phoneRegex.test(phoneInput.value) && phoneInput.value.replace(/\D/g, '').length >= 8) {
             phoneInput.classList.remove('is-invalid');
@@ -504,8 +527,6 @@
             }
           }
 
-          const isTermsValid = termsCheckbox.checked;
-          const isFormValid = isNameValid && isCompanyNameValid && isEmailValid && isPhoneValid && isTermsValid; // Actualizado
           submitButton.disabled = !isFormValid;
           return isFormValid;
         }
