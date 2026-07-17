@@ -11,8 +11,8 @@ export default async function handler(request, response) {
   }
 
   // 2. Validar el cuerpo de la petición
-  const { clientName, email, contractHtml } = request.body;
-  if (!clientName || !email || !contractHtml) {
+  const { clientName, email, contractHtml, companyName } = request.body;
+  if (!clientName || !email || !contractHtml) { // companyName es opcional
     return response.status(400).json({ message: 'Los parámetros clientName, email y contractHtml son requeridos.' });
   }
 
@@ -27,8 +27,11 @@ export default async function handler(request, response) {
     await resend.emails.send({
       from: 'SmartKit Notifier <notify@grupocomunicarte.com.ar>', // Reemplaza con tu dominio verificado
       to: [email, adminEmail], // Enviar al cliente y copia al admin
-      subject: `Copia de la Propuesta Aceptada para ${clientName}`,
-      html: contractHtml || `<p>Gracias por aceptar la propuesta. Adjuntamos una copia de la misma.</p>`,
+      subject: `Copia de la Propuesta Aceptada para ${clientName}${companyName ? ` (${companyName})` : ''}`,
+      html: `
+        <p>Estimado/a ${clientName}${companyName ? ` de ${companyName}` : ''},</p>
+        <p>Gracias por aceptar la propuesta. Adjuntamos una copia de la misma.</p>
+        ${contractHtml || `<p>No se pudo cargar el contenido de la propuesta.</p>`}`,
     });
     
     return response.status(200).json({ message: 'Confirmación enviada correctamente.' });

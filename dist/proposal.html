@@ -236,16 +236,26 @@
                 <p id="name-validation-msg" class="form-status" style="margin-top: 0.5rem; font-size: 0.8rem;"></p>
               </div>
               <div class="form-group">
+                <label for="company-name-input" class="form-label">Nombre de la Empresa:</label>
+                <input type="text" id="company-name-input" name="companyName" placeholder="Ej: Mi Empresa S.A." class="form-input">
+                <p id="company-name-validation-msg" class="form-status" style="margin-top: 0.5rem; font-size: 0.8rem;"></p>
+              </div>
+              <div class="form-group">
+                <label for="email-input" class="form-label">Email de contacto:</label>
+                <input type="email" id="email-input" name="email" required placeholder="Ej: juan.perez@ejemplo.com" class="form-input">
+                <p id="email-validation-msg" class="form-status" style="margin-top: 0.5rem; font-size: 0.8rem;"></p>
+              </div>
+              <div class="form-group">
                 <label for="phone-input" class="form-label">Teléfono de contacto:</label>
                 <input type="tel" id="phone-input" name="phone" required placeholder="Ej: +54 9 261 1234567" class="form-input">
                 <p id="phone-validation-msg" class="form-status" style="margin-top: 0.5rem; font-size: 0.8rem;"></p>
               </div>
               <div class="form-checkbox-group">
                 <input type="checkbox" id="terms-acceptance" name="terms-acceptance" required>
-                <label for="terms-acceptance">He leído y acepto los <a href="#terminos-condiciones" style="color: var(--color-primary);">términos y condiciones de esta propuesta</a>.</label>
+                <label for="terms-acceptance">He leído y acepto los <a href="#terminos-condiciones" target="_blank" style="color: var(--color-primary);">términos y condiciones de esta propuesta</a>.</label>
               </div>
               <div class="form-group">
-                <button type="submit" id="submit-btn" class="btn" style="width: 100%;">Confimar por WhatsApp</button>
+                <button type="submit" id="submit-btn" class="btn" style="width: 100%;">Confirmar Propuesta</button>
               </div>
               <p id="form-status" class="form-status"></p>
             </form>
@@ -253,7 +263,7 @@
               <h3 class="content-title" style="margin-top: 0;">¡Gracias por su confianza!</h3>
               <p>Hemos registrado su intención de aceptar la propuesta. Por favor, envíe el mensaje en WhatsApp para formalizar el acuerdo.</p>
               <h4 style="font-family: var(--font-serif); margin-top: 1.5rem; margin-bottom: 1rem;">Próximos Pasos:</h4>
-              <ul style="margin-top: 0; padding-left: 1rem;">
+              <ul style="margin-top: 0; padding-left: 1rem; list-style: disc;">
                 <li><strong>Cancelación 50% del trabajo:</strong> Correspondiente al pago inicial para dar comienzo formal al desarrollo.</li>
                 <li><strong>Reunión de Kick-off:</strong> Una vez recibido el pago inicial, coordinaremos una reunión para definir detalles finales y comenzar el proyecto.</li>
                 <li><strong>Comunicación:</strong> Para cualquier consulta, no dude en <a href="mailto:info@grupocomunicarte.com.ar" style="color: var(--color-primary);">escribirnos un email</a> o <a id="next-steps-whatsapp" href="#" style="color: var(--color-primary);">contactarnos por WhatsApp</a>.</li>
@@ -369,6 +379,8 @@
         const submitButton = document.getElementById('submit-btn');
         const statusMessage = document.getElementById('form-status');
         const clientNameInput = document.getElementById('client-name-input');
+        const companyNameInput = document.getElementById('company-name-input'); // Nuevo
+        const emailInput = document.getElementById('email-input');
         const phoneInput = document.getElementById('phone-input');
         const termsCheckbox = document.getElementById('terms-acceptance');
         
@@ -377,7 +389,6 @@
 
         acceptanceForm.addEventListener('submit', function(event) {
           event.preventDefault();
-          
           const clientName = clientNameInput.value;
           statusMessage.textContent = '';
 
@@ -393,29 +404,42 @@
             return;
           }
 
-          statusMessage.className = 'form-status';
-          statusMessage.textContent = 'Abriendo WhatsApp...';
+          statusMessage.className = 'form-status'; // Reset class
+          statusMessage.textContent = 'Enviando confirmación...';
           submitButton.disabled = true;
 
           try {
             const fileId = document.querySelector('#portada p strong:last-of-type')?.nextSibling.textContent.trim() || 'SW-SK-2026-07-01';
             const confirmationDate = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
-            const message = `¡Hola! He aceptado la propuesta comercial (ID: ${fileId}).\n\n- Nombre: ${clientName}\n- Teléfono: ${phoneInput.value}\n- Fecha de Aceptación: ${confirmationDate}\n\nQuedo a la espera de los próximos pasos.`;
+            const clientName = clientNameInput.value;
+            const companyName = companyNameInput.value;
+            const phone = phoneInput.value;
+            const email = emailInput.value;
+
+            let message = `¡Hola! He aceptado la propuesta comercial (ID: ${fileId}).\n\n`;
+            message += `- Nombre: ${clientName}\n`;
+            if (companyName) {
+              message += `- Empresa: ${companyName}\n`;
+            }
+            message += `- Teléfono: ${phone}\n`;
+            message += `- Email: ${email}\n`;
+            message += `- Fecha de Aceptación: ${confirmationDate}\n\nQuedo a la espera de los próximos pasos.`;
+
             const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
             
             // Abrir WhatsApp en una nueva pestaña
             window.open(whatsappUrl, '_blank');
 
             // Actualizar la UI para mostrar que la acción fue iniciada
-            statusMessage.textContent = '¡Gracias! Por favor, envía el mensaje en WhatsApp para confirmar.';
+            statusMessage.textContent = '¡Gracias! Por favor, envía el mensaje en WhatsApp para formalizar el acuerdo.';
             statusMessage.className = 'form-status is-success';
             document.getElementById('acceptance-form').style.display = 'none';
             document.getElementById('next-steps').style.display = 'block';
             
-            // Configurar el enlace de WhatsApp en los próximos pasos
+            // Configurar el enlace de WhatsApp en los próximos pasos para consultas
             const nextStepsWhatsappLink = document.getElementById('next-steps-whatsapp');
             if (nextStepsWhatsappLink) {
-              nextStepsWhatsappLink.href = `https://wa.me/${WHATSAPP_NUMBER}`;
+              nextStepsWhatsappLink.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hola, tengo una consulta sobre la propuesta que acabo de aceptar.')}`;
             }
 
           } catch (error) {
@@ -427,6 +451,8 @@
 
         // --- Validación en tiempo real ---
         const nameValidationMsg = document.getElementById('name-validation-msg');
+        const companyNameValidationMsg = document.getElementById('company-name-validation-msg'); // Nuevo
+        const emailValidationMsg = document.getElementById('email-validation-msg');
         const phoneValidationMsg = document.getElementById('phone-validation-msg');
 
         function validateForm() {
@@ -446,6 +472,21 @@
             }
           }
 
+          let isEmailValid = false;
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (emailRegex.test(emailInput.value)) {
+            emailInput.classList.remove('is-invalid');
+            emailInput.classList.add('is-valid');
+            emailValidationMsg.textContent = '';
+            isEmailValid = true;
+          } else {
+            emailInput.classList.remove('is-valid');
+            if (emailInput.classList.contains('is-touched') && emailInput.value.trim() !== '') {
+              emailInput.classList.add('is-invalid');
+              emailValidationMsg.textContent = 'Por favor, ingrese un email válido.';
+              emailValidationMsg.className = 'form-status is-error';
+            }
+          }
           let isPhoneValid = false;
           const phoneRegex = /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/;
           if (phoneRegex.test(phoneInput.value) && phoneInput.value.replace(/\D/g, '').length >= 8) {
@@ -464,12 +505,14 @@
           }
 
           const isTermsValid = termsCheckbox.checked;
-          const isFormValid = isNameValid && isPhoneValid && isTermsValid;
+          const isFormValid = isNameValid && isCompanyNameValid && isEmailValid && isPhoneValid && isTermsValid; // Actualizado
           submitButton.disabled = !isFormValid;
           return isFormValid;
         }
 
         function handleBlur(event) {
+          // Ensure the input has been "touched" before showing validation messages on blur
+          // This prevents showing errors on empty fields before the user interacts.
           event.target.classList.add('is-touched');
           validateForm();
         }
@@ -477,8 +520,12 @@
         // Añadir listeners para validar en tiempo real
         clientNameInput.addEventListener('input', validateForm);
         phoneInput.addEventListener('input', validateForm);
+        companyNameInput.addEventListener('input', validateForm); // Nuevo
+        emailInput.addEventListener('input', validateForm);
         termsCheckbox.addEventListener('change', validateForm);
         clientNameInput.addEventListener('blur', handleBlur);
+        companyNameInput.addEventListener('blur', handleBlur); // Nuevo
+        emailInput.addEventListener('blur', handleBlur);
         phoneInput.addEventListener('blur', handleBlur);
       }
 
