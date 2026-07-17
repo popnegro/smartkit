@@ -409,21 +409,7 @@
           submitButton.disabled = true;
 
           try {
-            const fileId = document.querySelector('#portada p strong:last-of-type')?.nextSibling.textContent.trim() || 'SW-SK-2026-07-01';
-            const confirmationDate = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
-            const clientName = clientNameInput.value;
-            const companyName = companyNameInput.value;
-            const phone = phoneInput.value;
-            const email = emailInput.value;
-
-            let message = `¡Hola! He aceptado la propuesta comercial (ID: ${fileId}).\n\n`;
-            message += `- Nombre: ${clientName}\n`;
-            if (companyName) {
-              message += `- Empresa: ${companyName}\n`;
-            }
-            message += `- Teléfono: ${phone}\n`;
-            message += `- Email: ${email}\n`;
-            message += `- Fecha de Aceptación: ${confirmationDate}\n\nQuedo a la espera de los próximos pasos.`;
+            const message = generateWhatsAppMessage(clientNameInput.value, companyNameInput.value, phoneInput.value, emailInput.value);
 
             const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
             
@@ -434,13 +420,8 @@
             statusMessage.textContent = '¡Gracias! Por favor, envía el mensaje en WhatsApp para formalizar el acuerdo.';
             statusMessage.className = 'form-status is-success';
             document.getElementById('acceptance-form').style.display = 'none';
-            document.getElementById('next-steps').style.display = 'block';
-            
-            // Configurar el enlace de WhatsApp en los próximos pasos para consultas
-            const nextStepsWhatsappLink = document.getElementById('next-steps-whatsapp');
-            if (nextStepsWhatsappLink) {
-              nextStepsWhatsappLink.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hola, tengo una consulta sobre la propuesta que acabo de aceptar.')}`;
-            }
+            document.getElementById('next-steps').style.display = 'block';            
+            document.getElementById('next-steps-whatsapp').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hola, tengo una consulta sobre la propuesta que acabo de aceptar.')}`;
 
           } catch (error) {
             console.error('Error al enviar el formulario:', error.message);
@@ -457,9 +438,10 @@
 
         function validateForm() {
           let isNameValid = false;
-          let isCompanyNameValid = true; // Declaración movida al inicio
-          let isEmailValid = false;     // Declaración movida al inicio
-          let isPhoneValid = false;     // Declaración movida al inicio
+          let isCompanyNameValid = true;
+          let isEmailValid = false;
+          let isPhoneValid = false;
+          let isFormValid = false; // Declaración de isFormValid al inicio
           const isTermsValid = termsCheckbox.checked; // Declaración movida al inicio
 
           if (clientNameInput.value.trim().length >= 3) {
@@ -527,6 +509,7 @@
             }
           }
 
+          isFormValid = isNameValid && isCompanyNameValid && isEmailValid && isPhoneValid && isTermsValid; // Asignación del valor
           submitButton.disabled = !isFormValid;
           return isFormValid;
         }
