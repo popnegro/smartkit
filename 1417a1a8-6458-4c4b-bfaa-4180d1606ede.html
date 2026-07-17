@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Propuesta: Desarrollo de Plataforma de Gestión de Medios</title>
   <meta name="description" content="Propuesta comercial para el desarrollo de una plataforma a medida para la gestión de catálogos de medios y generación de media kits. Incluye detalles de hosting y mantenimiento." />
-  <meta property="og:image" content="https://www.grupocomunicarte.com.ar/assets/images/smartkit-og-image.jpg" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -40,8 +39,8 @@
           <h1 class="section-title">Smartkit</h1>
           <p><strong>Branch</strong> Grupo Comunicarte<br>
              <strong>Deploy</strong> www.grupocomunicarte.com.ar<br>
-             <strong>Date</strong> <input type="date" id="current-date" readonly style="background: transparent; border: none; font-family: inherit; font-size: inherit; color: inherit; padding: 0;"><br>
-             <strong>File ID</strong> <strong id="file-id-display">SW-SK-2026-07-01</strong></p>
+             <strong>Date</strong> <input type="date" id="current-date" style="background: transparent; border: none; font-family: inherit; font-size: inherit; color: inherit; padding: 0;"><br>
+             <strong>File ID</strong> SW-SK-2026-07-01</p>
         </div>
       </section>
 
@@ -253,7 +252,7 @@
               </div>
               <div class="form-checkbox-group">
                 <input type="checkbox" id="terms-acceptance" name="terms-acceptance" required>
-                <label for="terms-acceptance">He leído y acepto los <a href="#terminos-condiciones" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary);">términos y condiciones de esta propuesta</a>.</label>
+                <label for="terms-acceptance">He leído y acepto los <a href="#terminos-condiciones" target="_blank" style="color: var(--color-primary);">términos y condiciones de esta propuesta</a>.</label>
               </div>
               <div class="form-group">
                 <button type="submit" id="submit-btn" class="btn" style="width: 100%;">Confirmar Propuesta</button>
@@ -261,13 +260,12 @@
               <p id="form-status" class="form-status"></p>
             </form>
             <div id="next-steps" style="display: none;">
-              <h3 class="content-title" style="margin-top: 0;">¡Gracias por su confianza!</h3>
               <p>Hemos registrado su intención de aceptar la propuesta. Por favor, envíe el mensaje en WhatsApp para formalizar el acuerdo.</p>
               <h4 style="font-family: var(--font-serif); margin-top: 1.5rem; margin-bottom: 1rem;">Próximos Pasos:</h4>
               <ul style="margin-top: 0; padding-left: 1rem; list-style: disc;">
                 <li><strong>Cancelación 50% del trabajo:</strong> Correspondiente al pago inicial para dar comienzo formal al desarrollo.</li>
                 <li><strong>Reunión de Kick-off:</strong> Una vez recibido el pago inicial, coordinaremos una reunión para definir detalles finales y comenzar el proyecto.</li>
-                <li><strong>Comunicación:</strong> Para cualquier consulta, no dude en <a href="smartwebmendoza@gmail.com" style="color: var(--color-primary);">escribirnos un email</a> o <a id="next-steps-whatsapp" href="#" style="color: var(--color-primary);">contactarnos por WhatsApp</a>.</li>
+                <li><strong>Comunicación:</strong> Para cualquier consulta, no dude en <a href="mailto:info@grupocomunicarte.com.ar" style="color: var(--color-primary);">escribirnos un email</a> o <a id="next-steps-whatsapp" href="#" style="color: var(--color-primary);">contactarnos por WhatsApp</a>.</li>
               </ul>
               <p style="margin-top: 1.5rem;">¡Estamos muy entusiasmados de comenzar a trabajar juntos!</p>
             </div>
@@ -283,6 +281,10 @@
   </a>
 
   <script>
+    // --- CONFIGURACIÓN ---
+    const WHATSAPP_NUMBER = '5492613871088'; // Reemplaza con tu número de WhatsApp en formato internacional sin '+' o '00'.
+
+
     // --- LÓGICA DE LA PÁGINA ---
     document.addEventListener('DOMContentLoaded', function() {
       const tocList = document.getElementById('toc-list');
@@ -384,25 +386,9 @@
         // Establecer el valor por defecto para el teléfono
         phoneInput.value = '+54 ';
 
-        /** 
-         * Genera el mensaje de WhatsApp con los datos del formulario.
-         * @param {string} clientName - Nombre del cliente.
-         * @param {string} companyName - Nombre de la empresa (opcional).
-         * @param {string} phone - Número de teléfono.
-         * @param {string} email - Correo electrónico.
-         * @returns {string} Mensaje formateado para WhatsApp.
-         */
-        function generateWhatsAppMessage(clientName, companyName, phone, email) {
-          const fileId = document.getElementById('file-id-display')?.textContent.trim() || 'SW-SK-2026-07-01';
-          const confirmationDate = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
-          let message = `¡Hola! He aceptado la propuesta comercial (ID: ${fileId}).\n\n`;
-          message += `- Nombre: ${clientName}\n`;
-          if (companyName) message += `- Empresa: ${companyName}\n`;
-          message += `- Teléfono: ${phone}\n- Email: ${email}\n- Fecha de Aceptación: ${confirmationDate}\n\nQuedo a la espera de los próximos pasos.`;
-          return message;
-        }
         acceptanceForm.addEventListener('submit', function(event) {
           event.preventDefault();
+          const clientName = clientNameInput.value;
           statusMessage.textContent = '';
 
           if (!validateForm()) {
@@ -422,19 +408,46 @@
           submitButton.disabled = true;
 
           try {
-            const message = generateWhatsAppMessage(clientNameInput.value, companyNameInput.value, phoneInput.value, emailInput.value);
+            // Capture the main content of the proposal to send as HTML
+            const contractHtml = document.getElementById('main-content').innerHTML;
 
-            const whatsappUrl = `https://wa.me/${window.SmartKitShared.DEFAULT_BRAND.whatsapp}?text=${encodeURIComponent(message)}`;
-            
-            // Abrir WhatsApp en una nueva pestaña
-            window.open(whatsappUrl, '_blank');
-
-            // Actualizar la UI para mostrar que la acción fue iniciada
-            statusMessage.textContent = '¡Gracias! Por favor, envía el mensaje en WhatsApp para formalizar el acuerdo.';
-            statusMessage.className = 'form-status is-success';
-            document.getElementById('acceptance-form').style.display = 'none';
-            document.getElementById('next-steps').style.display = 'block';            
-            document.getElementById('next-steps-whatsapp').href = `https://wa.me/${window.SmartKitShared.DEFAULT_BRAND.whatsapp}?text=${encodeURIComponent('Hola, tengo una consulta sobre la propuesta que acabo de aceptar.')}`;
+            fetch('/api/accept-proposal', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json', // Asegurar que el servidor responda JSON
+              },
+              body: JSON.stringify({
+                clientName: clientNameInput.value,
+                email: emailInput.value,
+                phone: phoneInput.value, // Although not used by the API, good to send for context
+                contractHtml: contractHtml,
+                companyName: companyNameInput.value, // Nuevo
+              }),
+            })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Error al enviar la confirmación. Intente de nuevo.');
+              }
+              return response.json();
+            })
+            .then(data => {
+              statusMessage.textContent = '¡Propuesta confirmada! Recibirá una copia en su email.';
+              statusMessage.className = 'form-status is-success';
+              document.getElementById('acceptance-form').style.display = 'none';
+              document.getElementById('next-steps').style.display = 'block';
+              
+              // Configurar el enlace de WhatsApp en los próximos pasos para consultas
+              const nextStepsWhatsappLink = document.getElementById('next-steps-whatsapp');
+              if (nextStepsWhatsappLink) {
+                nextStepsWhatsappLink.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hola, tengo una consulta sobre la propuesta que acabo de aceptar.')}`;
+              }
+            })
+            .catch(error => {
+              console.error('Error al enviar el formulario:', error);
+              statusMessage.textContent = `Error: ${error.message || 'No se pudo procesar la solicitud.'}`;
+              statusMessage.className = 'form-status is-error';
+            });
 
           } catch (error) {
             console.error('Error al enviar el formulario:', error.message);
@@ -451,12 +464,6 @@
 
         function validateForm() {
           let isNameValid = false;
-          let isCompanyNameValid = true;
-          let isEmailValid = false;
-          let isPhoneValid = false;
-          let isFormValid = false; // Declaración de isFormValid al inicio
-          const isTermsValid = termsCheckbox.checked; // Declaración movida al inicio
-
           if (clientNameInput.value.trim().length >= 3) {
             clientNameInput.classList.remove('is-invalid');
             clientNameInput.classList.add('is-valid');
@@ -472,26 +479,7 @@
             }
           }
 
-          // Nueva validación para el nombre de la empresa (opcional, pero con min-length si se rellena)
-          if (companyNameInput.value.trim() !== '') {
-            if (companyNameInput.value.trim().length >= 2) {
-              companyNameInput.classList.remove('is-invalid');
-              companyNameInput.classList.add('is-valid');
-              companyNameValidationMsg.textContent = '';
-            } else {
-              companyNameInput.classList.remove('is-valid');
-              if (companyNameInput.classList.contains('is-touched')) {
-                companyNameInput.classList.add('is-invalid');
-                companyNameValidationMsg.textContent = 'Debe tener al menos 2 caracteres si se especifica.';
-                companyNameValidationMsg.className = 'form-status is-error';
-              }
-              isCompanyNameValid = false;
-            }
-          } else {
-            companyNameInput.classList.remove('is-invalid');
-            companyNameInput.classList.remove('is-valid');
-            companyNameValidationMsg.textContent = '';
-          }
+          let isEmailValid = false;
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
           if (emailRegex.test(emailInput.value)) {
             emailInput.classList.remove('is-invalid');
@@ -506,6 +494,7 @@
               emailValidationMsg.className = 'form-status is-error';
             }
           }
+          let isPhoneValid = false;
           const phoneRegex = /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/;
           if (phoneRegex.test(phoneInput.value) && phoneInput.value.replace(/\D/g, '').length >= 8) {
             phoneInput.classList.remove('is-invalid');
@@ -522,8 +511,9 @@
             }
           }
 
-          isFormValid = isNameValid && isCompanyNameValid && isEmailValid && isPhoneValid && isTermsValid;
-          submitButton.disabled = !isFormValid; // Ahora isFormValid ya tiene su valor correcto
+          const isTermsValid = termsCheckbox.checked;
+          const isFormValid = isNameValid && isCompanyNameValid && isEmailValid && isPhoneValid && isTermsValid; // Actualizado
+          submitButton.disabled = !isFormValid;
           return isFormValid;
         }
 
@@ -544,6 +534,36 @@
         companyNameInput.addEventListener('blur', handleBlur); // Nuevo
         emailInput.addEventListener('blur', handleBlur);
         phoneInput.addEventListener('blur', handleBlur);
+      }
+
+      // --- Lógica del Botón Flotante de WhatsApp ---
+      const whatsappFab = document.getElementById('whatsapp-fab');
+      if (whatsappFab) {
+        whatsappFab.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hola, tengo una consulta sobre la propuesta comercial.')}`;
+        let scrollTimeout;
+        let fabVisible = false;
+
+        const showFab = () => {
+          if (fabVisible) return;
+          fabVisible = true;
+          whatsappFab.style.display = 'flex';
+          requestAnimationFrame(() => whatsappFab.classList.add('is-visible'));
+        };
+
+        // 1. Mostrar por inactividad de scroll
+        window.addEventListener('scroll', () => {
+          clearTimeout(scrollTimeout);
+          scrollTimeout = setTimeout(showFab, 10000); // 10 segundos de inactividad
+        }, { passive: true });
+
+        // 2. Mostrar al llegar al final
+        const footerObserver = new IntersectionObserver((entries) => {
+          if (entries[0].isIntersecting) {
+            showFab();
+          }
+        }, { threshold: 0.1 });
+        
+        footerObserver.observe(document.getElementById('aceptacion'));
       }
     });
   </script>
