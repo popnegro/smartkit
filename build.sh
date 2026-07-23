@@ -87,8 +87,6 @@ versionar_assets() {
 # Útil para verificar la integridad del despliegue.
 generar_manifiesto() {
     echo "Generando production-manifest.json..."
-    # Mover el contenido de DEST_DIR a VERCEL_DIST_DIR antes de generar el manifiesto final
-    mv "$DEST_DIR"/* "$VERCEL_DIST_DIR"/
     if command -v jq &> /dev/null; then
         echo "Usando 'jq' para generar el manifiesto."
         find "$VERCEL_DIST_DIR" -type f | sed "s|$VERCEL_DIST_DIR/||" | jq -R . | jq -s '.' > "$VERCEL_DIST_DIR/production-manifest.json"
