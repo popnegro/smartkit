@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cuestionario de Onboarding de Proyecto</title>
+  <meta name="description" content="Cuestionario para recolectar información clave para el inicio de proyectos." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📝</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="preload" href="contract.css" as="style">
+  <link rel="stylesheet" href="contract.css" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="contract.css"></noscript>
+</head>
+
+<body>
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <nav id="toc-nav">
+        <ul id="toc-list" class="toc"></ul>
+      </nav>
+    </aside>
+
+    <div class="mobile-header">
+      <button id="menu-toggle" class="menu-toggle" aria-label="Abrir menú">☰</button>
+      <span style="font-weight: 600;">Cuestionario</span>
+    </div>
+
+    <div id="overlay" class="overlay"></div>
+
+    <main id="main-content" class="main-content">
+
+      <!-- 1. TÍTULO -->
+      <section id="portada" class="content-section animate-on-scroll">
+        <div class="container">
+          <h1 class="section-title">Cuestionario de Onboarding</h1>
+          <p>Por favor, completa la siguiente información para que podamos entender mejor tu proyecto y tus necesidades.</p>
+        </div>
+      </section>
+
+      <!-- 2. FORMULARIO DEL CUESTIONARIO -->
+      <section id="cuestionario" class="content-section animate-on-scroll">
+        <div class="container">
+          <form id="questionnaire-form">
+            
+            <!-- SECCIÓN DE CONTACTO -->
+            <h2 class="content-title">Información de Contacto</h2>
+            <div class="form-group">
+              <label for="client-name-input" class="form-label">Nombre y Apellido:</label>
+              <input type="text" id="client-name-input" name="clientName" required placeholder="Ej: Juan Pérez" class="form-input">
+            </div>
+            <div class="form-group">
+              <label for="email-input" class="form-label">Email de contacto:</label>
+              <input type="email" id="email-input" name="email" required placeholder="Ej: juan.perez@ejemplo.com" class="form-input">
+            </div>
+
+            <!-- SECCIÓN DEL PROYECTO -->
+            <h2 class="content-title" style="margin-top: 2.5rem;">Detalles del Proyecto</h2>
+            <div class="form-group">
+              <label for="project-name" class="form-label">Nombre del Proyecto:</label>
+              <input type="text" id="project-name" name="projectName" required placeholder="Ej: Rediseño de mi E-commerce" class="form-input">
+            </div>
+            <div class="form-group">
+              <label for="project-description" class="form-label">Describe brevemente tu proyecto:</label>
+              <textarea id="project-description" name="projectDescription" rows="4" required class="form-input" placeholder="Ej: Queremos modernizar el diseño y mejorar la velocidad de carga..."></textarea>
+            </div>
+
+        <!-- CAMPO DE SELECCIÓN (SELECT) -->
+        <div class="form-group">
+          <label for="project-type" class="form-label">Tipo de Proyecto:</label>
+          <select id="project-type" name="projectType" required class="form-input">
+            <option value="" disabled selected>Selecciona una opción...</option>
+            <option value="nuevo-sitio">Nuevo Sitio Web</option>
+            <option value="rediseño">Rediseño de Sitio Existente</option>
+            <option value="ecommerce">E-commerce</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+
+        <!-- GRUPO DE CHECKBOXES -->
+        <div class="form-group">
+          <label class="form-label">Servicios de Interés (selecciona al menos uno):</label>
+          <div id="services-group">
+            <div class="form-checkbox-group"><input type="checkbox" id="service-design" name="services" value="diseño"><label for="service-design">Diseño UI/UX</label></div>
+            <div class="form-checkbox-group"><input type="checkbox" id="service-dev" name="services" value="desarrollo"><label for="service-dev">Desarrollo Web</label></div>
+            <div class="form-checkbox-group"><input type="checkbox" id="service-seo" name="services" value="seo"><label for="service-seo">Optimización SEO</label></div>
+          </div>
+        </div>
+
+            <div class="form-group">
+              <button type="submit" id="submit-btn" class="btn" style="width: 100%;" disabled>Enviar Cuestionario</button>
+            </div>
+            <p id="form-status" class="form-status"></p>
+
+          </form>
+
+          <!-- MENSAJE DE ÉXITO -->
+          <div id="success-message" style="display: none;" class="cta-box">
+            <h3 class="content-title" style="margin-top: 0;">¡Gracias!</h3>
+            <p>Hemos recibido tu información. Nos pondremos en contacto contigo a la brevedad para coordinar los próximos pasos.</p>
+          </div>
+
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const tocList = document.getElementById('toc-list');
+      const mainContent = document.getElementById('main-content');
+      const sections = mainContent.querySelectorAll('.content-section[id]');
+      
+      // Create TOC
+      if (tocList && mainContent) {
+        sections.forEach(section => {
+          const titleEl = section.querySelector('.section-title, .content-title');
+          if (titleEl) {
+            const li = document.createElement('li');
+            li.innerHTML = `<a href="#${section.id}" class="toc-link">${titleEl.textContent}</a>`;
+            tocList.appendChild(li);
+          }
+        });
+      }
+
+      // Scrollspy
+      const sectionOffsets = Array.from(sections).map(sec => ({ id: sec.id, offset: sec.offsetTop }));
+
+      function updateScrollSpy() {
+          const tocLinks = tocList.querySelectorAll('.toc-link');
+          let currentSectionId = '';
+          sectionOffsets.forEach(sec => {
+              if (window.scrollY >= sec.offset - 100) {
+                  currentSectionId = sec.id;
+              }
+          });
+          tocLinks.forEach(link => {
+              link.classList.remove('is-active');
+              if (link.getAttribute('href') === `#${currentSectionId}`) {
+                  link.classList.add('is-active');
+              }
+          });
+      }
+      window.addEventListener('scroll', updateScrollSpy);
+      updateScrollSpy();
+
+      // Mobile Menu Toggle
+      const menuToggle = document.getElementById('menu-toggle');
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.getElementById('overlay');
+
+      function closeMenu() {
+        sidebar.classList.remove('is-open');
+        overlay.classList.remove('is-active');
+      }
+
+      if (menuToggle && sidebar && overlay) {
+        menuToggle.addEventListener('click', () => {
+          sidebar.classList.toggle('is-open');
+          overlay.classList.toggle('is-active');
+        });
+        overlay.addEventListener('click', closeMenu);
+        tocList.addEventListener('click', (e) => {
+          if (e.target.classList.contains('toc-link')) {
+            closeMenu();
+          }
+        });
+      }
+
+      // Intersection Observer for animations
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+
+      document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+
+      // Questionnaire Form Logic
+      const form = document.getElementById('questionnaire-form');
+      if (form) {
+        const submitButton = document.getElementById('submit-btn');
+        const statusMessage = document.getElementById('form-status');
+        const requiredInputs = form.querySelectorAll('input[required], textarea[required], select[required]');
+        const servicesCheckboxes = document.querySelectorAll('input[name="services"]');
+
+        function validateForm() {
+          let allValid = true;
+
+          requiredInputs.forEach(input => {
+            const isEmail = input.type === 'email';
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            let isValid = false;
+
+            if (isEmail) {
+              isValid = emailRegex.test(input.value);
+            } else {
+              // Para text, textarea y select, solo verificamos que no estén vacíos
+              isValid = input.value.trim() !== '';
+            }
+
+            if (isValid) {
+              input.classList.remove('is-invalid');
+              input.classList.add('is-valid');
+            } else {
+              input.classList.remove('is-valid');
+              input.classList.add('is-invalid');
+              allValid = false;
+            }
+          });
+
+          // Validación para los checkboxes (al menos uno seleccionado)
+          const isAnyServiceChecked = Array.from(servicesCheckboxes).some(cb => cb.checked);
+          if (!isAnyServiceChecked) {
+            allValid = false;
+          }
+
+          submitButton.disabled = !allValid;
+          return allValid;
+        }
+
+        requiredInputs.forEach(input => {
+          input.addEventListener('input', validateForm);
+        });
+
+        servicesCheckboxes.forEach(checkbox => {
+          // Validamos el formulario cada vez que un checkbox cambia
+          checkbox.addEventListener('change', validateForm);
+        });
+
+        form.addEventListener('submit', function(event) {
+          event.preventDefault();
+          if (!validateForm()) {
+            statusMessage.textContent = 'Por favor, completa todos los campos requeridos.';
+            statusMessage.className = 'form-status is-error';
+            return;
+          }
+
+          statusMessage.textContent = 'Enviando...';
+          statusMessage.className = 'form-status';
+          submitButton.disabled = true;
+
+          // Simulación de envío a un servidor
+          setTimeout(() => {
+            form.style.display = 'none';
+            document.getElementById('success-message').style.display = 'block';
+          }, 1000);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
