@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Propuesta: D esarrollo de Plataforma de Gestión de Medios</title>
+  <meta name="description" content="Propuesta comercial para el desarrollo de una plataforma a medida para la gestión de catálogos de medios y generación de media kits. Incluye detalles de hosting y mantenimiento." />
+  <meta property="og:image" content="https://www.grupocomunicarte.com.ar/assets/images/smartkit-og-image.jpg" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <!-- Carga de CSS optimizada para performance -->
+  <link rel="preload" href="contract.css" as="style">
+  <link rel="stylesheet" href="contract.css" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="contract.css"></noscript>
+</head>
+
+<body>
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <nav id="toc-nav">
+        <ul id="toc-list" class="toc"></ul>
+      </nav>
+    </aside>
+
+    <div class="mobile-header">
+      <button id="menu-toggle" class="menu-toggle" aria-label="Abrir menú">☰</button>
+      <span style="font-weight: 600;">Propuesta</span>
+    </div>
+
+    <div id="overlay" class="overlay"></div>
+
+    <main id="main-content" class="main-content">
+
+      <!-- 1. TÍTULO -->
+      <section id="portada" class="content-section animate-on-scroll">
+        <div class="container">
+          <h1 class="section-title">Smartkit</h1>
+          <p><strong>Branch</strong> Grupo Comunicarte<br>
+             <strong>Deploy</strong> www.grupocomunicarte.com.ar<br>
+             <strong>Date</strong> <input type="date" id="current-date" readonly style="background: transparent; border: none; font-family: inherit; font-size: inherit; color: inherit; padding: 0;"><br>
+             <strong>File ID</strong> <strong id="file-id-display">SW-SK-2026-07-01</strong></p>
+        </div>
+      </section>
+
+      <!-- 2. RESUMEN Y BENEFICIOS -->
+      <section id="resumen" class="content-section animate-on-scroll">
+        <div class="container">
+          <h2 class="content-title">Introducción</h2>
+          <p>Esta propuesta detalla el desarrollo de SmartKit, una plataforma web a medida para ayudar a su equipo a gestionar el inventario de soportes publicitarios, generar media kits profesionales y automatizar procesos comerciales.</p><br>
+        
+          <p>El proyecto es una solución integral que resuelve las siguientes necesidades de su empresa:</p>
+          <ul>
+            <li><strong>Centralizar su inventario</strong> en una única plataforma digital y accesible.</li>
+            <li><strong>Optimizar el proceso de ventas</strong> con herramientas ágiles y automatizadas vía Whatsapp.</li>
+            <li><strong>Construir una plataforma robusta</strong> y escalable para el futuro de su empresa.</li>
+            <li><strong>Automatizar la creación de propuestas</strong> comerciales y el seguimiento de clientes.</li>
+            <li><strong>Dashboard de Gestión:</strong> Para administrar su inventario, precios y disponibilidad en tiempo real.</li>
+            <li><strong>CRM de Medios:</strong> Fichas detalladas con toda la información de cada soporte publicitario.</li>
+            <li><strong>Catálogo Digital Interactivo:</strong> Una página web para presentar su inventario de forma visual e interactiva.</li>
+            <li><strong>Panel de Administración:</strong> Para gestionar usuarios, roles y configuraciones de la plataforma.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="funcionalidades" class="content-section animate-on-scroll">
+        <div class="container">
+          <h2 class="content-title">Funcionalidades Incluidas</h2>
+          <p>La plataforma SmartKit está diseñada para ser una solución completa, abarcando desde la gestión del catálogo hasta la producción de propuestas comerciales profesionales.<br><br></p>
+        <div class="grid">
+        <div class="feature-card">
+          <h3>Catálogo y Mapa</h3>
+          <ul>
+            <li>✓ Listado de pantallas</li>
+            <li>✓ Buscador y filtros</li>
+            <li>✓ Mapa interactivo</li>
+            <li>✓ Videos en tarjetas</li>
+            <li>✓ Diseño responsive</li>
+          </ul>
+        </div>
+        <div class="feature-card">
+          <h3>Dashboard de Gestión</h3>
+          <ul>
+            <li>✓ Edición de precios</li>
+            <li>✓ Cambio de estados</li>
+            <li>✓ Gestión de audiencia</li>
+            <li>✓ Sincronización de base de datos usando Supabase</li>
+            <li>✓ Reseteo de datos</li>
+          </ul>
+        </div>
+        <div class="feature-card">
+          <h3>Generador de Media Kits</h3>
+          <ul>
+            <li>✓ Selección desde el cotizador</li>
+            <li>✓ Generación de link compartible</li>
+            <li>✓ Persistencia en la nube</li>
+            <li>✓ Verificación con firma HMAC</li>
+            <li>✓ Exportación a PDF / Impresión</li>            
+          </ul>
+        </div>
+        <div class="feature-card">
+          <h3>Datos y Persistencia</h3>
+          <ul>
+            <li>✓ Base de datos SQL (PostgreSQL)</li>
+            <li>✓ Gestión centralizada en la nube</li>
+            <li>✓ Actualizaciones en tiempo real</li>
+            <li>✓ API REST automática</li>
+            <li>✓ Escalabilidad garantizada</li>
+          </ul>
+        </div>
+        <div class="feature-card">
+          <h3>Creación de Páginas</h3>
+          <ul>
+            <li>✓ Diseño de interfaz (UI)</li>
+            <li>✓ Experiencia de usuario (UX)</li>
+            <li>✓ Desarrollo front-end</li>
+            <li>✓ Integración con backend</li>
+            <li>✓ Pruebas y despliegue</li>
+          </ul>
+        </div>
+      </div>
+      </div>
+      </section>
+
+
+      <!-- 4. CRONOGRAMA -->
+      <section id="cronograma" class="content-section animate-on-scroll">
+        <div class="container">
+          <h2 class="content-title">Cronograma</h2>
+          <table class="table">
+            <thead><tr><th>Fase</th><th>Semanas</th><th>Actividades Clave</th></tr></thead>
+            <tbody>
+              <tr><td>Discovery & Setup</td><td>1</td><td>Kick-off, arquitectura y diseño de BD.</td></tr>
+              <tr><td>Desarrollo del Core</td><td>1</td><td>Autenticación, panel de admin, CRM de medios.</td></tr>
+              <tr><td>Desarrollo de Módulos</td><td>1</td><td>Catálogo digital y generador de media kits.</td></tr>
+              <tr><td>QA y Pruebas</td><td>2</td><td>Pruebas de integración y seguridad.</td></tr>
+              <tr><td>Deploy y Capacitación</td><td>2</td><td>Despliegue en producción y capacitación al cliente.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 5. INVERSIÓN Y PAGO -->
+      <section id="inversion" class="content-section animate-on-scroll">
+        <div class="container">
+          <h2 class="content-title">Inversión y Forma de Pago</h2>
+          <p>A continuación se detalla la inversión necesaria para el desarrollo e implementación del proyecto SmartKit.</p>
+          <div class="grid" style="margin-top: 2rem; gap: 1rem;">
+            <div class="feature-card">
+              <h3 style="font-size: 1.1rem;">Desarrollo de Plataforma</h3>
+              <p style="font-size: 0.9rem; color: var(--color-text-secondary);">Creación de la aplicación, base de datos y funcionalidades descritas.</p>
+              <p style="font-size: 1.5rem; font-weight: 700; margin-top: 1rem;">USD 400</p>
+            </div>
+            <div class="feature-card">
+              <h3 style="font-size: 1.1rem;">Despliegue y Puesta en Marcha</h3>
+              <p style="font-size: 0.9rem; color: var(--color-text-secondary);">Configuración de hosting, dominio y pipelines de despliegue continuo.</p>
+              <p style="font-size: 1.5rem; font-weight: 700; margin-top: 1rem;">USD 100</p>
+            </div>
+            <div class="feature-card highlight" style="text-align: center;">
+              <h3 style="font-size: 1.1rem;">Inversión Total</h3>
+              <p style="font-size: 2rem; font-weight: 700; margin-top: 1rem;">USD 500</p>
+            </div>
+          </div>
+          <h3 class="content-title">Forma de Pago</h3>
+          <ul>
+            <li><strong>50% a la firma del contrato:</strong> USD 250</li>
+            <li><strong>50% a la entrega final:</strong> USD 250</li>
+          </ul>
+           <p style="font-size: 0.8rem; margin-top: 1.5rem; color: var(--color-text-secondary);">* Los valores no incluyen IVA. La moneda de pago es Dólar Estadounidense (USD) o su equivalente en Pesos Argentinos (ARS) a la cotización del Dólar Venta Banco Nación al día de pago.</p>
+        </div>
+      </section>
+      
+      <!-- 6. HOSTING Y MANTENIMIENTO ANUAL -->
+      <section id="hosting-mantenimiento" class="content-section animate-on-scroll">
+        <div class="container">
+          <h2 class="content-title">Hosting y Soporte Técnico</h2>
+          <p>Para garantizar el óptimo funcionamiento, seguridad y actualización constante de la plataforma, se ofrecen los siguientes servicios mensuales:</p>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Concepto</th>
+                <th>Monto (USD)</th>
+                <th>Detalle</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Hosting Administrado</td>
+                <td>-</td>
+                <td>Alojamiento de alto rendimiento en Vercel, incluyendo CDN global y certificado SSL.</td>
+              </tr>
+              <tr>
+                <td>Plan de Mantenimiento y Soporte</td>
+                <td>-</td>
+                <td>Actualización de dependencias, corrección de errores, optimización de performance y soporte técnico prioritario por 12 meses.</td>
+              </tr>
+              <tr>
+                <td><strong>Total</strong></td>
+                <td><strong>USD 100</strong></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+          <h3 class="content-title">Forma de Pago</h3>
+          <ul>
+            <li><strong>100% al inicio del período de servicio:</strong> USD 100, a abonarse del 1 al 5 de cada mes.</li>
+          </ul>
+          <p style="font-size: 0.8rem; margin-top: 1rem;">* El servicio de Hosting Administrado se activa al momento de delegar los DNS sobre el dominio en Producción. </p>
+        </div>
+      </section>
+   
+      <!-- TÉRMINOS Y CONDICIONES -->
+      <section id="terminos-condiciones" class="content-section animate-on-scroll">
+        <div class="container">
+          <h2 class="content-title">Términos y Condiciones</h2>
+          <p>Al aceptar esta propuesta, ambas partes (el "Proveedor" y el "Cliente") acuerdan los siguientes términos:</p>
+          <ul>
+            <li><strong>Confidencialidad:</strong> Toda la información compartida durante el proyecto será considerada confidencial y no será divulgada a terceros sin consentimiento previo por escrito.</li>
+            <li><strong>Pagos:</strong> Los pagos se realizarán según el cronograma establecido en la sección "Inversión y Pago". Las demoras en los pagos pueden resultar en la suspensión del trabajo.</li>
+            <li><strong>Alcance y Cambios:</strong> Cualquier trabajo solicitado fuera del alcance detallado en esta propuesta será cotizado por separado. Los cambios significativos en el alcance pueden requerir un ajuste en el cronograma y el presupuesto.</li>
+            <li><strong>Terminación:</strong> Cualquiera de las partes puede rescindir este acuerdo con un aviso por escrito de 15 días. En caso de terminación por parte del Cliente, se facturará el trabajo completado hasta la fecha.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 7. ACEPTACIÓN -->
+      <section id="aceptacion" class="content-section animate-on-scroll">
+        <div class="cta-box">
+          <div class="container">
+            <h2 class="content-title">Conformidad de la Propuesta</h2>
+            <form id="acceptance-form">
+              <div class="form-group">
+                <label for="client-name-input" class="form-label">Nombre y Apellido o Razón Social:</label>
+                <input type="text" id="client-name-input" name="clientName" required placeholder="Ej: Juan Pérez o Empresa S.A." class="form-input">
+                <p id="name-validation-msg" class="form-status" style="margin-top: 0.5rem; font-size: 0.8rem;"></p>
+              </div>
+              <div class="form-group">
+                <label for="company-name-input" class="form-label">Nombre de la Empresa:</label>
+                <input type="text" id="company-name-input" name="companyName" placeholder="Ej: Mi Empresa S.A." class="form-input">
+                <p id="company-name-validation-msg" class="form-status" style="margin-top: 0.5rem; font-size: 0.8rem;"></p>
+              </div>
+              <div class="form-group">
+                <label for="email-input" class="form-label">Email de contacto:</label>
+                <input type="email" id="email-input" name="email" required placeholder="Ej: juan.perez@ejemplo.com" class="form-input">
+                <p id="email-validation-msg" class="form-status" style="margin-top: 0.5rem; font-size: 0.8rem;"></p>
+              </div>
+              <div class="form-group">
+                <label for="phone-input" class="form-label">Teléfono de contacto:</label>
+                <input type="tel" id="phone-input" name="phone" required placeholder="Ej: +54 9 261 1234567" class="form-input">
+                <p id="phone-validation-msg" class="form-status" style="margin-top: 0.5rem; font-size: 0.8rem;"></p>
+              </div>
+              <div class="form-checkbox-group">
+                <input type="checkbox" id="terms-acceptance" name="terms-acceptance" required>
+                <label for="terms-acceptance">He leído y acepto los <a href="#terminos-condiciones" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary);">términos y condiciones de esta propuesta</a>.</label>
+              </div>
+              <div class="form-group">
+                <button type="submit" id="submit-btn" class="btn" style="width: 100%;">Confirmar Propuesta</button>
+              </div>
+              <p id="form-status" class="form-status"></p>
+            </form>
+            <div id="next-steps" style="display: none;">
+              <h3 class="content-title" style="margin-top: 0;">¡Gracias por su confianza!</h3>
+              <p>Hemos registrado su intención de aceptar la propuesta. Por favor, envíe el mensaje en WhatsApp para formalizar el acuerdo.</p>
+              <h4 style="font-family: var(--font-serif); margin-top: 1.5rem; margin-bottom: 1rem;">Próximos Pasos:</h4>
+              <ul style="margin-top: 0; padding-left: 1rem; list-style: disc;">
+                <li><strong>Cancelación 50% del trabajo:</strong> Correspondiente al pago inicial para dar comienzo formal al desarrollo.</li>
+                <li><strong>Reunión de Kick-off:</strong> Una vez recibido el pago inicial, coordinaremos una reunión para definir detalles finales y comenzar el proyecto.</li>
+                <li><strong>Comunicación:</strong> Para cualquier consulta, no dude en <a href="smartwebmendoza@gmail.com" style="color: var(--color-primary);">escribirnos un email</a> o <a id="next-steps-whatsapp" href="#" style="color: var(--color-primary);">contactarnos por WhatsApp</a>.</li>
+              </ul>
+              <p style="margin-top: 1.5rem;">¡Estamos muy entusiasmados de comenzar a trabajar juntos!</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Botón Flotante de WhatsApp -->
+  <a id="whatsapp-fab" href="#" class="whatsapp-fab" aria-label="Contactar por WhatsApp" style="display: none;">
+    <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#e3e3e3"><g><rect fill="none" height="24" width="24"/></g><g><g><path d="M21,12.22C21,6.73,16.74,3,12,3c-4.69,0-9,3.65-9,9.28C2.4,12.62,2,13.26,2,14v2c0,1.1,0.9,2,2,2h1v-6.1 c0-3.87,3.13-7,7-7s7,3.13,7,7V19h-8v2h8c1.1,0,2-0.9,2-2v-1.22c0.59-0.31,1-0.92,1-1.64v-2.3C22,13.14,21.59,12.53,21,12.22z"/><circle cx="9" cy="13" r="1"/><circle cx="15" cy="13" r="1"/><path d="M18,11.03C17.52,8.18,15.04,6,12.05,6c-3.03,0-6.29,2.51-6.03,6.45c2.47-1.01,4.33-3.21,4.86-5.89 C12.19,9.19,14.88,11,18,11.03z"/></g></g></svg>
+  </a>
+
+  <script>
+    // --- LÓGICA DE LA PÁGINA ---
+    document.addEventListener('DOMContentLoaded', function() {
+      const tocList = document.getElementById('toc-list');
+      const mainContent = document.getElementById('main-content');
+      const sections = mainContent.querySelectorAll('.content-section[id]');
+      
+      // Set current date
+      const dateInput = document.getElementById('current-date');
+      if (dateInput) {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+        const day = String(today.getDate()).padStart(2, '0');
+        dateInput.value = `${year}-${month}-${day}`;
+      }
+
+      // Create TOC
+      if (tocList && mainContent) {
+        sections.forEach(section => {
+          const titleEl = section.querySelector('.section-title, .content-title');
+          if (titleEl) {
+            const li = document.createElement('li');
+            li.innerHTML = `<a href="#${section.id}" class="toc-link">${titleEl.textContent}</a>`;
+            tocList.appendChild(li);
+          }
+        });
+      }
+
+      // Scrollspy
+      const sectionOffsets = Array.from(sections).map(sec => ({ id: sec.id, offset: sec.offsetTop }));
+
+      function updateScrollSpy() {
+          const tocLinks = tocList.querySelectorAll('.toc-link');
+          let currentSectionId = '';
+          sectionOffsets.forEach(sec => {
+              const sectionTop = sec.offset - 100;
+              if (window.scrollY >= sectionTop) {
+                  currentSectionId = sec.id;
+              }
+          });
+          tocLinks.forEach(link => {
+              link.classList.remove('is-active');
+              if (link.getAttribute('href') === `#${currentSectionId}`) {
+                  link.classList.add('is-active');
+              }
+          });
+      }
+      window.addEventListener('scroll', updateScrollSpy);
+      updateScrollSpy();
+
+      // Mobile Menu Toggle
+      const menuToggle = document.getElementById('menu-toggle');
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.getElementById('overlay');
+
+      function closeMenu() {
+        sidebar.classList.remove('is-open');
+        overlay.classList.remove('is-active');
+      }
+
+      if (menuToggle && sidebar && overlay) {
+        menuToggle.addEventListener('click', () => {
+          sidebar.classList.toggle('is-open');
+          overlay.classList.toggle('is-active');
+        });
+        overlay.addEventListener('click', closeMenu);
+        tocList.addEventListener('click', (e) => {
+          if (e.target.classList.contains('toc-link')) {
+            closeMenu();
+          }
+        });
+      }
+
+      // Intersection Observer for animations
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+
+      document.querySelectorAll('.animate-on-scroll').forEach(el => {
+        observer.observe(el);
+      });
+
+      // Acceptance Form Logic
+      const acceptanceForm = document.getElementById('acceptance-form');
+      if (acceptanceForm) {
+        const submitButton = document.getElementById('submit-btn');
+        const statusMessage = document.getElementById('form-status');
+        const clientNameInput = document.getElementById('client-name-input');
+        const companyNameInput = document.getElementById('company-name-input'); // Nuevo
+        const emailInput = document.getElementById('email-input');
+        const phoneInput = document.getElementById('phone-input');
+        const termsCheckbox = document.getElementById('terms-acceptance');
+        
+        // Establecer el valor por defecto para el teléfono
+        phoneInput.value = '+54 ';
+
+        /** 
+         * Genera el mensaje de WhatsApp con los datos del formulario.
+         * @param {string} clientName - Nombre del cliente.
+         * @param {string} companyName - Nombre de la empresa (opcional).
+         * @param {string} phone - Número de teléfono.
+         * @param {string} email - Correo electrónico.
+         * @returns {string} Mensaje formateado para WhatsApp.
+         */
+        function generateWhatsAppMessage(clientName, companyName, phone, email) {
+          const fileId = document.getElementById('file-id-display')?.textContent.trim() || 'SW-SK-2026-07-01';
+          const confirmationDate = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+          let message = `¡Hola! He aceptado la propuesta comercial (ID: ${fileId}).\n\n`;
+          message += `- Nombre: ${clientName}\n`;
+          if (companyName) message += `- Empresa: ${companyName}\n`;
+          message += `- Teléfono: ${phone}\n- Email: ${email}\n- Fecha de Aceptación: ${confirmationDate}\n\nQuedo a la espera de los próximos pasos.`;
+          return message;
+        }
+        acceptanceForm.addEventListener('submit', function(event) {
+          event.preventDefault();
+          statusMessage.textContent = '';
+
+          if (!validateForm()) {
+            statusMessage.textContent = 'Por favor, complete todos los campos correctamente.';
+            statusMessage.className = 'form-status is-error';
+            return;
+          }
+
+          // Doble chequeo por si el botón se habilitó de forma inesperada
+          if (submitButton.disabled) {
+            event.preventDefault();
+            return;
+          }
+
+          statusMessage.className = 'form-status'; // Reset class
+          statusMessage.textContent = 'Enviando confirmación...';
+          submitButton.disabled = true;
+
+          try {
+            const message = generateWhatsAppMessage(clientNameInput.value, companyNameInput.value, phoneInput.value, emailInput.value);
+
+            const whatsappUrl = `https://wa.me/${window.SmartKitShared.DEFAULT_BRAND.whatsapp}?text=${encodeURIComponent(message)}`;
+            
+            // Abrir WhatsApp en una nueva pestaña
+            window.open(whatsappUrl, '_blank');
+
+            // Actualizar la UI para mostrar que la acción fue iniciada
+            statusMessage.textContent = '¡Gracias! Por favor, envía el mensaje en WhatsApp para formalizar el acuerdo.';
+            statusMessage.className = 'form-status is-success';
+            document.getElementById('acceptance-form').style.display = 'none';
+            document.getElementById('next-steps').style.display = 'block';            
+            document.getElementById('next-steps-whatsapp').href = `https://wa.me/${window.SmartKitShared.DEFAULT_BRAND.whatsapp}?text=${encodeURIComponent('Hola, tengo una consulta sobre la propuesta que acabo de aceptar.')}`;
+
+          } catch (error) {
+            console.error('Error al enviar el formulario:', error.message);
+            statusMessage.textContent = `Error: No se pudo generar el enlace de WhatsApp.`;
+            statusMessage.className = 'form-status is-error';
+          }
+        });
+
+        // --- Validación en tiempo real ---
+        const nameValidationMsg = document.getElementById('name-validation-msg');
+        const companyNameValidationMsg = document.getElementById('company-name-validation-msg'); // Nuevo
+        const emailValidationMsg = document.getElementById('email-validation-msg');
+        const phoneValidationMsg = document.getElementById('phone-validation-msg');
+
+        function validateForm() {
+          let isNameValid = false;
+          let isCompanyNameValid = true;
+          let isEmailValid = false;
+          let isPhoneValid = false;
+          let isFormValid = false; // Declaración de isFormValid al inicio
+          const isTermsValid = termsCheckbox.checked; // Declaración movida al inicio
+
+          if (clientNameInput.value.trim().length >= 3) {
+            clientNameInput.classList.remove('is-invalid');
+            clientNameInput.classList.add('is-valid');
+            nameValidationMsg.textContent = '';
+            isNameValid = true;
+          } else {
+            clientNameInput.classList.remove('is-valid');
+            // Solo mostrar error si el campo ha sido "tocado"
+            if (clientNameInput.classList.contains('is-touched')) {
+              clientNameInput.classList.add('is-invalid');
+              nameValidationMsg.textContent = 'Debe tener al menos 3 caracteres.';
+              nameValidationMsg.className = 'form-status is-error';
+            }
+          }
+
+          // Nueva validación para el nombre de la empresa (opcional, pero con min-length si se rellena)
+          if (companyNameInput.value.trim() !== '') {
+            if (companyNameInput.value.trim().length >= 2) {
+              companyNameInput.classList.remove('is-invalid');
+              companyNameInput.classList.add('is-valid');
+              companyNameValidationMsg.textContent = '';
+            } else {
+              companyNameInput.classList.remove('is-valid');
+              if (companyNameInput.classList.contains('is-touched')) {
+                companyNameInput.classList.add('is-invalid');
+                companyNameValidationMsg.textContent = 'Debe tener al menos 2 caracteres si se especifica.';
+                companyNameValidationMsg.className = 'form-status is-error';
+              }
+              isCompanyNameValid = false;
+            }
+          } else {
+            companyNameInput.classList.remove('is-invalid');
+            companyNameInput.classList.remove('is-valid');
+            companyNameValidationMsg.textContent = '';
+          }
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (emailRegex.test(emailInput.value)) {
+            emailInput.classList.remove('is-invalid');
+            emailInput.classList.add('is-valid');
+            emailValidationMsg.textContent = '';
+            isEmailValid = true;
+          } else {
+            emailInput.classList.remove('is-valid');
+            if (emailInput.classList.contains('is-touched') && emailInput.value.trim() !== '') {
+              emailInput.classList.add('is-invalid');
+              emailValidationMsg.textContent = 'Por favor, ingrese un email válido.';
+              emailValidationMsg.className = 'form-status is-error';
+            }
+          }
+          const phoneRegex = /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/;
+          if (phoneRegex.test(phoneInput.value) && phoneInput.value.replace(/\D/g, '').length >= 8) {
+            phoneInput.classList.remove('is-invalid');
+            phoneInput.classList.add('is-valid');
+            phoneValidationMsg.textContent = ''; // No mostrar mensaje en caso de éxito
+            isPhoneValid = true;
+          } else {
+            phoneInput.classList.remove('is-valid');
+            // Solo mostrar error si el campo ha sido "tocado" y no está vacío o solo con el prefijo
+            if (phoneInput.classList.contains('is-touched') && phoneInput.value.trim() !== '+54' && phoneInput.value.trim() !== '') {
+              phoneInput.classList.add('is-invalid');
+              phoneValidationMsg.textContent = 'Formato de teléfono inválido.';
+              phoneValidationMsg.className = 'form-status is-error';
+            }
+          }
+
+          isFormValid = isNameValid && isCompanyNameValid && isEmailValid && isPhoneValid && isTermsValid;
+          submitButton.disabled = !isFormValid; // Ahora isFormValid ya tiene su valor correcto
+          return isFormValid;
+        }
+
+        function handleBlur(event) {
+          // Ensure the input has been "touched" before showing validation messages on blur
+          // This prevents showing errors on empty fields before the user interacts.
+          event.target.classList.add('is-touched');
+          validateForm();
+        }
+
+        // Añadir listeners para validar en tiempo real
+        clientNameInput.addEventListener('input', validateForm);
+        phoneInput.addEventListener('input', validateForm);
+        companyNameInput.addEventListener('input', validateForm); // Nuevo
+        emailInput.addEventListener('input', validateForm);
+        termsCheckbox.addEventListener('change', validateForm);
+        clientNameInput.addEventListener('blur', handleBlur);
+        companyNameInput.addEventListener('blur', handleBlur); // Nuevo
+        emailInput.addEventListener('blur', handleBlur);
+        phoneInput.addEventListener('blur', handleBlur);
+      }
+    });
+  </script>
+</body>
+</html>
