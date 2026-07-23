@@ -16,7 +16,7 @@ DEST_DIR="dist"
 VERCEL_DIST_DIR="public" # Directorio de salida esperado por Vercel
 # Archivos y directorios a procesar
 CSS_FILES=("styles.css" "contract.css")
-HTML_FILES=("index.html" "dashboard.html" "mediakit.html" "map.html" "proposal.html")
+HTML_FILES=("index.html" "dashboard.html" "mediakit.html" "map.html" "proposal.html" "contract.html")
 STATIC_ASSETS=("assets" "data") # Directorios para copiar
 
 # --- Funciones ---
