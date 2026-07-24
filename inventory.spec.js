@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
-import { BrochurePage } from './tests/poms/brochurePage.js';
-import { MapPage } from './tests/poms/mapPage.js';
-import { DashboardPage } from './tests/poms/dashboardPage.js';
+import { BrochurePage } from './poms/brochurePage.js';
+import { MapPage } from './poms/mapPage.js';
+import { DashboardPage } from './poms/dashboardPage.js';
 
 test.describe('Carga de Inventario', () => {
   let brochurePage;
