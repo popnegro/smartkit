@@ -35,10 +35,10 @@ ejecutar_tests() {
 
 verificar_copia() {
     echo "Verificando la copia de archivos clave..."
-    if [ -f "$DEST_DIR/onboarding.html" ]; then
+    if [ -f "$VERCEL_DIST_DIR/onboarding.html" ]; then
         echo "  ✅ Verificación exitosa: onboarding.html está en el directorio de build."
     else
-        echo "❌ Error de verificación: onboarding.html no se encontró en $DEST_DIR." >&2
+        echo "❌ Error de verificación: onboarding.html no se encontró en $VERCEL_DIST_DIR." >&2
         exit 1
     fi
 }
