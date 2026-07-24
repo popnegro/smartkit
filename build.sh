@@ -33,6 +33,16 @@ ejecutar_tests() {
     fi
 }
 
+verificar_copia() {
+    echo "Verificando la copia de archivos clave..."
+    if [ -f "$DEST_DIR/onboarding.html" ]; then
+        echo "  ✅ Verificación exitosa: onboarding.html está en el directorio de build."
+    else
+        echo "❌ Error de verificación: onboarding.html no se encontró en $DEST_DIR." >&2
+        exit 1
+    fi
+}
+
 limpiar() {
     echo "Limpiando y creando el directorio '$VERCEL_DIST_DIR' para el modo '$MODE'..."
     rm -rf "$VERCEL_DIST_DIR"
@@ -132,6 +142,7 @@ ejecutar_tests
 verificar_dependencias
 limpiar
 copiar_archivos
+verificar_copia
 minificar_js
 minificar_css
 versionar_assets
