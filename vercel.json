@@ -10,5 +10,12 @@
     "distDir": "public"
       }
     }
+  ],
+  "routes": [
+    {
+      "src": "/demo/(.*)",
+      "dest": "/demo/$1"
+    },
+    { "src": "/(.*)", "dest": "/public/$1" }
   ]
 }
