@@ -15,7 +15,7 @@ const SmartKitShared = (() => {
   const DEFAULT_BRAND = {
     name: 'SmartKit',
     logo: 'SK',
-    whatsapp: '',
+    whatsapp: '5492613871088', // Número de WhatsApp unificado por defecto
     heroCopy: 'Planifica campañas DOOH, selecciona ubicaciones digitales y genera una reserva comercial en minutos.',
     terms: 'Inicio de campaña sujeto a disponibilidad y aprobación de piezas. Valores expresados en ARS.',
     validity: '15 días'

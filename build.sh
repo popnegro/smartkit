@@ -21,6 +21,18 @@ STATIC_ASSETS=("assets" "data") # Directorios para copiar
 
 # --- Funciones ---
 
+ejecutar_tests() {
+    echo "Ejecutando tests de Playwright antes del build..."
+    # Vercel instala las dependencias de Playwright automáticamente.
+    # El comando 'test' de Playwright inicia un servidor web por defecto.
+    if npx playwright test; then
+        echo "✅ Todos los tests pasaron."
+    else
+        echo "❌ Fallaron los tests. Abortando el build." >&2
+        exit 1
+    fi
+}
+
 limpiar() {
     echo "Limpiando y creando el directorio '$VERCEL_DIST_DIR' para el modo '$MODE'..."
     rm -rf "$VERCEL_DIST_DIR"
@@ -116,6 +128,7 @@ START_TIME=$SECONDS
 # Asegurarse de que DEST_DIR sea el directorio de salida final
 DEST_DIR=$VERCEL_DIST_DIR
 
+ejecutar_tests
 verificar_dependencias
 limpiar
 copiar_archivos

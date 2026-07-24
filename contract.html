@@ -14,6 +14,7 @@
   <!-- Carga de CSS optimizada para performance -->
   <link rel="preload" href="contract.css" as="style">
   <link rel="stylesheet" href="contract.css" media="print" onload="this.media='all'">
+  <script src="shared.js"></script>
   <noscript><link rel="stylesheet" href="contract.css"></noscript>
 </head>
 
@@ -147,20 +148,20 @@
         <div class="container">
           <h2 class="content-title">Inversión y Forma de Pago</h2>
           <p>A continuación se detalla la inversión necesaria para el desarrollo e implementación del proyecto SmartKit.</p>
-          <div class="grid" style="margin-top: 2rem; gap: 1rem;">
-            <div class="feature-card">
-              <h3 style="font-size: 1.1rem;">Desarrollo de Plataforma</h3>
-              <p style="font-size: 0.9rem; color: var(--color-text-secondary);">Creación de la aplicación, base de datos y funcionalidades descritas.</p>
-              <p style="font-size: 1.5rem; font-weight: 700; margin-top: 1rem;">USD 400</p>
+          <div class="grid grid-tight mt-8">
+            <div class="feature-card price-card">
+              <h3>Desarrollo de Plataforma</h3>
+              <p>Creación de la aplicación, base de datos y funcionalidades descritas.</p>
+              <p class="price">USD 400</p>
             </div>
-            <div class="feature-card">
-              <h3 style="font-size: 1.1rem;">Despliegue y Puesta en Marcha</h3>
-              <p style="font-size: 0.9rem; color: var(--color-text-secondary);">Configuración de hosting, dominio y pipelines de despliegue continuo.</p>
-              <p style="font-size: 1.5rem; font-weight: 700; margin-top: 1rem;">USD 100</p>
+            <div class="feature-card price-card">
+              <h3>Despliegue y Puesta en Marcha</h3>
+              <p>Configuración de hosting, dominio y pipelines de despliegue continuo.</p>
+              <p class="price">USD 100</p>
             </div>
-            <div class="feature-card highlight" style="text-align: center;">
-              <h3 style="font-size: 1.1rem;">Inversión Total</h3>
-              <p style="font-size: 2rem; font-weight: 700; margin-top: 1rem;">USD 500</p>
+            <div class="feature-card price-card total highlight text-center">
+              <h3>Inversión Total</h3>
+              <p class="price">USD 500</p>
             </div>
           </div>
           <h3 class="content-title">Forma de Pago</h3>
@@ -168,7 +169,7 @@
             <li><strong>50% a la firma del contrato:</strong> USD 250</li>
             <li><strong>50% a la entrega final:</strong> USD 250</li>
           </ul>
-           <p style="font-size: 0.8rem; margin-top: 1.5rem; color: var(--color-text-secondary);">* Los valores no incluyen IVA. La moneda de pago es Dólar Estadounidense (USD) o su equivalente en Pesos Argentinos (ARS) a la cotización del Dólar Venta Banco Nación al día de pago.</p>
+           <p class="price-note">* Los valores no incluyen IVA. La moneda de pago es Dólar Estadounidense (USD) o su equivalente en Pesos Argentinos (ARS) a la cotización del Dólar Venta Banco Nación al día de pago.</p>
         </div>
       </section>
       
@@ -207,7 +208,7 @@
           <ul>
             <li><strong>100% al inicio del período de servicio:</strong> USD 100, a abonarse del 1 al 5 de cada mes.</li>
           </ul>
-          <p style="font-size: 0.8rem; margin-top: 1rem;">* El servicio de Hosting Administrado se activa al momento de delegar los DNS sobre el dominio en Producción. </p>
+          <p class="price-note mt-4">* El servicio de Hosting Administrado se activa al momento de delegar los DNS sobre el dominio en Producción. </p>
         </div>
       </section>
    
@@ -256,7 +257,7 @@
                 <label for="terms-acceptance">He leído y acepto los <a href="#terminos-condiciones" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary);">términos y condiciones de esta propuesta</a>.</label>
               </div>
               <div class="form-group">
-                <button type="submit" id="submit-btn" class="btn" style="width: 100%;">Confirmar Propuesta</button>
+                <button type="submit" id="submit-btn" class="btn btn-block">Confirmar Propuesta</button>
               </div>
               <p id="form-status" class="form-status"></p>
             </form>
@@ -423,8 +424,9 @@
 
           try {
             const message = generateWhatsAppMessage(clientNameInput.value, companyNameInput.value, phoneInput.value, emailInput.value);
-
-            const whatsappUrl = `https://wa.me/${window.SmartKitShared.DEFAULT_BRAND.whatsapp}?text=${encodeURIComponent(message)}`;
+            // Usar el número de WhatsApp global desde shared.js
+            const whatsappNumber = window.SmartKitShared?.DEFAULT_BRAND?.whatsapp;
+            const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
             
             // Abrir WhatsApp en una nueva pestaña
             window.open(whatsappUrl, '_blank');
@@ -433,8 +435,8 @@
             statusMessage.textContent = '¡Gracias! Por favor, envía el mensaje en WhatsApp para formalizar el acuerdo.';
             statusMessage.className = 'form-status is-success';
             document.getElementById('acceptance-form').style.display = 'none';
-            document.getElementById('next-steps').style.display = 'block';            
-            document.getElementById('next-steps-whatsapp').href = `https://wa.me/${window.SmartKitShared.DEFAULT_BRAND.whatsapp}?text=${encodeURIComponent('Hola, tengo una consulta sobre la propuesta que acabo de aceptar.')}`;
+            document.getElementById('next-steps').style.display = 'block';
+            document.getElementById('next-steps-whatsapp').href = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent('Hola, tengo una consulta sobre la propuesta que acabo de aceptar.')}`;
 
           } catch (error) {
             console.error('Error al enviar el formulario:', error.message);

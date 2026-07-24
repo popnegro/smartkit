@@ -52,7 +52,7 @@ ul { padding-left: var(--space-4); margin-top: var(--space-4); }
   opacity: 0.5;
   cursor: not-allowed;
 }
-.form-checkbox-group label { margin-left: var(--space-2); color: var(--color-text-secondary); }
+.form-radio-group label, .form-checkbox-group label { margin-left: var(--space-2); color: var(--color-text-secondary); }
 .form-status { margin-top: var(--space-4); font-weight: 500; }
 .form-status.is-success { color: #22c55e; } /* text-green-500 */
 .form-status.is-error { color: #ef4444; } /* text-red-500 */
@@ -62,6 +62,20 @@ ul { padding-left: var(--space-4); margin-top: var(--space-4); }
   transition: opacity 0.6s ease-out, transform 0.6s ease-out;
 }
 .animate-on-scroll.is-visible { opacity: 1; transform: translateY(0); }
+
+/* Utilidades de espaciado y layout */
+.mt-4 { margin-top: var(--space-4); }
+.mt-6 { margin-top: var(--space-6); }
+.mt-8 { margin-top: var(--space-8); }
+.text-center { text-align: center; }
+.grid-tight { gap: var(--space-4); }
+
+/* Estilos específicos para componentes de propuesta */
+.price-card h3 { font-size: 1.1rem; }
+.price-card p { font-size: 0.9rem; color: var(--color-text-secondary); }
+.price-card .price { font-size: 1.5rem; font-weight: 700; margin-top: 1rem; }
+.price-card.total .price { font-size: 2rem; }
+.price-note { font-size: 0.8rem; margin-top: 1.5rem; color: var(--color-text-secondary); }
 
 .mobile-header { display: none; }
 
@@ -95,8 +109,8 @@ ul { padding-left: var(--space-4); margin-top: var(--space-4); }
 
 @media (max-width: 1024px) {
   .page-wrapper { flex-direction: column; }
-  .sidebar { position: fixed; top: 0; left: 0; width: 280px; height: 100%; z-index: 100; transform: translateX(-100%); transition: transform 0.3s ease-in-out; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
-  .sidebar.is-open { transform: translateX(0); }
+  .sidebar { display: block; position: fixed; top: 0; left: 0; width: 280px; height: 100%; z-index: 100; transform: translateX(-100%); transition: transform 0.3s ease-in-out; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+  .sidebar.is-open { transform: translateX(0); display: block; }
   .main-content { padding: var(--space-6); }
   .mobile-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4); background-color: var(--color-bg); border-bottom: 1px solid var(--color-border); position: sticky; top: 0; z-index: 50; }
   .menu-toggle { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
